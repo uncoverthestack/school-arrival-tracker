@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>School Card Generator</title>
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Student Card Generator</h1>
+    <p class="subtitle">Upload your student spreadsheet to generate print-ready QR cards</p>
+
+    <div class="upload-box" id="uploadBox">
+      <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" hidden />
+      <button onclick="document.getElementById('fileInput').click()">
+        Upload Spreadsheet
+      </button>
+      <p>Accepts .xlsx, .xls, or .csv</p>
+    </div>
+
+    <div class="expected-format">
+      <strong>Expected columns:</strong> Student Name, Class, Parent Phone, Parent Email
+    </div>
+
+    <div id="preview" class="preview hidden"></div>
+
+    <div id="actions" class="actions hidden">
+      <button id="generateBtn" onclick="generatePDF()">Generate & Download PDF</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

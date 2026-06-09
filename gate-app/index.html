@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gate Scanner</title>
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- QR Scanner Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+</head>
+<body>
+
+  <div class="container">
+    <div class="header">
+      <h1>Gate Scanner</h1>
+      <p class="date" id="currentDate"></p>
+    </div>
+
+    <div class="scanner-box">
+      <div id="reader"></div>
+    </div>
+
+    <div id="result" class="result hidden">
+      <div class="result-icon" id="resultIcon"></div>
+      <div class="result-name" id="resultName"></div>
+      <div class="result-class" id="resultClass"></div>
+      <div class="result-message" id="resultMessage"></div>
+    </div>
+
+    <div class="log-section">
+      <h2>Today's Arrivals</h2>
+      <div id="arrivalLog" class="arrival-log"></div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
