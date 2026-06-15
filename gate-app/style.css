@@ -144,3 +144,125 @@ body {
   font-size: 14px;
   padding: 20px;
 }
+
+/* Mode toggle (QR vs RFID) */
+.mode-toggle {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.mode-btn {
+  flex: 1;
+  padding: 10px;
+  border-radius: 10px;
+  border: 2px solid #334155;
+  background: #1e293b;
+  color: #94a3b8;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mode-btn.active {
+  border-color: #6366f1;
+  background: #312e81;
+  color: white;
+}
+
+/* Arrival / Departure toggle */
+.type-toggle {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.type-btn {
+  flex: 1;
+  padding: 10px;
+  border-radius: 10px;
+  border: 2px solid #334155;
+  background: #1e293b;
+  color: #94a3b8;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.type-btn.active {
+  border-color: #16a34a;
+  background: #14532d;
+  color: white;
+}
+
+/* RFID HID mode box */
+.rfid-box {
+  background: #1e293b;
+  border-radius: 16px;
+  padding: 40px 16px;
+  margin-bottom: 20px;
+  text-align: center;
+  border: 2px dashed #334155;
+}
+
+.rfid-box.hidden {
+  display: none;
+}
+
+.rfid-icon {
+  font-size: 56px;
+  margin-bottom: 12px;
+}
+
+.rfid-label {
+  color: #94a3b8;
+  font-size: 15px;
+  margin-bottom: 16px;
+}
+
+.rfid-input {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid #334155;
+  background: #0f172a;
+  color: #94a3b8;
+  font-size: 14px;
+  text-align: center;
+  outline: none;
+}
+
+.rfid-input:focus {
+  border-color: #6366f1;
+}
+
+/* Log type badge */
+.log-time {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.log-type {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.log-type.arrival {
+  background: #14532d;
+  color: #4ade80;
+}
+
+.log-type.departure {
+  background: #1e3a5f;
+  color: #60a5fa;
+}
+
+.hidden {
+  display: none;
+}

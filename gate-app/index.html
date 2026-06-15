@@ -5,8 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Gate Scanner</title>
   <link rel="stylesheet" href="style.css" />
-
-  <!-- QR Scanner Library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
 </head>
 <body>
@@ -17,8 +15,35 @@
       <p class="date" id="currentDate"></p>
     </div>
 
-    <div class="scanner-box">
+    <!-- Mode toggle -->
+    <div class="mode-toggle">
+      <button type="button" id="btnQR" class="mode-btn active" onclick="setMode('qr')">Camera (QR)</button>
+      <button type="button" id="btnRFID" class="mode-btn" onclick="setMode('rfid')">RFID Scanner</button>
+    </div>
+
+    <!-- Arrival / Departure toggle -->
+    <div class="type-toggle">
+      <button type="button" id="btnArrival" class="type-btn active" onclick="setType('arrival')">Arrival</button>
+      <button type="button" id="btnDeparture" class="type-btn" onclick="setType('departure')">Departure</button>
+    </div>
+
+    <!-- QR camera scanner -->
+    <div id="qrSection" class="scanner-box">
       <div id="reader"></div>
+    </div>
+
+    <!-- RFID HID mode: USB reader acts as keyboard, types card UID + Enter -->
+    <div id="rfidSection" class="rfid-box hidden">
+      <div class="rfid-icon">📡</div>
+      <p class="rfid-label">Ready — tap card on reader</p>
+      <input
+        id="rfidInput"
+        type="text"
+        autocomplete="off"
+        class="rfid-input"
+        placeholder="Waiting for card..."
+        readonly
+      />
     </div>
 
     <div id="result" class="result hidden">

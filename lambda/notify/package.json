@@ -1,0 +1,11 @@
+{
+  "name": "notify-lambda",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "SMS notification dispatcher for school arrival tracker",
+  "main": "index.mjs",
+  "dependencies": {
+    "@aws-sdk/client-sns": "^3.0.0",
+    "@aws-sdk/client-socialmessaging": "^3.0.0"
+  }
+}
