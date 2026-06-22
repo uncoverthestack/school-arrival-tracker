@@ -1,10 +1,18 @@
 import { supabase } from '@/lib/supabase'
 import { notifyParent } from '@/lib/notify'
+import { getSchool } from '@/lib/schools'
+import { checkLimit, scanLimiter } from '@/lib/ratelimit'
 
 export async function POST(request) {
   const apiKey = request.headers.get('x-api-key')
-  if (apiKey !== process.env.GATE_API_KEY) {
+  const school = await getSchool(apiKey)
+  if (!school) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const { allowed } = await checkLimit(scanLimiter, school.id, request)
+  if (!allowed) {
+    return Response.json({ error: 'Too many scans. Slow down.' }, { status: 429 })
   }
 
   let body
@@ -22,11 +30,16 @@ export async function POST(request) {
     return Response.json({ error: 'type must be arrival or departure' }, { status: 400 })
   }
 
-  // Look up student by card_id (RFID UID) or student_id (QR code value)
+  const safeId = String(cardId).trim().replace(/[^a-zA-Z0-9\-]/g, '').slice(0, 50)
+  if (!safeId) {
+    return Response.json({ error: 'cardId contains invalid characters' }, { status: 400 })
+  }
+
   const { data: student } = await supabase
     .from('students')
     .select('*')
-    .or(`card_id.eq.${cardId},student_id.eq.${cardId}`)
+    .eq('school_id', school.id)
+    .or(`card_id.eq.${safeId},student_id.eq.${safeId},code.eq.${safeId}`)
     .single()
 
   if (!student) {
@@ -35,7 +48,6 @@ export async function POST(request) {
 
   const today = new Date().toISOString().split('T')[0]
 
-  // Check for duplicate scan of same type today
   const { data: existing } = await supabase
     .from('arrivals')
     .select('id, scanned_at')
@@ -50,14 +62,19 @@ export async function POST(request) {
     })
     return Response.json({
       duplicate: true,
-      student: { name: student.name, studentClass: student.student_class },
+      student: {
+        name: student.name,
+        studentClass: student.student_class,
+        studentId: student.student_id,
+        photoUrl: student.photo_url ?? null
+      },
       message: `Already scanned at ${time}`
     })
   }
 
-  // Log the event
   await supabase.from('arrivals').insert({
     student_id: student.id,
+    school_id: school.id,
     type,
     date: today
   })
@@ -66,14 +83,18 @@ export async function POST(request) {
     hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Lagos'
   })
 
-  // Fire notifications without blocking the response
   if (student.parent_phone) {
     notifyParent(student.parent_phone, student.name, type, time).catch(console.error)
   }
 
   return Response.json({
     success: true,
-    student: { name: student.name, studentClass: student.student_class },
+    student: {
+      name: student.name,
+      studentClass: student.student_class,
+      studentId: student.student_id,
+      photoUrl: student.photo_url ?? null
+    },
     time,
     message: `${type === 'arrival' ? 'Arrived' : 'Departed'} at ${time} — parent notified`
   })

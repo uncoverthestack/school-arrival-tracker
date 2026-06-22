@@ -4,12 +4,14 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { scanCard } from '@/app/actions/scan'
 
 export default function GatePage() {
-  const [mode, setMode] = useState('qr')
+  const [mode, setMode] = useState('code')
+  const [codeInput, setCodeInput] = useState('')
   const [scanType, setScanType] = useState('arrival')
   const [result, setResult] = useState(null)
   const [arrivals, setArrivals] = useState([])
   const [scanning, setScanning] = useState(false)
   const [today, setToday] = useState('')
+  const [schoolKey, setSchoolKey] = useState('')
 
   const scanTypeRef = useRef(scanType)
   const lastScannedRef = useRef(null)
@@ -26,6 +28,15 @@ export default function GatePage() {
       weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
       timeZone: 'Africa/Lagos'
     }))
+    const params = new URLSearchParams(window.location.search)
+    const keyFromUrl = params.get('key') ?? ''
+
+    const cookieKey = document.cookie
+      .split('; ')
+      .find(row => row.startsWith('school-key='))
+      ?.split('=')[1] ?? ''
+
+    setSchoolKey(decodeURIComponent(keyFromUrl || cookieKey))
   }, [])
 
   const showResult = useCallback((data) => {
@@ -41,19 +52,23 @@ export default function GatePage() {
     setTimeout(() => { lastScannedRef.current = null }, 3000)
 
     setScanning(true)
-    const data = await scanCard(id, scanTypeRef.current)
+    const data = await scanCard(id, scanTypeRef.current, schoolKey)
     setScanning(false)
 
+    if (data.error === 'unauthorized') {
+      showResult({ state: 'error', icon: '❌', student: null, message: 'Invalid school key — check the URL' })
+      return
+    }
     if (data.error === 'not_found') {
       showResult({ state: 'error', icon: '❌', student: null, message: `Card not recognised: ${id}` })
       return
     }
     if (data.duplicate) {
-      showResult({ state: 'warning', icon: '⚠️', student: data.student, message: data.message })
+      showResult({ state: 'warning', student: data.student, time: data.time, message: data.message })
       return
     }
     if (data.success) {
-      showResult({ state: 'success', icon: scanTypeRef.current === 'arrival' ? '✅' : '🚪', student: data.student, message: data.message })
+      showResult({ state: 'success', student: data.student, time: data.time, message: data.message, eventType: scanTypeRef.current })
       setArrivals(prev => [{ ...data.student, time: data.time, type: scanTypeRef.current }, ...prev])
     }
   }, [showResult])
@@ -92,6 +107,14 @@ export default function GatePage() {
     return () => input.removeEventListener('blur', refocus)
   }, [mode])
 
+  const handleCodeSubmit = useCallback(async (e) => {
+    e.preventDefault()
+    const code = codeInput.trim()
+    if (!code) return
+    setCodeInput('')
+    await handleScan(code)
+  }, [codeInput, handleScan])
+
   const handleRFIDKey = useCallback((e) => {
     if (e.key === 'Enter') {
       const cardId = rfidBufferRef.current
@@ -124,8 +147,8 @@ export default function GatePage() {
         </div>
 
         {/* Mode toggle */}
-        <div className="grid grid-cols-2 gap-2 mb-3">
-          {[['qr', '📷 Camera (QR)'], ['rfid', '📡 RFID Scanner']].map(([m, label]) => (
+        <div className="grid grid-cols-3 gap-2 mb-3">
+          {[['code', '🔢 Code Entry'], ['qr', '📷 Camera (QR)'], ['rfid', '📡 RFID']].map(([m, label]) => (
             <button
               key={m}
               type="button"
@@ -159,6 +182,30 @@ export default function GatePage() {
           ))}
         </div>
 
+        {/* Code entry */}
+        {mode === 'code' && (
+          <form onSubmit={handleCodeSubmit} className="bg-gray-900 rounded-2xl p-6 mb-4">
+            <p className="text-gray-400 text-sm text-center mb-4">Enter the student&apos;s 6-digit code</p>
+            <input
+              type="text"
+              inputMode="numeric"
+              maxLength={6}
+              value={codeInput}
+              onChange={e => setCodeInput(e.target.value.replace(/\D/g, ''))}
+              placeholder="000000"
+              autoFocus
+              className="w-full bg-gray-800 border-2 border-gray-700 rounded-xl px-4 py-4 text-center text-3xl font-bold tracking-widest text-white outline-none focus:border-indigo-500 mb-4"
+            />
+            <button
+              type="submit"
+              disabled={codeInput.length < 4}
+              className="w-full py-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:bg-gray-800 disabled:text-gray-600 text-white font-bold text-lg transition-colors"
+            >
+              Check In / Out
+            </button>
+          </form>
+        )}
+
         {/* QR camera */}
         {mode === 'qr' && (
           <div className="bg-gray-900 rounded-2xl p-3 mb-4 overflow-hidden">
@@ -189,29 +236,78 @@ export default function GatePage() {
           </div>
         )}
 
-        {/* Scan result with student photo */}
+        {/* Scan result — ID card style */}
         {result && (
-          <div className={`rounded-2xl p-6 mb-5 text-center transition-all ${
-            result.state === 'success' ? 'bg-green-950 border-2 border-green-500' :
-            result.state === 'warning' ? 'bg-yellow-950 border-2 border-yellow-500' :
-            'bg-red-950 border-2 border-red-500'
-          }`}>
-            {result.student?.photoUrl ? (
-              <img
-                src={result.student.photoUrl}
-                alt={result.student.name}
-                className="w-24 h-24 rounded-full object-cover mx-auto mb-3 border-4 border-white/20"
-              />
+          <div className="bg-white rounded-2xl shadow-2xl overflow-hidden mb-5">
+            {/* Status banner */}
+            <div className={`px-4 py-2.5 text-center text-sm font-medium flex items-center justify-center gap-2 ${
+              result.state === 'success'
+                ? 'bg-green-50 text-green-700 border-b border-green-100'
+                : result.state === 'warning'
+                ? 'bg-orange-50 text-orange-700 border-b border-orange-100'
+                : 'bg-red-50 text-red-700 border-b border-red-100'
+            }`}>
+              <span className={`w-2 h-2 rounded-full shrink-0 ${
+                result.state === 'success' ? 'bg-green-500' :
+                result.state === 'warning' ? 'bg-orange-500' : 'bg-red-500'
+              }`} />
+              {result.message}
+            </div>
+
+            {result.student ? (
+              <div className="px-6 pt-5 pb-6">
+                {/* Label */}
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Student</p>
+
+                {/* Photo */}
+                <div className="flex justify-center mb-4">
+                  {result.student.photoUrl ? (
+                    <img
+                      src={result.student.photoUrl}
+                      alt={result.student.name}
+                      className="w-36 h-44 object-cover rounded-xl shadow-md"
+                    />
+                  ) : (
+                    <div className="w-36 h-44 bg-gray-100 rounded-xl flex items-center justify-center text-7xl font-bold text-gray-300 shadow-inner">
+                      {result.student.name?.[0] ?? '?'}
+                    </div>
+                  )}
+                </div>
+
+                {/* Name */}
+                <p className="text-2xl font-bold text-gray-900 text-center mb-5">{result.student.name}</p>
+
+                {/* 3-column detail row */}
+                <div className="grid grid-cols-3 divide-x divide-gray-100">
+                  <div className="text-center px-2">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Class</p>
+                    <p className="text-sm font-semibold text-gray-800">{result.student.studentClass ?? '—'}</p>
+                  </div>
+                  <div className="text-center px-2">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Student ID</p>
+                    <p className="text-sm font-semibold text-gray-800">{result.student.studentId ?? '—'}</p>
+                  </div>
+                  <div className="text-center px-2">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">
+                      {result.eventType === 'departure' ? 'Departed' : 'Arrived'}
+                    </p>
+                    <p className={`text-sm font-semibold ${result.state === 'warning' ? 'text-orange-500' : 'text-green-600'}`}>
+                      {result.time ?? '—'}
+                    </p>
+                  </div>
+                </div>
+              </div>
             ) : (
-              <div className="text-5xl mb-3">{result.icon}</div>
+              <div className="px-6 py-10 text-center text-gray-500 text-sm">{result.message}</div>
             )}
-            {result.student && (
-              <>
-                <p className="text-xl font-bold">{result.student.name}</p>
-                <p className="text-gray-300 text-sm mb-2">{result.student.studentClass}</p>
-              </>
-            )}
-            <p className="text-sm opacity-80">{result.message}</p>
+          </div>
+        )}
+
+        {/* Session count footer */}
+        {arrivals.length > 0 && (
+          <div className="flex items-center justify-between text-xs text-gray-500 mb-4 px-1">
+            <span>{arrivals.filter(a => a.type === 'arrival').length} checked in this session</span>
+            <span>{arrivals.filter(a => a.type === 'departure').length} departed</span>
           </div>
         )}
 
@@ -227,13 +323,13 @@ export default function GatePage() {
                   {a.photoUrl ? (
                     <img src={a.photoUrl} alt={a.name} className="w-10 h-10 rounded-full object-cover shrink-0" />
                   ) : (
-                    <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center text-lg shrink-0">
+                    <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center text-lg font-bold shrink-0">
                       {a.name?.[0]}
                     </div>
                   )}
                   <div>
                     <p className="text-sm font-semibold">{a.name}</p>
-                    <p className="text-xs text-gray-500">{a.studentClass}</p>
+                    <p className="text-xs text-gray-500">{a.studentClass}{a.studentId ? ` · ${a.studentId}` : ''}</p>
                   </div>
                 </div>
                 <div className="text-right">

@@ -17,14 +17,36 @@ export const handler = async (event) => {
     return json(400, { error: 'Invalid JSON' })
   }
 
-  const { phone, studentName, action, time } = body
-  if (!phone || !studentName || !action || !time) {
-    return json(400, { error: 'phone, studentName, action, and time are required' })
+  const { phone, otp, studentName, action, time } = body
+  if (!phone) {
+    return json(400, { error: 'phone is required' })
   }
 
   const normalized = normalizePhone(phone)
-  const smsText = `SchoolPass: ${studentName} ${action} at ${time}.`
   const results = {}
+
+  // OTP path — phone verification for parent registration
+  if (otp) {
+    const smsText = `SchoolPass: Your verification code is ${otp}. Valid for 10 minutes.`
+    await sns.send(new PublishCommand({
+      PhoneNumber: normalized,
+      Message: smsText,
+      MessageAttributes: {
+        'AWS.SNS.SMS.SMSType': { DataType: 'String', StringValue: 'Transactional' },
+        'AWS.SNS.SMS.SenderID': { DataType: 'String', StringValue: process.env.SENDER_ID || 'SchoolPass' }
+      }
+    }))
+      .then(() => { results.sms = 'sent' })
+      .catch(err => { results.sms = `failed: ${err.message}`; console.error('SNS OTP error:', err) })
+
+    return json(200, { success: true, results })
+  }
+
+  if (!studentName || !action || !time) {
+    return json(400, { error: 'phone, studentName, action, and time are required' })
+  }
+
+  const smsText = `SchoolPass: ${studentName} ${action} at ${time}.`
 
   // ── SMS via AWS SNS ──────────────────────────────────────────────────────────
   await sns.send(new PublishCommand({
