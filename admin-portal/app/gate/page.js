@@ -60,7 +60,7 @@ export default function GatePage() {
       return
     }
     if (data.error === 'not_found') {
-      showResult({ state: 'error', icon: '❌', student: null, message: `Card not recognised: ${id}` })
+      showResult({ state: 'error', icon: '❌', student: null, message: `Card not recognized: ${id}` })
       return
     }
     if (data.duplicate) {
@@ -73,7 +73,7 @@ export default function GatePage() {
     }
   }, [showResult])
 
-  // ── QR scanner ───────────────────────────────────────────────────────────────
+  // QR scanner 
   useEffect(() => {
     if (mode !== 'qr') return
     let scanner
@@ -96,7 +96,7 @@ export default function GatePage() {
     }
   }, [mode, handleScan])
 
-  // ── RFID HID: keep input focused, capture keystrokes ─────────────────────────
+  // RFID HID: keep input focused, capture keystrokes 
   useEffect(() => {
     if (mode !== 'rfid') return
     const input = rfidInputRef.current
@@ -148,7 +148,7 @@ export default function GatePage() {
 
         {/* Mode toggle */}
         <div className="grid grid-cols-3 gap-2 mb-3">
-          {[['code', '🔢 Code Entry'], ['qr', '📷 Camera (QR)'], ['rfid', '📡 RFID']].map(([m, label]) => (
+          {[['code', 'Code Entry'], ['qr', '📷 Camera (QR)'], ['rfid', '📡 RFID']].map(([m, label]) => (
             <button
               key={m}
               type="button"
@@ -216,7 +216,7 @@ export default function GatePage() {
         {/* RFID HID input */}
         {mode === 'rfid' && (
           <div className="bg-gray-900 rounded-2xl p-10 mb-4 text-center border-2 border-dashed border-gray-700">
-            <div className="text-5xl mb-3">📡</div>
+            <div className="text-5xl mb-3"></div>
             <p className="text-gray-400 mb-4 text-sm">Ready — tap card on reader</p>
             <input
               ref={rfidInputRef}

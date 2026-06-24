@@ -1,19 +1,21 @@
-# SchoolPass
+# SchoolPass — dataocelotschools.com
 
-A multi-tenant school arrival tracking SaaS. Each school gets its own isolated portal with a unique subdomain. Gate attendants log student arrivals and departures by entering a 6-digit code, scanning a QR code, or using an RFID reader. Parents receive SMS and WhatsApp notifications in real time.
+A multi-tenant school arrival tracking SaaS. Each school gets its own isolated portal at a unique subdomain (e.g. `greenfield.dataocelotschools.com`). Gate attendants log student arrivals and departures by entering a 6-digit code, scanning a QR code, or using an RFID reader. Parents receive SMS and WhatsApp notifications in real time.
 
 ---
 
 ## Features
 
-- **Multi-tenant** — every school is fully data-isolated behind its own subdomain (e.g. `greenfield.dataocelot.com`)
+- **Multi-tenant** — every school is fully data-isolated behind its own subdomain
 - **Gate scanner** — code entry, QR camera, or USB RFID reader (HID keyboard emulation)
-- **Student ID card** — scan result shows portrait photo, name, class, student ID, and arrival time
+- **Student ID card result** — scan shows portrait photo, name, class, student ID, and arrival time in a clean card UI
 - **Live dashboard** — real-time arrival stats that auto-refresh every 10 seconds
-- **Student directory** — paginated list of all enrolled students with gate codes
+- **Student directory** — all enrolled students with gate codes, photos, and class info
+- **Student code rotation** — codes tied to the school year; rotate automatically on promotion, preserved on class repeat
 - **Parent notifications** — SMS + WhatsApp via AWS Lambda on every arrival and departure
-- **Parent self-registration** — 2-step OTP phone verification so parents link themselves to a student
-- **School self-registration** — any school can sign up at `/signup` with no manual SQL
+- **Parent self-registration** — 2-step OTP flow; phone must match what the school registered (prevents students faking parent numbers)
+- **School self-registration** — any school signs up at `/signup`, no manual SQL needed
+- **Super admin panel** — platform owner can suspend, restore, archive, or permanently delete any school
 - **Rate limiting** — per-endpoint limits via Upstash Redis (gracefully skips if not configured)
 - **Admin auth** — encrypted session cookies via iron-session; bcrypt password hashing
 
@@ -25,12 +27,13 @@ A multi-tenant school arrival tracking SaaS. Each school gets its own isolated p
 Browser / Gate device
         │
         ▼
-  Next.js 16 (App Router)  ←── proxy.js (subdomain routing)
+  Next.js 16 (App Router)  ←── proxy.js (subdomain routing + status check)
         │
+        ├── /superadmin     Platform owner panel (suspend / archive / delete schools)
         ├── /api/*          REST endpoints (external devices, parent registration)
         ├── /               Admin dashboard (server component, session-protected)
         ├── /gate           Gate scanner (client component)
-        ├── /students       Student directory (server component)
+        ├── /students       Student directory with class editing + code rotation
         ├── /signup         School self-registration
         └── /login          Admin login
         │
@@ -41,7 +44,7 @@ Browser / Gate device
    AWS Lambda              SMS (SNS) + WhatsApp (End User Messaging Social)
 ```
 
-**Subdomain routing** — `proxy.js` intercepts every request, looks up the school by subdomain via the Supabase REST API, and injects the school's API key as an `x-school-key` header and a `school-key` cookie so both server components and client components can identify the school.
+**Subdomain routing** — `proxy.js` intercepts every request, looks up the school by subdomain, checks its status (`active` / `suspended` / `archived`), and injects the school's API key only for active schools.
 
 ---
 
@@ -51,34 +54,38 @@ Browser / Gate device
 school-arrival-tracker/
 ├── admin-portal/           Next.js 16 app
 │   ├── app/
-│   │   ├── page.js         Dashboard
-│   │   ├── gate/           Gate scanner
-│   │   ├── students/       Student directory
-│   │   ├── login/          Admin login
-│   │   ├── signup/         School registration
-│   │   ├── register/       Parent self-registration
+│   │   ├── page.js              Dashboard
+│   │   ├── gate/                Gate scanner
+│   │   ├── students/            Student directory + code rotation
+│   │   ├── superadmin/          Super admin panel
+│   │   ├── login/               Admin login
+│   │   ├── signup/              School registration
+│   │   ├── register/            Parent self-registration
 │   │   ├── actions/
-│   │   │   └── scan.js     Server action for gate scanning
+│   │   │   └── scan.js          Server action for gate scanning
 │   │   └── api/
-│   │       ├── scan/       External device endpoint (ESP32, RFID bridge)
-│   │       ├── students/   CRUD for students
-│   │       ├── arrivals/   Query arrivals
-│   │       ├── stats/      Today's stats
-│   │       ├── signup/     School account creation
-│   │       ├── register/   Parent OTP request
-│   │       ├── verify/     Parent OTP verification
-│   │       └── auth/       Login / logout
+│   │       ├── scan/            External device endpoint (ESP32, RFID bridge)
+│   │       ├── students/        CRUD for students
+│   │       ├── students/[id]/   Update class + trigger code rotation
+│   │       ├── arrivals/        Query arrivals
+│   │       ├── stats/           Today's stats
+│   │       ├── signup/          School account creation
+│   │       ├── register/        Parent OTP request
+│   │       ├── verify/          Parent OTP verification
+│   │       ├── superadmin/      Super admin auth + school management
+│   │       └── auth/            Login / logout
 │   ├── lib/
-│   │   ├── supabase.js     Supabase client
-│   │   ├── session.js      iron-session admin auth
-│   │   ├── schools.js      School lookup by API key
-│   │   ├── notify.js       Lambda notification helper
-│   │   └── ratelimit.js    Upstash rate limiting
-│   └── proxy.js            Subdomain routing (Next.js middleware)
-├── card-generator/         Static HTML card printer (generates printable student codes)
+│   │   ├── supabase.js          Supabase client (lazy init)
+│   │   ├── session.js           iron-session school admin auth
+│   │   ├── superSession.js      iron-session super admin auth (separate cookie)
+│   │   ├── schools.js           School lookup by API key
+│   │   ├── notify.js            Lambda notification helper
+│   │   └── ratelimit.js         Upstash rate limiting
+│   └── proxy.js                 Subdomain routing (Next.js middleware)
+├── card-generator/              Static HTML card printer (generates printable student codes)
 ├── lambda/
 │   └── notify/
-│       └── index.mjs       AWS Lambda — SMS + WhatsApp notifications
+│       └── index.mjs            AWS Lambda — SMS + WhatsApp notifications
 └── infrastructure/
     └── supabase-migration.sql   Full DB schema
 ```
@@ -97,25 +104,30 @@ school-arrival-tracker/
 
 ## Database Setup
 
-Run the migration in your Supabase dashboard under **SQL Editor**:
-
-```sql
--- From infrastructure/supabase-migration.sql
-```
+Run the full migration in your Supabase dashboard under **SQL Editor** — paste the contents of `infrastructure/supabase-migration.sql` and click Run.
 
 The schema creates:
 
-| Table | Purpose |
-|-------|---------|
-| `schools` | One row per school — name, subdomain, hashed password, API key |
-| `students` | Students with `school_id`, 6-digit `code`, `student_id`, `photo_url` |
-| `arrivals` | Arrival/departure events with `school_id`, `student_id`, `date`, `type` |
-| `verifications` | OTP records for parent phone verification |
+| Table | Key columns |
+|-------|-------------|
+| `schools` | `name`, `subdomain`, `api_key`, `status`, `archived_at` |
+| `students` | `school_id`, `code`, `code_year`, `student_id`, `photo_url` |
+| `arrivals` | `school_id`, `student_id`, `type`, `date`, `scanned_at` |
+| `verifications` | `student_id`, `phone`, `otp`, `expires_at`, `used` |
 
-After running the migration, also run this if adding `photo_url` to an existing database:
+**Grant permissions** (required for tables created via SQL editor):
 
 ```sql
-ALTER TABLE students ADD COLUMN photo_url TEXT;
+GRANT ALL ON public.schools      TO service_role;
+GRANT ALL ON public.students     TO service_role;
+GRANT ALL ON public.arrivals     TO service_role;
+GRANT ALL ON public.verifications TO service_role;
+```
+
+**Fix status on existing rows** (if migrating an existing database):
+
+```sql
+UPDATE schools SET status = 'active' WHERE status IS NULL;
 ```
 
 ---
@@ -126,7 +138,7 @@ ALTER TABLE students ADD COLUMN photo_url TEXT;
 git clone <repo>
 cd school-arrival-tracker/admin-portal
 pnpm install
-cp .env.local.example .env.local   # then fill in your values
+cp .env.local.example .env.local   # fill in your values
 pnpm dev
 ```
 
@@ -147,13 +159,61 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 # Session encryption (must be 32+ characters)
 SESSION_SECRET=change-me-to-a-32-plus-character-random-string
 
+# Super admin credentials — platform owner only, never share these
+SUPER_ADMIN_EMAIL=you@yourdomain.com
+SUPER_ADMIN_PASSWORD=your-strong-password
+
 # AWS Lambda for SMS/WhatsApp (optional — skip to disable notifications)
 NOTIFY_LAMBDA_URL=https://your-function.lambda-url.us-east-1.on.aws
 NOTIFY_LAMBDA_API_KEY=your-lambda-api-key
 
 # Upstash Redis for rate limiting (optional — skipped gracefully if missing)
-UPSTASH_REDIS_REST_URL=https://your-instance.upstash.io
-UPSTASH_REDIS_REST_TOKEN=your-upstash-token
+UPSTASH_REDIS_REST_URL=
+UPSTASH_REDIS_REST_TOKEN=
+```
+
+---
+
+## Super Admin Panel
+
+The platform owner manages all schools at:
+
+```
+https://dataocelotschools.com/superadmin
+```
+
+Log in with `SUPER_ADMIN_EMAIL` and `SUPER_ADMIN_PASSWORD`. This panel is completely separate from school admin accounts — no school can access it.
+
+### School statuses
+
+| Status | Meaning | Data |
+|--------|---------|------|
+| **Active** | School has full access | Live |
+| **Suspended** | Access blocked (e.g. late payment) | Intact — fully restorable |
+| **Archived** | Soft-deleted, hidden from all queries | Intact in Supabase — restorable |
+
+### Actions per status
+
+| From | Actions available |
+|------|------------------|
+| Active | Suspend · Archive |
+| Suspended | Restore · Archive |
+| Archived | Restore · Delete forever |
+
+- **Suspend** — portal goes dark instantly, login blocked, all data untouched
+- **Restore** — one click, full access restored immediately
+- **Archive** — school is hidden from all queries but data stays in Supabase
+- **Delete forever** — only available on archived schools; permanently removes all students, arrivals, and parent records
+
+### Clear test data via SQL
+
+To wipe all schools and start clean:
+
+```sql
+DELETE FROM verifications WHERE student_id IN (SELECT id FROM students);
+DELETE FROM arrivals;
+DELETE FROM students;
+DELETE FROM schools;
 ```
 
 ---
@@ -163,7 +223,7 @@ UPSTASH_REDIS_REST_TOKEN=your-upstash-token
 **Via API** (using the school's API key):
 
 ```bash
-curl -X POST https://yourschool.schoolpass.com/api/students \
+curl -X POST https://greenfield.dataocelotschools.com/api/students \
   -H "x-api-key: YOUR_SCHOOL_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -175,14 +235,27 @@ curl -X POST https://yourschool.schoolpass.com/api/students \
   }'
 ```
 
-The API auto-generates a unique `student_id` (`SCH-YYYY-NNNN`) and a 6-digit gate `code`. The response includes both.
+The API auto-generates a unique `student_id` (`SCH-YYYY-NNNN`), a 6-digit gate `code`, and tags the code with the current school year (`code_year`).
 
 **List all students:**
 
 ```bash
-curl https://yourschool.schoolpass.com/api/students \
+curl https://greenfield.dataocelotschools.com/api/students \
   -H "x-api-key: YOUR_SCHOOL_API_KEY"
 ```
+
+---
+
+## Student Code Rotation
+
+Each student's 6-digit gate code is tied to the school year (`code_year`, e.g. `2025-2026`). At year-end, the school admin updates each student's class from the **Students** page:
+
+| Change | Result |
+|--------|--------|
+| Class updated (e.g. JSS 1A → JSS 2A) | **New code generated** — student is promoted |
+| Class unchanged (same class) | **Code preserved** — student is repeating |
+
+The old code stops working immediately when a new one is generated.
 
 ---
 
@@ -202,11 +275,11 @@ Three scan modes:
 | **QR Camera** | Phone/tablet camera reads a QR code printed on the student card |
 | **RFID** | USB RFID reader plugged into the gate laptop — HID keyboard emulation, no driver needed |
 
-When a code is scanned the result card shows:
+The result card shows:
 - Student portrait photo (letter avatar fallback)
 - Full name, class, student ID
-- Arrival or departure time
-- Parent notification status
+- Arrived / Departed time
+- Status banner (green for first scan, orange if already checked in)
 
 ---
 
@@ -231,10 +304,11 @@ Content-Type: application/json
 Parents visit `/register` on the school's subdomain:
 
 1. Enter the student's 6-digit code and their phone number
-2. Receive a 6-digit OTP via SMS
-3. Enter the OTP to link their number to the student
+2. System checks the submitted number against what the school registered — prevents students entering their own number
+3. OTP sent via SMS to the verified number
+4. Enter the OTP to complete registration
 
-After registration, every arrival and departure triggers an SMS + WhatsApp message to that number.
+After registration, every arrival and departure triggers an SMS + WhatsApp notification to that number.
 
 ---
 
@@ -242,28 +316,28 @@ After registration, every arrival and departure triggers an SMS + WhatsApp messa
 
 Every school is isolated by `school_id`. The subdomain is resolved in `proxy.js`:
 
-1. Request arrives at `greenfield.dataocelot.com`
-2. `proxy.js` reads the subdomain (`greenfield`), queries Supabase for the matching school
-3. Sets `x-school-key` header (read by server components) and `school-key` cookie (read by client components)
-4. All DB queries are scoped by `school_id` — School A can never read School B's data
+1. Request arrives at `greenfield.dataocelotschools.com`
+2. `proxy.js` reads the subdomain, queries Supabase for the matching school and checks its `status`
+3. If status is not `active` — no school key is set, access is blocked
+4. If active — sets `x-school-key` header (server components) and `school-key` cookie (client components)
+5. All DB queries are scoped by `school_id` — School A can never read School B's data
 
-No code changes or redeployments are needed when a new school signs up — picking a subdomain at `/signup` is all it takes to get a live, isolated portal.
+No code changes or redeployments are needed when a new school signs up.
 
 ---
 
 ## Deployment
 
-### How subdomain isolation works in production
+### How it works
 
-Each school that signs up picks a subdomain. If your domain is `dataocelot.com`:
+Each school picks a subdomain at signup. With `dataocelotschools.com`:
 
-| School | Subdomain chosen at signup | Portal URL |
-|--------|---------------------------|------------|
-| School A | `a` | `a.dataocelot.com` |
-| School B | `b` | `b.dataocelot.com` |
-| Greenfield Academy | `greenfield` | `greenfield.dataocelot.com` |
+| School | Subdomain | Portal URL |
+|--------|-----------|------------|
+| Greenfield Academy | `greenfield` | `greenfield.dataocelotschools.com` |
+| St Joseph's | `stjoseph` | `stjoseph.dataocelotschools.com` |
 
-Every school's portal is the **same Next.js app** — the subdomain tells the app which school's data to load. School A can never see School B's students or arrivals.
+The wildcard `*` routes all subdomains to the same Vercel deployment automatically.
 
 ---
 
@@ -271,41 +345,35 @@ Every school's portal is the **same Next.js app** — the subdomain tells the ap
 
 ```bash
 cd admin-portal
+pnpm install
 vercel --prod
 ```
 
-Set all environment variables in the Vercel project dashboard (same keys as `.env.local`).
+Add all environment variables in Vercel → **Settings → Environment Variables**.
 
 ---
 
-### Step 2 — Add wildcard domain in Vercel
+### Step 2 — Add domains in Vercel
 
 In your Vercel project → **Settings → Domains**, add:
 
 ```
-*.dataocelot.com
-```
-
-Vercel will show you a DNS record to add. Also add the root domain if you want `dataocelot.com` itself to serve the signup page:
-
-```
-dataocelot.com
+dataocelotschools.com
+*.dataocelotschools.com
 ```
 
 ---
 
-### Step 3 — Configure DNS (wildcard record)
+### Step 3 — Point nameservers to Vercel
 
-In your DNS provider (wherever `dataocelot.com` is managed — Cloudflare, Namecheap, etc.), add a wildcard CNAME:
+Since `dataocelotschools.com` is a fresh domain (nothing else running on it), point its nameservers to Vercel in **AWS Route 53 → Registered Domains → Edit nameservers**:
 
-| Type | Name | Value |
-|------|------|-------|
-| `CNAME` | `*` | `cname.vercel-dns.com` |
-| `CNAME` | `@` (or `dataocelot.com`) | `cname.vercel-dns.com` |
+```
+ns1.vercel-dns.com
+ns2.vercel-dns.com
+```
 
-> If you are using Cloudflare, set the proxy status to **DNS only** (grey cloud) for the wildcard record — Cloudflare's proxy does not support wildcard subdomains on free plans.
-
-Once DNS propagates (usually under 5 minutes on Cloudflare, up to 24 hours elsewhere), any school that signs up with subdomain `xyz` will instantly get a working portal at `xyz.dataocelot.com` — no extra configuration needed.
+This lets Vercel handle wildcard SSL automatically. Propagation takes a few minutes to a few hours.
 
 ---
 
@@ -322,12 +390,7 @@ aws lambda create-function \
   --role arn:aws:iam::YOUR_ACCOUNT:role/lambda-execution-role
 ```
 
-Enable a **Function URL** on the Lambda and add the URL + API key to your Vercel environment variables:
-
-```
-NOTIFY_LAMBDA_URL=https://your-function.lambda-url.us-east-1.on.aws
-NOTIFY_LAMBDA_API_KEY=your-secret-key
-```
+Enable a **Function URL** on the Lambda and add the URL + API key to Vercel environment variables.
 
 ---
 
@@ -339,7 +402,7 @@ NOTIFY_LAMBDA_API_KEY=your-secret-key
 | `/api/register` | 5 requests / minute per IP |
 | `/api/auth/login` | 10 requests / 15 minutes per IP |
 
-Limits are enforced via Upstash Redis. If `UPSTASH_REDIS_REST_URL` is not set, rate limiting is silently skipped (safe for local dev).
+Rate limiting uses Upstash Redis. If `UPSTASH_REDIS_REST_URL` is not set or is a placeholder, rate limiting is silently skipped (safe for local dev).
 
 ---
 
