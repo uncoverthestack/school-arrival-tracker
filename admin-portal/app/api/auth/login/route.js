@@ -32,13 +32,24 @@ export async function POST(request) {
 
   const { data: school } = await supabase
     .from('schools')
-    .select('id, name, api_key, admin_email, admin_password_hash')
+    .select('id, name, api_key, admin_email, admin_password_hash, status')
     .eq('api_key', resolvedKey)
     .single()
 
   // Use same error for wrong email or wrong school to avoid enumeration
   if (!school || school.admin_email !== email.trim().toLowerCase()) {
     return Response.json({ error: 'Invalid email or password' }, { status: 401 })
+  }
+
+  if (school.status === 'suspended') {
+    return Response.json(
+      { error: 'Your account has been suspended. Please contact support to restore access.' },
+      { status: 403 }
+    )
+  }
+
+  if (school.status === 'archived') {
+    return Response.json({ error: 'This account no longer exists.' }, { status: 403 })
   }
 
   const valid = await bcrypt.compare(password, school.admin_password_hash)

@@ -22,7 +22,7 @@ export async function proxy(request) {
 
   try {
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/schools?subdomain=eq.${encodeURIComponent(subdomain)}&select=id,name,api_key&limit=1`,
+      `${SUPABASE_URL}/rest/v1/schools?subdomain=eq.${encodeURIComponent(subdomain)}&select=id,name,api_key,status&limit=1`,
       {
         headers: {
           apikey: SUPABASE_KEY,
@@ -34,8 +34,8 @@ export async function proxy(request) {
     const schools = await res.json()
     const school = schools?.[0]
 
-    // Not a registered school subdomain — pass through unchanged
-    if (!school) return NextResponse.next()
+    // Not a registered school subdomain, or suspended/archived — pass through without setting school key
+    if (!school || school.status !== 'active') return NextResponse.next()
 
     const response = NextResponse.next()
 

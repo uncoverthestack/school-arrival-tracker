@@ -50,6 +50,12 @@ export async function POST(request) {
     )
   }
 
+  function currentSchoolYear() {
+    const now = new Date()
+    const y = now.getFullYear()
+    return now.getMonth() >= 8 ? `${y}-${y + 1}` : `${y - 1}-${y}`
+  }
+
   const year = new Date().getFullYear()
   const { count } = await supabase
     .from('students')
@@ -83,6 +89,7 @@ export async function POST(request) {
       parent_email: parentEmail ?? null,
       card_id: cardId ?? studentId,
       code,
+      code_year: currentSchoolYear(),
       photo_url: photoUrl ?? null
     })
     .select()

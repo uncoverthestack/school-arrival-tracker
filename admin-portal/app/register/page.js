@@ -120,7 +120,7 @@ export default function RegisterPage() {
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold">Parent Registration</h1>
           <p className="text-gray-400 text-sm mt-2">
-            Enter the code given to you by the school to activate arrival notifications.
+            Enter the student code and the phone number you provided to the school when enrolling your child.
           </p>
         </div>
         <form onSubmit={handleRegister} className="space-y-4">
@@ -158,6 +158,7 @@ export default function RegisterPage() {
               required
               className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 outline-none focus:border-indigo-500"
             />
+            <p className="text-xs text-gray-600 mt-1">Must match the number you gave the school at enrolment</p>
           </div>
           {error && <p className="text-red-400 text-sm text-center">{error}</p>}
           <button

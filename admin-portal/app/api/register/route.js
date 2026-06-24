@@ -8,6 +8,10 @@ function isValidPhone(phone) {
   return /^[0-9+\-\s()]{7,15}$/.test(String(phone).trim())
 }
 
+function normalizePhone(phone) {
+  return String(phone).replace(/[\s\-\(\)]/g, '')
+}
+
 function generateOtp() {
   return String(Math.floor(100000 + Math.random() * 900000))
 }
@@ -66,10 +70,19 @@ export async function POST(request) {
     return Response.json({ error: 'Invalid code — check with your school' }, { status: 404 })
   }
 
-  if (student.parent_phone && student.parent_phone !== safePhone) {
+  // School must pre-register the parent phone when adding the student
+  if (!student.parent_phone) {
     return Response.json(
-      { error: 'A parent is already registered for this student. Contact the school to update.' },
-      { status: 409 }
+      { error: 'No parent contact on file for this student. Ask the school office to register your number first.' },
+      { status: 403 }
+    )
+  }
+
+  // Submitted phone must exactly match what the school registered — prevents students entering their own number
+  if (normalizePhone(student.parent_phone) !== normalizePhone(safePhone)) {
+    return Response.json(
+      { error: 'Phone number does not match school records for this student. Contact the school office.' },
+      { status: 403 }
     )
   }
 

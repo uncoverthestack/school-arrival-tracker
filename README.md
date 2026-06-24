@@ -6,7 +6,7 @@ A multi-tenant school arrival tracking SaaS. Each school gets its own isolated p
 
 ## Features
 
-- **Multi-tenant** — every school is fully data-isolated behind its own subdomain (e.g. `greenfield.schoolpass.com`)
+- **Multi-tenant** — every school is fully data-isolated behind its own subdomain (e.g. `greenfield.dataocelot.com`)
 - **Gate scanner** — code entry, QR camera, or USB RFID reader (HID keyboard emulation)
 - **Student ID card** — scan result shows portrait photo, name, class, student ID, and arrival time
 - **Live dashboard** — real-time arrival stats that auto-refresh every 10 seconds
@@ -242,25 +242,74 @@ After registration, every arrival and departure triggers an SMS + WhatsApp messa
 
 Every school is isolated by `school_id`. The subdomain is resolved in `proxy.js`:
 
-1. Request arrives at `greenfield.schoolpass.com`
-2. `proxy.js` queries Supabase for the school with `subdomain = 'greenfield'`
+1. Request arrives at `greenfield.dataocelot.com`
+2. `proxy.js` reads the subdomain (`greenfield`), queries Supabase for the matching school
 3. Sets `x-school-key` header (read by server components) and `school-key` cookie (read by client components)
-4. All DB queries are scoped by `school_id` — no school can read another school's data
+4. All DB queries are scoped by `school_id` — School A can never read School B's data
+
+No code changes or redeployments are needed when a new school signs up — picking a subdomain at `/signup` is all it takes to get a live, isolated portal.
 
 ---
 
 ## Deployment
 
-### Next.js → Vercel
+### How subdomain isolation works in production
+
+Each school that signs up picks a subdomain. If your domain is `dataocelot.com`:
+
+| School | Subdomain chosen at signup | Portal URL |
+|--------|---------------------------|------------|
+| School A | `a` | `a.dataocelot.com` |
+| School B | `b` | `b.dataocelot.com` |
+| Greenfield Academy | `greenfield` | `greenfield.dataocelot.com` |
+
+Every school's portal is the **same Next.js app** — the subdomain tells the app which school's data to load. School A can never see School B's students or arrivals.
+
+---
+
+### Step 1 — Deploy to Vercel
 
 ```bash
 cd admin-portal
 vercel --prod
 ```
 
-Set all environment variables in the Vercel project dashboard. Configure custom domains so `*.schoolpass.com` points to your Vercel deployment.
+Set all environment variables in the Vercel project dashboard (same keys as `.env.local`).
 
-### Lambda → AWS
+---
+
+### Step 2 — Add wildcard domain in Vercel
+
+In your Vercel project → **Settings → Domains**, add:
+
+```
+*.dataocelot.com
+```
+
+Vercel will show you a DNS record to add. Also add the root domain if you want `dataocelot.com` itself to serve the signup page:
+
+```
+dataocelot.com
+```
+
+---
+
+### Step 3 — Configure DNS (wildcard record)
+
+In your DNS provider (wherever `dataocelot.com` is managed — Cloudflare, Namecheap, etc.), add a wildcard CNAME:
+
+| Type | Name | Value |
+|------|------|-------|
+| `CNAME` | `*` | `cname.vercel-dns.com` |
+| `CNAME` | `@` (or `dataocelot.com`) | `cname.vercel-dns.com` |
+
+> If you are using Cloudflare, set the proxy status to **DNS only** (grey cloud) for the wildcard record — Cloudflare's proxy does not support wildcard subdomains on free plans.
+
+Once DNS propagates (usually under 5 minutes on Cloudflare, up to 24 hours elsewhere), any school that signs up with subdomain `xyz` will instantly get a working portal at `xyz.dataocelot.com` — no extra configuration needed.
+
+---
+
+### Step 4 — Deploy Lambda (SMS/WhatsApp notifications)
 
 ```bash
 cd lambda/notify
@@ -273,7 +322,12 @@ aws lambda create-function \
   --role arn:aws:iam::YOUR_ACCOUNT:role/lambda-execution-role
 ```
 
-Enable a **Function URL** on the Lambda and set the URL + a secret API key in your Vercel environment variables.
+Enable a **Function URL** on the Lambda and add the URL + API key to your Vercel environment variables:
+
+```
+NOTIFY_LAMBDA_URL=https://your-function.lambda-url.us-east-1.on.aws
+NOTIFY_LAMBDA_API_KEY=your-secret-key
+```
 
 ---
 

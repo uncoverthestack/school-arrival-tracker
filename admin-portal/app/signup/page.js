@@ -90,7 +90,7 @@ export default function SignupPage() {
                 maxLength={32}
                 className="bg-transparent outline-none flex-1 min-w-0"
               />
-              <span className="text-gray-500 text-sm whitespace-nowrap">.schoolpass.com</span>
+              <span className="text-gray-500 text-sm whitespace-nowrap">.dataocelotschools.com</span>
             </div>
             <p className="text-xs text-gray-600 mt-1">Lowercase letters, numbers and hyphens only</p>
           </div>

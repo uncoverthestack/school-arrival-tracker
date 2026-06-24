@@ -41,7 +41,17 @@ ALTER TABLE students ADD COLUMN IF NOT EXISTS photo_url TEXT;
 -- ── 6. Add school_id to arrivals ────────────────────────────────────────────
 ALTER TABLE arrivals ADD COLUMN IF NOT EXISTS school_id UUID REFERENCES schools(id);
 
--- ── 7. Performance indexes ───────────────────────────────────────────────────
+-- ── 8. School status — active | suspended | archived ────────────────────────
+-- suspended: access blocked, data intact, fully restorable
+-- archived:  soft-deleted, hidden from all queries, restorable by super admin
+ALTER TABLE schools ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'active';
+ALTER TABLE schools ADD COLUMN IF NOT EXISTS archived_at TIMESTAMPTZ;
+
+-- ── 9. Track which school year the gate code was generated for ──────────────
+-- e.g. "2025-2026". Code rotates when student is promoted; stays if repeating.
+ALTER TABLE students ADD COLUMN IF NOT EXISTS code_year TEXT;
+
+-- ── 9. Performance indexes ───────────────────────────────────────────────────
 CREATE INDEX IF NOT EXISTS students_school_id_idx        ON students(school_id);
 CREATE INDEX IF NOT EXISTS students_code_idx             ON students(code);
 CREATE INDEX IF NOT EXISTS arrivals_school_id_date_idx   ON arrivals(school_id, date);

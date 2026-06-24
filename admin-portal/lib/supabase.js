@@ -1,7 +1,19 @@
 import { createClient } from '@supabase/supabase-js'
 
-// Server-side client using the service role key — never expose to the browser
-export const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-)
+let _client = null
+
+function getClient() {
+  if (!_client) {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+    if (!url || !key) throw new Error('Supabase env vars are not set')
+    _client = createClient(url, key)
+  }
+  return _client
+}
+
+export const supabase = new Proxy({}, {
+  get(_, prop) {
+    return getClient()[prop]
+  }
+})

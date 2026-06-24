@@ -1,7 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "Bash(xargs cat)"
+      "Bash(xargs cat)",
+      "Bash(kill 95005)",
+      "Bash(pnpm dev *)",
+      "Bash(curl -s -w '\\\\nHTTP:%{http_code}' -X POST http://localhost:3000/api/signup -H 'Content-Type: application/json' -d '{\"schoolName\":\"Test School\",\"subdomain\":\"testschool\",\"email\":\"admin@test.com\",\"password\":\"password123\"}')"
     ]
   }
 }
