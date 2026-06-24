@@ -148,7 +148,7 @@ export default function GatePage() {
 
         {/* Mode toggle */}
         <div className="grid grid-cols-3 gap-2 mb-3">
-          {[['code', 'Code Entry'], ['qr', '📷 Camera (QR)'], ['rfid', '📡 RFID']].map(([m, label]) => (
+          {[['code', 'Code Entry'], ['qr', 'Camera (QR)'], ['rfid', 'RFID']].map(([m, label]) => (
             <button
               key={m}
               type="button"
@@ -166,7 +166,7 @@ export default function GatePage() {
 
         {/* Arrival / Departure toggle */}
         <div className="grid grid-cols-2 gap-2 mb-5">
-          {[['arrival', '↓ Arrival'], ['departure', '↑ Departure']].map(([t, label]) => (
+          {[['arrival', 'Arrival'], ['departure', 'Departure']].map(([t, label]) => (
             <button
               key={t}
               type="button"
