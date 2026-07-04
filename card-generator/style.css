@@ -5,85 +5,67 @@
 }
 
 body {
-  font-family: 'Segoe UI', sans-serif;
-  background: #f0f4f8;
-  color: #1a1a2e;
+  font-family: var(--font-family);
+  background: var(--color-surface-container-low);
+  color: var(--color-on-surface);
   min-height: 100vh;
-  padding: 40px 20px;
+  padding: var(--space-40) var(--space-20);
 }
 
-.container {
+.container { 
   max-width: 700px;
   margin: 0 auto;
-  background: white;
-  border-radius: 16px;
-  padding: 40px;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  background: var(--color-surface-container-lowest);
+  border-radius: var(--radius-lg);
+  padding: var(--space-40);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
 }
 
 h1 {
-  font-size: 28px;
-  font-weight: 700;
-  margin-bottom: 8px;
-  color: #1a1a2e;
+  margin-bottom: var(--space-8);
+  color: var(--color-on-surface);
 }
 
 .subtitle {
-  color: #666;
-  margin-bottom: 32px;
-  font-size: 15px;
+  color: var(--color-on-surface-variant);
+  margin-bottom: var(--space-32);
 }
 
 .upload-box {
-  border: 2px dashed #c0cfe0;
-  border-radius: 12px;
-  padding: 40px;
+  border: 2px dashed var(--color-outline-variant);
+  border-radius: var(--radius-md);
+  padding: var(--space-40);
   text-align: center;
-  margin-bottom: 16px;
+  margin-bottom: var(--space-16);
   transition: border-color 0.2s;
 }
 
 .upload-box:hover {
-  border-color: #3b82f6;
+  border-color: var(--color-primary);
 }
 
-.upload-box button {
-  background: #3b82f6;
-  color: white;
-  border: none;
-  padding: 12px 28px;
-  border-radius: 8px;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  margin-bottom: 12px;
-  transition: background 0.2s;
-}
-
-.upload-box button:hover {
-  background: #2563eb;
+.upload-box .btn {
+  margin-bottom: var(--space-12);
 }
 
 .upload-box p {
-  color: #999;
-  font-size: 13px;
+  color: var(--color-on-surface-variant);
 }
 
 .expected-format {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 12px 16px;
-  font-size: 13px;
-  color: #555;
-  margin-bottom: 32px;
+  background: var(--color-surface-container-low);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-sm);
+  padding: var(--space-12) var(--space-16);
+  color: var(--color-on-surface-variant);
+  margin-bottom: var(--space-32);
 }
 
 .preview {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 16px;
-  margin-bottom: 32px;
+  gap: var(--space-16);
+  margin-bottom: var(--space-32);
 }
 
 .preview.hidden {
@@ -91,24 +73,23 @@ h1 {
 }
 
 .card-preview {
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  padding: 16px;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-md);
+  padding: var(--space-16);
   text-align: center;
-  background: #fafafa;
+  background: var(--color-surface-container-low);
 }
 
 .card-preview .student-name {
-  font-weight: 700;
-  font-size: 13px;
-  margin-bottom: 4px;
-  color: #1a1a2e;
+  font: var(--font-weight-bold) 13px/16px var(--font-family);
+  margin-bottom: var(--space-4);
+  color: var(--color-on-surface);
 }
 
 .card-preview .student-class {
-  font-size: 11px;
-  color: #888;
-  margin-bottom: 10px;
+  font: var(--font-weight-regular) 11px/16px var(--font-family);
+  color: var(--color-on-surface-variant);
+  margin-bottom: var(--space-8);
 }
 
 .card-preview canvas,
@@ -123,20 +104,4 @@ h1 {
 
 .actions.hidden {
   display: none;
-}
-
-#generateBtn {
-  background: #16a34a;
-  color: white;
-  border: none;
-  padding: 14px 36px;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-#generateBtn:hover {
-  background: #15803d;
 }

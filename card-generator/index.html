@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>School Card Generator</title>
+  <link rel="stylesheet" href="theme.css" />
+  <link rel="stylesheet" href="components.css" />
   <link rel="stylesheet" href="style.css" />
 
   <!-- Libraries -->
@@ -14,25 +16,25 @@
 <body>
 
   <div class="container">
-    <h1>Student Card Generator</h1>
-    <p class="subtitle">Upload your student spreadsheet to generate print-ready QR cards</p>
+    <h1 class="t-headline-small">Student Card Generator</h1>
+    <p class="subtitle t-body-medium">Upload your student spreadsheet to generate print-ready QR cards</p>
 
     <div class="upload-box" id="uploadBox">
       <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" hidden />
-      <button onclick="document.getElementById('fileInput').click()">
+      <button class="btn btn--primary" onclick="document.getElementById('fileInput').click()">
         Upload Spreadsheet
       </button>
-      <p>Accepts .xlsx, .xls, or .csv</p>
+      <p class="t-body-small">Accepts .xlsx, .xls, or .csv</p>
     </div>
 
-    <div class="expected-format">
+    <div class="expected-format t-body-small">
       <strong>Expected columns:</strong> Student Name, Class, Parent Phone, Parent Email
     </div>
 
     <div id="preview" class="preview hidden"></div>
 
     <div id="actions" class="actions hidden">
-      <button id="generateBtn" onclick="generatePDF()">Generate & Download PDF</button>
+      <button id="generateBtn" class="btn btn--primary btn--block" onclick="generatePDF()">Generate & Download PDF</button>
     </div>
   </div>
 
