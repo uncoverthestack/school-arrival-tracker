@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gate Scanner — Code not found</title>
+  <link rel="stylesheet" href="theme.css" />
+  <link rel="stylesheet" href="components.css" />
+  <link rel="stylesheet" href="style.css" />
+  <script>
+    // Follow the OS light/dark preference — set before first paint to avoid a flash.
+    (function () {
+      var query = window.matchMedia('(prefers-color-scheme: dark)');
+      function apply(e) { document.documentElement.dataset.theme = e.matches ? 'dark' : 'light'; }
+      apply(query);
+      query.addEventListener('change', apply);
+    })();
+  </script>
+</head>
+<body>
+
+  <div class="kiosk">
+    <header class="kiosk-topbar">
+      <p class="kiosk-title t-title-large">Bright Hill School</p>
+      <div class="kiosk-topbar__right">
+        <div class="pill pill--arrival">
+          <span class="pill__dot"></span>
+          <span>Arrival</span>
+        </div>
+        <div class="kiosk-status">
+          <span class="kiosk-status__dot"></span>
+          <span class="t-title-medium">online</span>
+          <span class="t-body-large kiosk-status__sep">·</span>
+          <span class="t-title-medium">7:29 am</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="kiosk-content">
+      <div class="scan-view">
+        <div class="banner banner--error banner--wide">
+          <svg class="banner__icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 9v4m0 4h.01M10.29 3.86l-8.18 14.18A2 2 0 0 0 3.82 21h16.36a2 2 0 0 0 1.71-2.96L13.71 3.86a2 2 0 0 0-3.42 0Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <p class="t-title-medium">Code not found — check the digits and try again</p>
+        </div>
+
+        <div class="id-card">
+          <p class="id-card__label t-label-small">STUDENT</p>
+          <span class="id-card__punch"></span>
+          <div class="id-card__photo id-card__photo--error">
+            <svg class="id-card__icon alert-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M10.29 3.86l-8.18 14.18A2 2 0 0 0 3.82 21h16.36a2 2 0 0 0 1.71-2.96L13.71 3.86a2 2 0 0 0-3.42 0Z" fill="currentColor"/>
+              <path d="M12 9.5v3.25M12 15.75h.01" stroke="var(--color-on-error)" stroke-width="1.75" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="details">
+          <p class="details__name t-headline-medium-emph">Code not found</p>
+          <p class="t-body-large kiosk-subtext">No student matches that code. Re-enter the code, or use the card.</p>
+        </div>
+      </div>
+    </main>
+
+    <footer class="kiosk-bottombar">
+      <p class="kiosk-count">
+        <span class="t-title-medium">147</span>
+        <span class="t-body-large kiosk-count__label">checked in today</span>
+      </p>
+      <p class="kiosk-bottombar__note t-label-large">back to keypad…</p>
+    </footer>
+  </div>
+
+</body>
+</html>

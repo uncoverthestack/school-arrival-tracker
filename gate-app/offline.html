@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gate Scanner — Offline</title>
+  <link rel="stylesheet" href="theme.css" />
+  <link rel="stylesheet" href="components.css" />
+  <link rel="stylesheet" href="style.css" />
+  <script>
+    // Follow the OS light/dark preference — set before first paint to avoid a flash.
+    (function () {
+      var query = window.matchMedia('(prefers-color-scheme: dark)');
+      function apply(e) { document.documentElement.dataset.theme = e.matches ? 'dark' : 'light'; }
+      apply(query);
+      query.addEventListener('change', apply);
+    })();
+  </script>
+</head>
+<body>
+
+  <div class="kiosk">
+    <header class="kiosk-topbar">
+      <p class="kiosk-title t-title-large">Bright Hill School</p>
+      <div class="kiosk-topbar__right">
+        <div class="pill pill--arrival">
+          <span class="pill__dot"></span>
+          <span>Arrival</span>
+        </div>
+        <div class="kiosk-status">
+          <span class="kiosk-status__dot kiosk-status__dot--offline"></span>
+          <span class="t-title-medium">offline</span>
+          <span class="t-body-large kiosk-status__sep">·</span>
+          <span class="t-title-medium">7:29 am</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="kiosk-content">
+      <div class="scan-view">
+        <div class="banner banner--warning banner--wide">
+          <svg class="banner__icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
+            <path d="M12 7v5l3.5 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <p class="t-title-medium">Offline — check-ins aren't being recorded</p>
+        </div>
+
+        <div class="id-card id-card--elevated">
+          <p class="id-card__label t-label-small">STUDENT</p>
+          <span class="id-card__punch"></span>
+          <div class="id-card__photo id-card__photo--offline">
+            <svg class="id-card__icon offline-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M2 8.82a15.9 15.9 0 0 1 4.17-2.65M12 20h.01M8.5 16.43a6.5 6.5 0 0 1 7 0M5.3 12.9a11 11 0 0 1 3.7-2.16M15 10.74a11 11 0 0 1 3.7 2.16M9.9 6.34A15.9 15.9 0 0 1 12 6.16c2.45 0 4.78.55 6.87 1.53" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M2 2l20 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="details">
+          <p class="details__name t-headline-medium-emph">No connection</p>
+          <p class="t-body-large kiosk-subtext">Check-ins aren't sending — switch to the paper list</p>
+        </div>
+      </div>
+    </main>
+
+    <footer class="kiosk-bottombar">
+      <p class="kiosk-count">
+        <span class="t-title-medium">147</span>
+        <span class="t-body-large kiosk-count__label">checked in today</span>
+      </p>
+      <p class="kiosk-bottombar__note t-label-large">not syncing</p>
+    </footer>
+  </div>
+
+</body>
+</html>
