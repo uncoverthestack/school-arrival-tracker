@@ -49,40 +49,40 @@ export default async function Dashboard() {
   ])
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-8">
+    <div className="theme-auto font-kiosk min-h-screen bg-surface text-on-surface p-8">
       <div className="max-w-6xl mx-auto">
 
         <div className="mb-8 flex items-start justify-between">
           <div>
-            <h1 className="text-3xl font-bold">{session.schoolName}</h1>
-            <p className="text-gray-400 mt-1">{today}</p>
+            <h1 className="text-headline-medium font-bold text-on-surface">{session.schoolName}</h1>
+            <p className="text-body-large tracking-[0.5px] text-on-surface-variant mt-1">{today}</p>
           </div>
           <RefreshTicker />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <div className="bg-gray-900 rounded-xl p-5">
-            <p className="text-gray-400 text-sm">Total Students</p>
-            <p className="text-3xl font-bold mt-1">{stats.totalStudents}</p>
+          <div className="bg-surface-container-lowest border border-outline-variant rounded-lg p-5">
+            <p className="text-body-medium tracking-[0.25px] text-on-surface-variant">Total Students</p>
+            <p className="text-headline-medium font-bold text-on-surface mt-1">{stats.totalStudents}</p>
           </div>
-          <div className="bg-gray-900 rounded-xl p-5">
-            <p className="text-gray-400 text-sm">Arrived Today</p>
-            <p className="text-3xl font-bold mt-1 text-green-400">{stats.arrivedToday}</p>
+          <div className="bg-surface-container-lowest border border-outline-variant rounded-lg p-5">
+            <p className="text-body-medium tracking-[0.25px] text-on-surface-variant">Arrived Today</p>
+            <p className="text-headline-medium font-bold text-success mt-1">{stats.arrivedToday}</p>
           </div>
-          <div className="bg-gray-900 rounded-xl p-5">
-            <p className="text-gray-400 text-sm">Not Yet Arrived</p>
-            <p className="text-3xl font-bold mt-1 text-yellow-400">{stats.notArrived}</p>
+          <div className="bg-surface-container-lowest border border-outline-variant rounded-lg p-5">
+            <p className="text-body-medium tracking-[0.25px] text-on-surface-variant">Not Yet Arrived</p>
+            <p className="text-headline-medium font-bold text-warning mt-1">{stats.notArrived}</p>
           </div>
         </div>
 
-        <div className="bg-gray-900 rounded-xl p-6">
-          <h2 className="text-lg font-semibold mb-4">Recent Arrivals</h2>
+        <div className="bg-surface-container-lowest border border-outline-variant rounded-lg p-6">
+          <h2 className="text-title-medium font-medium tracking-[0.15px] text-on-surface mb-4">Recent Arrivals</h2>
           {arrivals.length === 0 ? (
-            <p className="text-gray-500 text-sm">No arrivals recorded today yet.</p>
+            <p className="text-body-medium tracking-[0.25px] text-on-surface-variant">No arrivals recorded today yet.</p>
           ) : (
-            <table className="w-full text-sm">
+            <table className="w-full text-body-medium tracking-[0.25px]">
               <thead>
-                <tr className="text-gray-400 border-b border-gray-800">
+                <tr className="text-on-surface-variant border-b border-outline-variant">
                   <th className="text-left pb-3 w-12"></th>
                   <th className="text-left pb-3">Student</th>
                   <th className="text-left pb-3 hidden md:table-cell">Class</th>
@@ -90,27 +90,29 @@ export default async function Dashboard() {
                   <th className="text-left pb-3">Event</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-800">
+              <tbody className="divide-y divide-outline-variant">
                 {arrivals.map(a => (
                   <tr key={a.id}>
                     <td className="py-3 pr-3">
                       {a.photoUrl ? (
                         <img src={a.photoUrl} alt={a.name} className="w-10 h-10 rounded-full object-cover" />
                       ) : (
-                        <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center text-base font-bold text-white shrink-0">
+                        <div className="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-base font-bold text-on-surface shrink-0">
                           {a.name?.[0] ?? '?'}
                         </div>
                       )}
                     </td>
                     <td className="py-3">
-                      <p className="font-medium">{a.name}</p>
-                      {a.studentId && <p className="text-xs text-gray-500">{a.studentId}</p>}
+                      <p className="text-label-large font-medium text-on-surface">{a.name}</p>
+                      {a.studentId && <p className="text-body-small tracking-[0.4px] text-on-surface-variant">{a.studentId}</p>}
                     </td>
-                    <td className="py-3 text-gray-400 hidden md:table-cell">{a.cls}</td>
-                    <td className="py-3 text-gray-400 hidden sm:table-cell">{a.time}</td>
+                    <td className="py-3 text-on-surface-variant hidden md:table-cell">{a.cls}</td>
+                    <td className="py-3 text-on-surface-variant hidden sm:table-cell">{a.time}</td>
                     <td className="py-3">
-                      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                        a.type === 'arrival' ? 'bg-green-900 text-green-400' : 'bg-blue-900 text-blue-400'
+                      <span className={`px-2 py-1 rounded-full text-label-small font-bold tracking-[0.5px] ${
+                        a.type === 'arrival'
+                          ? 'bg-success-container text-on-success-container'
+                          : 'bg-tertiary-container text-on-tertiary-container'
                       }`}>
                         {a.type === 'arrival' ? 'Arrived' : 'Departed'}
                       </span>
