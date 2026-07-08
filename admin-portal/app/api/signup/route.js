@@ -73,7 +73,8 @@ export async function POST(request) {
       subdomain: cleanSubdomain,
       admin_email: cleanEmail,
       admin_password_hash: passwordHash,
-      api_key: apiKey
+      api_key: apiKey,
+      status: 'pending'
     })
     .select('id, name, api_key')
     .single()
@@ -82,12 +83,12 @@ export async function POST(request) {
     return Response.json({ error: 'Could not create account. Try again.' }, { status: 500 })
   }
 
-  // Log the school admin in immediately
-  const session = await getAdminSession()
-  session.schoolId = school.id
-  session.schoolName = school.name
-  session.schoolKey = school.api_key
-  await session.save()
-
-  return Response.json({ success: true, subdomain: cleanSubdomain, school: school.name }, { status: 201 })
+  // Do not create a session — school is pending approval and has no portal access yet
+  return Response.json({
+    success: true,
+    pending: true,
+    subdomain: cleanSubdomain,
+    school: school.name,
+    message: 'Registration received. You will get access once your payment is confirmed by our team.'
+  }, { status: 201 })
 }

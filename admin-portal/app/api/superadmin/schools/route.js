@@ -45,16 +45,21 @@ export async function PATCH(request) {
     return Response.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
-  const { action } = body // 'suspend' | 'restore' | 'archive'
-  const validActions = ['suspend', 'restore', 'archive']
+  const { action, paymentDays } = body // 'approve' | 'suspend' | 'restore' | 'archive'
+  const validActions = ['approve', 'suspend', 'restore', 'archive']
   if (!validActions.includes(action)) {
-    return Response.json({ error: 'action must be suspend, restore, or archive' }, { status: 400 })
+    return Response.json({ error: 'action must be approve, suspend, restore, or archive' }, { status: 400 })
   }
 
+  const now = new Date()
+  const daysUntilDue = Number(paymentDays) > 0 ? Number(paymentDays) : 30
+  const paymentDueAt = new Date(now.getTime() + daysUntilDue * 24 * 60 * 60 * 1000).toISOString()
+
   const updates =
+    action === 'approve'  ? { status: 'active',    archived_at: null, payment_approved_at: now.toISOString(), payment_due_at: paymentDueAt } :
     action === 'suspend'  ? { status: 'suspended', archived_at: null } :
     action === 'restore'  ? { status: 'active',    archived_at: null } :
-    /* archive */           { status: 'archived',   archived_at: new Date().toISOString() }
+    /* archive */           { status: 'archived',   archived_at: now.toISOString() }
 
   const { error } = await supabase
     .from('schools')

@@ -41,6 +41,20 @@ export async function POST(request) {
     return Response.json({ error: 'Invalid email or password' }, { status: 401 })
   }
 
+  if (school.status === 'pending') {
+    return Response.json(
+      { error: 'Your account is awaiting payment approval. Please contact DataOcelot Schools to proceed.' },
+      { status: 403 }
+    )
+  }
+
+  if (school.status === 'payment_due') {
+    return Response.json(
+      { error: 'Your subscription has expired. Please make payment to restore access.' },
+      { status: 403 }
+    )
+  }
+
   if (school.status === 'suspended') {
     return Response.json(
       { error: 'Your account has been suspended. Please contact support to restore access.' },

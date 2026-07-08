@@ -6,10 +6,23 @@ import { supabase } from '@/lib/supabase'
 async function getAllSchools() {
   const { data: schools } = await supabase
     .from('schools')
-    .select('id, name, subdomain, admin_email, created_at')
+    .select('id, name, subdomain, admin_email, status, archived_at, payment_due_at, payment_approved_at, created_at')
     .order('created_at', { ascending: false })
 
   if (!schools || schools.length === 0) return []
+
+  // Auto-expire schools whose payment_due_at has passed
+  const now = new Date()
+  const expired = schools.filter(
+    s => s.status === 'active' && s.payment_due_at && new Date(s.payment_due_at) < now
+  )
+  if (expired.length > 0) {
+    await supabase
+      .from('schools')
+      .update({ status: 'payment_due' })
+      .in('id', expired.map(s => s.id))
+    expired.forEach(s => { s.status = 'payment_due' })
+  }
 
   const counts = await Promise.all(
     schools.map(s =>
