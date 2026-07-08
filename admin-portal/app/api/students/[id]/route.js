@@ -77,3 +77,30 @@ export async function PATCH(request, { params }) {
   const rotated = 'code' in updates
   return Response.json({ student: data, codeRotated: rotated })
 }
+
+export async function DELETE(request, { params }) {
+  const session = await getAdminSession()
+  if (!session.schoolId) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const { id } = await params
+
+  // Confirm the student belongs to this school before deleting
+  const { data: student } = await supabase
+    .from('students')
+    .select('id')
+    .eq('id', id)
+    .eq('school_id', session.schoolId)
+    .maybeSingle()
+
+  if (!student) {
+    return Response.json({ error: 'Student not found' }, { status: 404 })
+  }
+
+  await supabase.from('verifications').delete().eq('student_id', id)
+  await supabase.from('arrivals').delete().eq('student_id', id)
+  await supabase.from('students').delete().eq('id', id)
+
+  return Response.json({ success: true })
+}

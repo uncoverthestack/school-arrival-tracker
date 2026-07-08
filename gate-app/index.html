@@ -4,59 +4,121 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Gate Scanner</title>
+  <link rel="stylesheet" href="theme.css" />
+  <link rel="stylesheet" href="components.css" />
   <link rel="stylesheet" href="style.css" />
+  <script>
+    // Follow the OS light/dark preference — set before first paint to avoid a flash.
+    (function () {
+      var query = window.matchMedia('(prefers-color-scheme: dark)');
+      function apply(e) { document.documentElement.dataset.theme = e.matches ? 'dark' : 'light'; }
+      apply(query);
+      query.addEventListener('change', apply);
+    })();
+  </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
 </head>
 <body>
 
-  <div class="container">
-    <div class="header">
-      <h1>Gate Scanner</h1>
-      <p class="date" id="currentDate"></p>
-    </div>
+  <div class="kiosk">
+    <header class="kiosk-topbar">
+      <p class="kiosk-title t-title-large">Gate Scanner</p>
+      <div class="kiosk-topbar__right">
+        <div class="pill" id="modePill">
+          <span class="pill__dot"></span>
+          <span id="modeLabel">Arrival</span>
+        </div>
+        <div class="kiosk-status">
+          <span class="kiosk-status__dot"></span>
+          <span class="t-title-medium">online</span>
+          <span class="t-body-large kiosk-status__sep">·</span>
+          <span class="t-title-medium" id="currentTime"></span>
+        </div>
+      </div>
+    </header>
 
-    <!-- Mode toggle -->
-    <div class="mode-toggle">
-      <button type="button" id="btnQR" class="mode-btn active" onclick="setMode('qr')">Camera (QR)</button>
-      <button type="button" id="btnRFID" class="mode-btn" onclick="setMode('rfid')">RFID Scanner</button>
-    </div>
+    <main class="kiosk-content">
+      <div id="scanView" class="scan-view">
+        <div class="id-card">
+          <p class="id-card__label t-label-small">STUDENT</p>
+          <span class="id-card__punch"></span>
+          <div class="id-card__photo">
+            <div id="reader"></div>
+            <svg class="id-card__icon scan-reticle" viewBox="0 0 76 76" fill="none" aria-hidden="true">
+              <path d="M4 20V8a4 4 0 0 1 4-4h12" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+              <path d="M56 4h12a4 4 0 0 1 4 4v12" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+              <path d="M72 56v12a4 4 0 0 1-4 4H56" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+              <path d="M20 72H8a4 4 0 0 1-4-4V56" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
 
-    <!-- Arrival / Departure toggle -->
-    <div class="type-toggle">
-      <button type="button" id="btnArrival" class="type-btn active" onclick="setType('arrival')">Arrival</button>
-      <button type="button" id="btnDeparture" class="type-btn" onclick="setType('departure')">Departure</button>
-    </div>
+        <p class="t-headline-large" id="scanViewHeading" tabindex="-1">Ready to scan</p>
+        <p class="t-body-large kiosk-subtext">Hold your ID card to the reader</p>
 
-    <!-- QR camera scanner -->
-    <div id="qrSection" class="scanner-box">
-      <div id="reader"></div>
-    </div>
+        <p class="enter-code-link t-body-medium">
+          Card won't scan?
+          <button type="button" id="enterCodeLink" class="link-button t-label-large">Enter code →</button>
+        </p>
+      </div>
 
-    <!-- RFID HID mode: USB reader acts as keyboard, types card UID + Enter -->
-    <div id="rfidSection" class="rfid-box hidden">
-      <div class="rfid-icon">📡</div>
-      <p class="rfid-label">Ready — tap card on reader</p>
-      <input
-        id="rfidInput"
-        type="text"
-        autocomplete="off"
-        class="rfid-input"
-        placeholder="Waiting for card..."
-        readonly
-      />
-    </div>
+      <div id="codeView" class="code-view hidden">
+        <div class="code-view__info">
+          <p class="t-headline-small" id="codeViewHeading" tabindex="-1">Enter student code</p>
+          <p class="t-body-large kiosk-subtext">For a lost or damaged card</p>
 
-    <div id="result" class="result hidden">
-      <div class="result-icon" id="resultIcon"></div>
-      <div class="result-name" id="resultName"></div>
-      <div class="result-class" id="resultClass"></div>
-      <div class="result-message" id="resultMessage"></div>
-    </div>
+          <form id="codeForm">
+            <div class="code-row" id="codeRow">
+              <div class="code-cell"></div>
+              <div class="code-cell"></div>
+              <div class="code-cell"></div>
+              <div class="code-cell"></div>
+              <div class="code-cell"></div>
+              <div class="code-cell"></div>
+            </div>
 
-    <div class="log-section">
-      <h2>Today's Arrivals</h2>
-      <div id="arrivalLog" class="arrival-log"></div>
-    </div>
+            <button type="submit" id="codeContinueBtn" class="btn btn--primary btn--block" disabled>Continue →</button>
+          </form>
+
+          <button type="button" id="useScannerLink" class="link-button t-label-large">Use card instead</button>
+        </div>
+
+        <div class="keypad">
+          <button type="button" class="key" data-digit="1">1</button>
+          <button type="button" class="key" data-digit="2">2</button>
+          <button type="button" class="key" data-digit="3">3</button>
+          <button type="button" class="key" data-digit="4">4</button>
+          <button type="button" class="key" data-digit="5">5</button>
+          <button type="button" class="key" data-digit="6">6</button>
+          <button type="button" class="key" data-digit="7">7</button>
+          <button type="button" class="key" data-digit="8">8</button>
+          <button type="button" class="key" data-digit="9">9</button>
+          <button type="button" class="key" id="keyClear" aria-label="Clear">✕</button>
+          <button type="button" class="key" data-digit="0">0</button>
+          <button type="button" class="key" id="keyBackspace" aria-label="Backspace">⌫</button>
+        </div>
+      </div>
+
+      <div id="result" class="result hidden">
+        <div class="result-icon" id="resultIcon"></div>
+        <div class="result-name" id="resultName"></div>
+        <div class="result-class" id="resultClass"></div>
+        <div class="result-message" id="resultMessage"></div>
+      </div>
+    </main>
+
+    <footer class="kiosk-bottombar">
+      <p class="kiosk-count">
+        <span class="t-title-medium" id="checkedInCount">0</span>
+        <span class="t-body-large kiosk-count__label">checked in today</span>
+      </p>
+      <p class="kiosk-ready t-label-large">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+          <path d="M1 5V2a1 1 0 0 1 1-1h3M17 5V2a1 1 0 0 0-1-1h-3M1 13v3a1 1 0 0 0 1 1h3M17 13v3a1 1 0 0 1-1 1h-3" stroke="currentColor" stroke-width="1.5"/>
+        </svg>
+        ready for next student
+      </p>
+    </footer>
   </div>
 
   <script src="script.js"></script>

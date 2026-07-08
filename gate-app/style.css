@@ -4,265 +4,398 @@
   box-sizing: border-box;
 }
 
+html, body {
+  height: 100%;
+}
+
 body {
-  font-family: 'Segoe UI', sans-serif;
-  background: #0f172a;
-  color: white;
+  font-family: var(--font-family);
+  background: var(--color-surface);
+  color: var(--color-on-surface);
+}
+
+a {
+  color: inherit;
+}
+
+.kiosk {
+  display: flex;
+  flex-direction: column;
   min-height: 100vh;
-  padding: 24px 16px;
 }
 
-.container {
-  max-width: 500px;
-  margin: 0 auto;
+/* ---- Top bar ---------------------------------------------------------- */
+.kiosk-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-24) var(--space-40);
+  border-bottom: 1px solid var(--color-outline-variant);
 }
 
-.header {
+.kiosk-title {
+  color: var(--color-on-surface);
+}
+
+.kiosk-topbar__right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-16);
+}
+
+.kiosk-status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  color: var(--color-on-surface-variant);
+}
+
+.kiosk-status__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-full);
+  background: var(--color-success);
+}
+
+.kiosk-status__dot--offline {
+  background: var(--color-error);
+}
+
+.kiosk-status__sep {
+  color: var(--color-outline);
+}
+
+/* ---- Content ------------------------------------------------------------ */
+.kiosk-content {
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-24) var(--space-16);
+}
+
+.scan-view {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-24);
   text-align: center;
-  margin-bottom: 24px;
 }
 
-.header h1 {
-  font-size: 26px;
-  font-weight: 700;
-  color: white;
+.kiosk-subtext {
+  color: var(--color-on-surface-variant);
 }
 
-.date {
-  color: #94a3b8;
-  font-size: 14px;
-  margin-top: 4px;
+.prompt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
 }
 
-.scanner-box {
-  background: #1e293b;
-  border-radius: 16px;
-  padding: 16px;
-  margin-bottom: 20px;
+.actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-12);
+}
+
+/* ---- ID card / scanner viewport ----------------------------------------- */
+.id-card {
+  position: relative;
+  width: 300px;
+  height: 360px;
+  background: var(--color-surface-container-lowest);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15), 0 1px 6px 1px rgba(0, 0, 0, 0.07);
+}
+
+.id-card__label {
+  position: absolute;
+  left: 18px;
+  top: 22px;
+  color: var(--color-on-surface-variant);
+}
+
+.id-card__punch {
+  position: absolute;
+  left: 142px;
+  top: 18px;
+  width: 16px;
+  height: 16px;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-dim);
+}
+
+.id-card__photo {
+  position: absolute;
+  left: 14px;
+  top: 46px;
+  width: 272px;
+  height: 300px;
+  border-radius: var(--radius-md);
+  background: var(--color-primary-container);
   overflow: hidden;
+}
+
+.id-card__photo--error {
+  background: var(--color-error-container);
+}
+
+.id-card__photo--offline {
+  background: var(--color-surface-variant);
+}
+
+.id-card--elevated {
+  box-shadow: 0 4px 8px 3px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 #reader {
   width: 100% !important;
-  border-radius: 10px;
-  overflow: hidden;
+  height: 100%;
 }
 
 #reader video {
-  border-radius: 10px;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
 }
 
-/* Result card */
+/* Shared centering for an icon placed inside .id-card__photo */
+.id-card__icon {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.scan-reticle {
+  width: 76px;
+  height: 76px;
+  color: var(--color-on-primary-container);
+  opacity: 0.5;
+}
+
+.alert-icon {
+  width: 88px;
+  height: 88px;
+  color: var(--color-error);
+}
+
+.offline-icon {
+  width: 92px;
+  height: 92px;
+  color: var(--color-on-surface-variant);
+}
+
+/* ---- Enter code link ----------------------------------------------------- */
+.enter-code-link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  color: var(--color-on-surface-variant);
+}
+
+.link-button {
+  border: none;
+  background: none;
+  padding: 0;
+  color: var(--color-primary);
+  font-family: var(--font-family);
+  cursor: pointer;
+}
+
+/* ---- Manual code entry ---------------------------------------------------- */
+.code-view {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-40);
+  max-width: 100%;
+}
+
+.code-view__info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-16);
+  width: 280px;
+  text-align: left;
+}
+
+.code-view__info form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+  width: 100%;
+}
+
+.code-row {
+  display: flex;
+  gap: var(--space-8);
+}
+
+.code-view__info .link-button {
+  align-self: center;
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 96px);
+  gap: var(--space-12);
+}
+
+.keypad .key {
+  appearance: none;
+  font-family: var(--font-family);
+}
+
+/* ---- Result overlay -------------------------------------------------------- */
 .result {
-  border-radius: 16px;
-  padding: 24px;
+  border-radius: var(--radius-lg);
+  padding: var(--space-24);
   text-align: center;
-  margin-bottom: 20px;
-  transition: all 0.3s ease;
-}
-
-.result.hidden {
-  display: none;
 }
 
 .result.success {
-  background: #14532d;
-  border: 2px solid #16a34a;
+  background: var(--color-success-container);
+  color: var(--color-on-success-container);
+  border: 2px solid var(--color-success);
 }
 
 .result.error {
-  background: #7f1d1d;
-  border: 2px solid #dc2626;
+  background: var(--color-error-container);
+  color: var(--color-on-error-container);
+  border: 2px solid var(--color-error);
 }
 
 .result-icon {
   font-size: 48px;
-  margin-bottom: 12px;
+  margin-bottom: var(--space-12);
 }
 
 .result-name {
-  font-size: 22px;
-  font-weight: 700;
-  margin-bottom: 4px;
+  font: var(--font-weight-bold) 22px/28px var(--font-family);
+  margin-bottom: var(--space-4);
 }
 
 .result-class {
-  font-size: 14px;
-  color: #94a3b8;
-  margin-bottom: 8px;
+  font: var(--font-weight-regular) 14px/20px var(--font-family);
+  opacity: 0.75;
+  margin-bottom: var(--space-8);
 }
 
 .result-message {
-  font-size: 13px;
+  font: var(--font-weight-regular) 13px/18px var(--font-family);
   opacity: 0.8;
 }
 
-/* Arrival log */
-.log-section h2 {
-  font-size: 16px;
-  color: #94a3b8;
-  margin-bottom: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+/* ---- Result banner (reuses .banner from components.css, just sized for a result screen) --- */
+.banner--wide {
+  width: 440px;
+  max-width: 100%;
 }
 
-.arrival-log {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+.banner__icon {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
 }
 
-.log-entry {
-  background: #1e293b;
-  border-radius: 10px;
-  padding: 12px 16px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+/* ---- ID card with a resolved student photo ----------------------------------- */
+.id-card__photo--filled {
+  background: var(--color-surface-container);
 }
 
-.log-entry .log-name {
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.log-entry .log-class {
-  font-size: 12px;
-  color: #64748b;
-  margin-top: 2px;
-}
-
-.log-entry .log-time {
-  font-size: 12px;
-  color: #16a34a;
-  font-weight: 600;
-}
-
-.empty-log {
-  text-align: center;
-  color: #475569;
-  font-size: 14px;
-  padding: 20px;
-}
-
-/* Mode toggle (QR vs RFID) */
-.mode-toggle {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-
-.mode-btn {
-  flex: 1;
-  padding: 10px;
-  border-radius: 10px;
-  border: 2px solid #334155;
-  background: #1e293b;
-  color: #94a3b8;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.mode-btn.active {
-  border-color: #6366f1;
-  background: #312e81;
-  color: white;
-}
-
-/* Arrival / Departure toggle */
-.type-toggle {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-
-.type-btn {
-  flex: 1;
-  padding: 10px;
-  border-radius: 10px;
-  border: 2px solid #334155;
-  background: #1e293b;
-  color: #94a3b8;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.type-btn.active {
-  border-color: #16a34a;
-  background: #14532d;
-  color: white;
-}
-
-/* RFID HID mode box */
-.rfid-box {
-  background: #1e293b;
-  border-radius: 16px;
-  padding: 40px 16px;
-  margin-bottom: 20px;
-  text-align: center;
-  border: 2px dashed #334155;
-}
-
-.rfid-box.hidden {
-  display: none;
-}
-
-.rfid-icon {
-  font-size: 56px;
-  margin-bottom: 12px;
-}
-
-.rfid-label {
-  color: #94a3b8;
-  font-size: 15px;
-  margin-bottom: 16px;
-}
-
-.rfid-input {
+.id-card__photo--filled img {
   width: 100%;
-  padding: 10px 14px;
-  border-radius: 8px;
-  border: 1px solid #334155;
-  background: #0f172a;
-  color: #94a3b8;
-  font-size: 14px;
-  text-align: center;
-  outline: none;
+  height: 100%;
+  object-fit: cover;
 }
 
-.rfid-input:focus {
-  border-color: #6366f1;
-}
-
-/* Log type badge */
-.log-time {
+/* ---- Student details (shown under the ID card on a result) ------------------- */
+.details {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
+  align-items: center;
+  gap: var(--space-12);
 }
 
-.log-type {
-  font-size: 10px;
-  font-weight: 700;
-  padding: 2px 6px;
-  border-radius: 4px;
+.details__name {
+  color: var(--color-on-surface);
 }
 
-.log-type.arrival {
-  background: #14532d;
-  color: #4ade80;
+.details__meta {
+  display: flex;
+  align-items: center;
+  gap: 22px;
 }
 
-.log-type.departure {
-  background: #1e3a5f;
-  color: #60a5fa;
+.details__field {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
 }
 
+.details__field-label {
+  color: var(--color-on-surface-variant);
+}
+
+.details__field-value {
+  color: var(--color-on-surface);
+}
+
+.details__field-value--accent {
+  color: var(--color-primary);
+}
+
+.details__divider {
+  width: 1px;
+  height: 30px;
+  background: var(--color-outline-variant);
+}
+
+/* ---- Bottom bar ------------------------------------------------------------- */
+.kiosk-bottombar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-24) var(--space-40);
+  border-top: 1px solid var(--color-outline-variant);
+}
+
+.kiosk-count {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.kiosk-count__label {
+  color: var(--color-on-surface-variant);
+}
+
+.kiosk-ready {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  color: var(--color-on-surface-variant);
+}
+
+.kiosk-bottombar__note {
+  color: var(--color-on-surface-variant);
+}
+
+/* ---- Utility (kept last so it always wins the display cascade) ------------- */
 .hidden {
   display: none;
 }

@@ -1,8 +1,13 @@
 import { getIronSession } from 'iron-session'
 import { cookies } from 'next/headers'
 
+const secret = process.env.SESSION_SECRET
+if (!secret || secret.length < 32) {
+  throw new Error('SESSION_SECRET env var must be set to a random string of 32+ characters')
+}
+
 const superSessionOptions = {
-  password: process.env.SESSION_SECRET ?? 'dev-only-secret-32-chars-minimum!!',
+  password: secret,
   cookieName: 'sp-super',
   cookieOptions: {
     secure: process.env.NODE_ENV === 'production',

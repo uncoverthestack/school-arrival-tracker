@@ -1,7 +1,7 @@
 import { Ratelimit } from '@upstash/ratelimit'
 import { Redis } from '@upstash/redis'
 
-function makeRatelimit(requests, window) {
+function makeRatelimit(refillRate, interval, maxTokens) {
   const url = process.env.UPSTASH_REDIS_REST_URL
   const token = process.env.UPSTASH_REDIS_REST_TOKEN
   // Skip if not configured or if placeholder values are still set
@@ -9,12 +9,15 @@ function makeRatelimit(requests, window) {
     return null
   }
   const redis = new Redis({ url, token })
-  return new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(requests, window) })
+  // tokenBucket with maxTokens === refillRate = no burst accumulation (leaky bucket behaviour)
+  return new Ratelimit({ redis, limiter: Ratelimit.tokenBucket(refillRate, interval, maxTokens) })
 }
 
-export const registerLimiter = makeRatelimit(5, '1 m')
-export const scanLimiter = makeRatelimit(60, '1 m')
-export const loginLimiter = makeRatelimit(10, '15 m')
+// refillRate, interval, maxTokens
+// maxTokens kept equal to refillRate so tokens never accumulate — requests must arrive at a steady rate
+export const registerLimiter = makeRatelimit(5, '1 m', 5)    // 5 per minute, no burst
+export const scanLimiter     = makeRatelimit(60, '1 m', 60)  // 60 per minute, no burst
+export const loginLimiter    = makeRatelimit(10, '15 m', 10) // 10 per 15 min, no burst
 
 export async function checkLimit(limiter, key, request) {
   if (!limiter) return { allowed: true }

@@ -3,49 +3,50 @@ const API_BASE = 'http://localhost:3000'
 // Set the gate API key (must match GATE_API_KEY in your .env)
 const API_KEY = 'change-me-to-a-long-random-secret'
 
-const arrivals = []
+// Before this hour it's arrival, at/after it's departure — tune to your school's gate schedule.
+const ARRIVAL_CUTOFF_HOUR = 12
+
 let lastScanned = null
 let resultTimeout = null
-let currentMode = 'qr'
-let currentType = 'arrival'
 let html5QrCode = null
+let checkedInCount = 0
+let activeView = 'scan' // 'scan' | 'code'
 
-document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-GB', {
-  weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-})
+const scanView = document.getElementById('scanView')
+const codeView = document.getElementById('codeView')
 
-// ── Mode toggle ───────────────────────────────────────────────────────────────
+// ── Arrival / departure (derived from time of day) ─────────────────────────────
 
-function setMode(mode) {
-  currentMode = mode
-  document.getElementById('btnQR').classList.toggle('active', mode === 'qr')
-  document.getElementById('btnRFID').classList.toggle('active', mode === 'rfid')
-  document.getElementById('qrSection').classList.toggle('hidden', mode !== 'qr')
-  document.getElementById('rfidSection').classList.toggle('hidden', mode !== 'rfid')
-
-  if (mode === 'qr') {
-    stopRFID()
-    startQR()
-  } else {
-    stopQR()
-    startRFID()
-  }
+function currentType() {
+  return new Date().getHours() < ARRIVAL_CUTOFF_HOUR ? 'arrival' : 'departure'
 }
 
-function setType(type) {
-  currentType = type
-  document.getElementById('btnArrival').classList.toggle('active', type === 'arrival')
-  document.getElementById('btnDeparture').classList.toggle('active', type === 'departure')
+function updateModePill() {
+  const type = currentType()
+  const pill = document.getElementById('modePill')
+  pill.classList.toggle('pill--arrival', type === 'arrival')
+  pill.classList.toggle('pill--departure', type === 'departure')
+  document.getElementById('modeLabel').textContent = type === 'arrival' ? 'Arrival' : 'Departure'
 }
 
-// ── QR camera scanner ─────────────────────────────────────────────────────────
+function updateClock() {
+  document.getElementById('currentTime').textContent = new Date().toLocaleTimeString('en-GB', {
+    hour: 'numeric', minute: '2-digit'
+  })
+}
+
+updateModePill()
+updateClock()
+setInterval(() => { updateModePill(); updateClock() }, 30000)
+
+// ── QR camera scanner ───────────────────────────────────────────────────────────
 
 function startQR() {
   if (html5QrCode) return
   html5QrCode = new Html5Qrcode('reader')
   html5QrCode.start(
     { facingMode: 'environment' },
-    { fps: 10, qrbox: { width: 250, height: 250 } },
+    { fps: 10, qrbox: { width: 220, height: 220 } },
     (decodedText) => handleScan(decodedText),
     () => {}
   ).catch(err => console.warn('QR start failed:', err))
@@ -53,55 +54,75 @@ function startQR() {
 
 function stopQR() {
   if (!html5QrCode) return
-  html5QrCode.stop().then(() => { html5QrCode = null }).catch(() => { html5QrCode = null })
-}
-
-// ── RFID HID keyboard capture ─────────────────────────────────────────────────
-// USB HID RFID readers type the card UID as keyboard input followed by Enter.
-// We capture that in a focused hidden input field.
-
-let rfidBuffer = ''
-let rfidFlushTimer = null
-
-function startRFID() {
-  const input = document.getElementById('rfidInput')
-  input.readOnly = false
-  input.value = ''
-  input.focus()
-
-  input.addEventListener('keydown', onRFIDKeydown)
-  input.addEventListener('blur', () => setTimeout(() => input.focus(), 100))
-}
-
-function stopRFID() {
-  const input = document.getElementById('rfidInput')
-  input.readOnly = true
-  input.removeEventListener('keydown', onRFIDKeydown)
-}
-
-function onRFIDKeydown(e) {
-  if (e.key === 'Enter') {
-    const cardId = rfidBuffer.trim()
-    rfidBuffer = ''
-    clearTimeout(rfidFlushTimer)
-    document.getElementById('rfidInput').value = ''
-    if (cardId) handleScan(cardId)
-    return
-  }
-  if (e.key.length === 1) {
-    rfidBuffer += e.key
-    // Auto-flush after 100ms of no input (handles readers that don't send Enter)
-    clearTimeout(rfidFlushTimer)
-    rfidFlushTimer = setTimeout(() => {
-      const cardId = rfidBuffer.trim()
-      rfidBuffer = ''
-      document.getElementById('rfidInput').value = ''
-      if (cardId) handleScan(cardId)
-    }, 100)
+  try {
+    html5QrCode.stop().then(() => { html5QrCode = null }).catch(() => { html5QrCode = null })
+  } catch {
+    // stop() throws synchronously if the camera never actually started (e.g. permission denied)
+    html5QrCode = null
   }
 }
 
-// ── Core scan handler ─────────────────────────────────────────────────────────
+// ── View switching (camera scanner vs manual code entry) ───────────────────────
+
+function setActiveView(view) {
+  activeView = view
+  scanView.classList.toggle('hidden', view !== 'scan')
+  codeView.classList.toggle('hidden', view !== 'code')
+  // Move focus so screen reader / keyboard users notice the view actually changed.
+  document.getElementById(view === 'scan' ? 'scanViewHeading' : 'codeViewHeading').focus()
+}
+
+document.getElementById('enterCodeLink').addEventListener('click', () => {
+  stopQR()
+  resetCodeEntry()
+  setActiveView('code')
+})
+
+document.getElementById('useScannerLink').addEventListener('click', () => {
+  setActiveView('scan')
+  startQR()
+})
+
+// ── Manual code entry (digit cells + on-screen keypad) ─────────────────────────
+
+const CODE_LENGTH = 6
+let codeDigits = []
+
+function renderCodeCells() {
+  const cells = document.querySelectorAll('#codeRow .code-cell')
+  cells.forEach((cell, i) => { cell.textContent = codeDigits[i] ?? '' })
+  document.getElementById('codeContinueBtn').disabled = codeDigits.length !== CODE_LENGTH
+}
+
+function resetCodeEntry() {
+  codeDigits = []
+  renderCodeCells()
+}
+
+document.querySelectorAll('.key[data-digit]').forEach(key => {
+  key.addEventListener('click', () => {
+    if (codeDigits.length >= CODE_LENGTH) return
+    codeDigits.push(key.dataset.digit)
+    renderCodeCells()
+  })
+})
+
+document.getElementById('keyBackspace').addEventListener('click', () => {
+  codeDigits.pop()
+  renderCodeCells()
+})
+
+document.getElementById('keyClear').addEventListener('click', resetCodeEntry)
+
+document.getElementById('codeForm').addEventListener('submit', (e) => {
+  e.preventDefault()
+  if (codeDigits.length !== CODE_LENGTH) return
+  const code = codeDigits.join('')
+  resetCodeEntry()
+  handleScan(code)
+})
+
+// ── Core scan handler ────────────────────────────────────────────────────────────
 
 async function handleScan(cardId) {
   if (lastScanned === cardId) return
@@ -115,7 +136,7 @@ async function handleScan(cardId) {
         'Content-Type': 'application/json',
         'x-api-key': API_KEY
       },
-      body: JSON.stringify({ cardId, type: currentType })
+      body: JSON.stringify({ cardId, type: currentType() })
     })
 
     const data = await res.json()
@@ -136,21 +157,16 @@ async function handleScan(cardId) {
     }
 
     if (data.success) {
-      arrivals.unshift({
-        name: data.student.name,
-        studentClass: data.student.studentClass,
-        time: data.time,
-        type: currentType
-      })
-      updateLog()
-      showResult('success', currentType === 'arrival' ? '✅' : '🚪', data.student.name, data.student.studentClass, data.message)
+      checkedInCount++
+      document.getElementById('checkedInCount').textContent = checkedInCount
+      showResult('success', currentType() === 'arrival' ? '✅' : '🚪', data.student.name, data.student.studentClass, data.message)
     }
   } catch {
     showResult('error', '❌', 'Connection Error', '', 'Could not reach server — check your network')
   }
 }
 
-// ── UI helpers ────────────────────────────────────────────────────────────────
+// ── Result overlay ───────────────────────────────────────────────────────────────
 
 function showResult(state, icon, name, cls, message) {
   const resultDiv = document.getElementById('result')
@@ -160,32 +176,16 @@ function showResult(state, icon, name, cls, message) {
   document.getElementById('resultClass').textContent = cls
   document.getElementById('resultMessage').textContent = message
   resultDiv.classList.remove('hidden')
+  scanView.classList.add('hidden')
+  codeView.classList.add('hidden')
 
   clearTimeout(resultTimeout)
-  resultTimeout = setTimeout(() => resultDiv.classList.add('hidden'), 4000)
+  resultTimeout = setTimeout(() => {
+    resultDiv.classList.add('hidden')
+    setActiveView(activeView)
+  }, 4000)
 }
 
-function updateLog() {
-  const log = document.getElementById('arrivalLog')
-  if (arrivals.length === 0) {
-    log.innerHTML = '<div class="empty-log">No arrivals yet</div>'
-    return
-  }
-  log.innerHTML = arrivals.map(a => `
-    <div class="log-entry">
-      <div>
-        <div class="log-name">${a.name}</div>
-        <div class="log-class">${a.studentClass}</div>
-      </div>
-      <div class="log-time">
-        <span class="log-type ${a.type}">${a.type === 'arrival' ? '↓ In' : '↑ Out'}</span>
-        ${a.time}
-      </div>
-    </div>
-  `).join('')
-}
-
-// ── Startup ───────────────────────────────────────────────────────────────────
+// ── Startup ───────────────────────────────────────────────────────────────────────
 
 startQR()
-updateLog()

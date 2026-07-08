@@ -1,0 +1,187 @@
+/* =========================================================================
+   Attendance Guard — Design System  (theme.css)
+   Exported from the Figma system. Single source of truth for the re-skin.
+
+   HOW TO USE (plain HTML/JS/CSS):
+   1. <link rel="stylesheet" href="theme.css">  ← before your own styles
+   2. Load Manrope (see @import below, or self-host).
+   3. Replace hardcoded colors / fonts / spacing / radii in the demo
+      with these variables, e.g.  background: var(--color-surface);
+   4. Dark mode: add  <html data-theme="dark">  (or class="dark").
+   ========================================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+
+:root {
+  /* ---- Color · Light (default) ---------------------------------------- */
+  --color-primary: #185fa5;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #ecf2f7;
+  --color-on-primary-container: #061829;
+
+  --color-secondary: #3e5c7e;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #dfe4e9;
+  --color-on-secondary-container: #101720;
+
+  --color-tertiary: #2e6b6b;
+  --color-on-tertiary: #ffffff;
+  --color-tertiary-container: #eef3f3;
+  --color-on-tertiary-container: #0c1b1b;
+
+  --color-error: #a32d2d;
+  --color-on-error: #ffffff;
+  --color-error-container: #f0dcdc;
+  --color-on-error-container: #a32d2d;
+
+  --color-success: #3b6d11;
+  --color-on-success: #ffffff;
+  --color-success-container: #eff3eb;
+  --color-on-success-container: #1e3709;
+
+  --color-warning: #854f0b;
+  --color-on-warning: #ffffff;
+  --color-warning-container: #f5f0eb;
+  --color-on-warning-container: #432806;
+
+  --color-background: #fcfcfc;
+  --color-on-background: #181816;
+  --color-surface: #fcfcfc;
+  --color-on-surface: #181816;
+  --color-surface-variant: #e2e3e4;
+  --color-on-surface-variant: #424548;
+  --color-surface-dim: #dcdcda;
+  --color-surface-bright: #fafaf9;
+
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f4f4f3;
+  --color-surface-container: #efefee;
+  --color-surface-container-high: #e9e9e8;
+  --color-surface-container-highest: #e4e4e2;
+
+  --color-outline: #6e7378;
+  --color-outline-variant: #e2e3e4;
+
+  --color-inverse-surface: #30302c;
+  --color-inverse-on-surface: #f1f1f1;
+  --color-inverse-primary: #b2cae1;
+  --color-scrim: #000000;
+  --color-shadow: #000000;
+
+  /* ---- Spacing scale (px) — use ONLY these steps ---------------------- */
+  --space-0: 0px;
+  --space-4: 4px;
+  --space-8: 8px;
+  --space-12: 12px;
+  --space-16: 16px;
+  --space-20: 20px;
+  --space-24: 24px;
+  --space-32: 32px;
+  --space-40: 40px;
+  --space-48: 48px;
+  --space-56: 56px;
+  --space-64: 64px;
+
+  /* ---- Corner radius -------------------------------------------------- */
+  --radius-none: 0px;
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 28px;
+  --radius-full: 999px;
+
+  /* ---- Typography ----------------------------------------------------- */
+  --font-family: 'Manrope', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+}
+
+/* ---- Color · Dark mode ------------------------------------------------ */
+[data-theme="dark"], .dark {
+  --color-primary: #b2cae1;
+  --color-on-primary: #0c3053;
+  --color-primary-container: #0c3053;
+  --color-on-primary-container: #ecf2f7;
+
+  --color-secondary: #bfc9d4;
+  --color-on-secondary: #1f2e3f;
+  --color-secondary-container: #1f2e3f;
+  --color-on-secondary-container: #eff1f4;
+
+  --color-tertiary: #b9cece;
+  --color-on-tertiary: #173636;
+  --color-tertiary-container: #173636;
+  --color-on-tertiary-container: #eef3f3;
+
+  --color-error: #e0b9b9;
+  --color-on-error: #521717;
+  --color-error-container: #521717;
+  --color-on-error-container: #f7eded;
+
+  --color-success: #beceb0;
+  --color-on-success: #1e3709;
+  --color-success-container: #1e3709;
+  --color-on-success-container: #eff3eb;
+
+  --color-warning: #d6c4ae;
+  --color-on-warning: #432806;
+  --color-warning-container: #432806;
+  --color-on-warning-container: #f5f0eb;
+
+  --color-background: #181816;
+  --color-on-background: #e4e4e2;
+  --color-surface: #181816;
+  --color-on-surface: #e4e4e2;
+  --color-surface-variant: #424548;
+  --color-on-surface-variant: #c5c7c9;
+  --color-surface-dim: #0e0e0d;
+  --color-surface-bright: #3a3935;
+
+  --color-surface-container-lowest: #0a0a09;
+  --color-surface-container-low: #181816;
+  --color-surface-container: #1d1d1b;
+  --color-surface-container-high: #292826;
+  --color-surface-container-highest: #353431;
+
+  --color-outline: #8b8f93;
+  --color-outline-variant: #424548;
+
+  --color-inverse-surface: #e4e4e2;
+  --color-inverse-on-surface: #30302c;
+  --color-inverse-primary: #185fa5;
+  --color-scrim: #000000;
+  --color-shadow: #000000;
+}
+
+/* =========================================================================
+   TYPOGRAPHY UTILITY CLASSES  (M3 scale, exact values from Figma)
+   Apply to text elements, e.g. <h1 class="t-headline-small">
+   Each sets font-size / line-height / weight / letter-spacing.
+   ========================================================================= */
+.t-display-large    { font: var(--font-weight-regular) 57px/64px var(--font-family); letter-spacing:-0.25px; }
+.t-display-medium   { font: var(--font-weight-regular) 45px/52px var(--font-family); letter-spacing:0; }
+.t-display-small    { font: var(--font-weight-regular) 36px/44px var(--font-family); letter-spacing:0; }
+
+.t-headline-large   { font: var(--font-weight-regular) 32px/40px var(--font-family); letter-spacing:0; }
+.t-headline-medium  { font: var(--font-weight-regular) 28px/36px var(--font-family); letter-spacing:0; }
+.t-headline-small   { font: var(--font-weight-regular) 24px/32px var(--font-family); letter-spacing:0; }
+
+.t-title-large      { font: var(--font-weight-regular) 22px/28px var(--font-family); letter-spacing:0; }
+.t-title-medium     { font: var(--font-weight-medium) 16px/24px var(--font-family); letter-spacing:0.15px; }
+.t-title-small      { font: var(--font-weight-medium) 14px/20px var(--font-family); letter-spacing:0.1px; }
+
+.t-body-large       { font: var(--font-weight-regular) 16px/24px var(--font-family); letter-spacing:0.5px; }
+.t-body-medium      { font: var(--font-weight-regular) 14px/20px var(--font-family); letter-spacing:0.25px; }
+.t-body-small       { font: var(--font-weight-regular) 12px/16px var(--font-family); letter-spacing:0.4px; }
+
+.t-label-large      { font: var(--font-weight-medium) 14px/20px var(--font-family); letter-spacing:0.1px; }
+.t-label-medium     { font: var(--font-weight-medium) 12px/16px var(--font-family); letter-spacing:0; }
+.t-label-small      { font: var(--font-weight-medium) 11px/16px var(--font-family); letter-spacing:0.5px; }
+
+/* Emphasized (used for kiosk headlines / hero) */
+.t-headline-medium-emph { font: var(--font-weight-bold) 28px/36px var(--font-family); letter-spacing:0; }
+.t-display-small-emph   { font: var(--font-weight-bold) 32px/40px var(--font-family); letter-spacing:0; }

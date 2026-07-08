@@ -3,6 +3,13 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { AuthLayout } from '../_components/AuthLayout'
+
+const labelClass = 'block text-body-medium tracking-[0.25px] text-on-surface-variant mb-2'
+const inputClass =
+  'w-full h-12 px-4 py-3 rounded-sm bg-surface-container-lowest border border-outline-variant ' +
+  'text-on-surface text-body-large tracking-[0.5px] outline-none ' +
+  'focus:outline-2 focus:outline-primary focus:-outline-offset-1 focus:border-transparent'
 
 export default function SignupPage() {
   const router = useRouter()
@@ -55,100 +62,98 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center p-6">
-      <div className="max-w-sm w-full">
+    <AuthLayout>
+      <div>
+        <p className="text-headline-small text-on-surface">Create your school account</p>
+        <p className="text-body-medium tracking-[0.25px] text-on-surface-variant mt-1">
+          Set up Attendance Guard for your school
+        </p>
+      </div>
 
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold">Create School Account</h1>
-          <p className="text-gray-400 text-sm mt-2">Set up your school&apos;s arrival tracking portal</p>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+        <div>
+          <label className={labelClass}>School name</label>
+          <input
+            type="text"
+            value={form.schoolName}
+            onChange={set('schoolName')}
+            placeholder="e.g. Greenfield Academy"
+            required
+            autoFocus
+            className={inputClass}
+          />
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm text-gray-400 mb-1">School Name</label>
+        <div>
+          <label className={labelClass}>School URL</label>
+          <div className="flex items-center h-12 px-4 rounded-sm bg-surface-container-lowest border border-outline-variant focus-within:outline-2 focus-within:outline-primary focus-within:-outline-offset-1 focus-within:border-transparent">
             <input
               type="text"
-              value={form.schoolName}
-              onChange={set('schoolName')}
-              placeholder="e.g. Greenfield Academy"
+              value={form.subdomain}
+              onChange={set('subdomain')}
+              placeholder="greenfield"
               required
-              autoFocus
-              className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 outline-none focus:border-indigo-500"
+              minLength={3}
+              maxLength={32}
+              className="bg-transparent outline-none flex-1 min-w-0 text-on-surface text-body-large tracking-[0.5px]"
             />
+            <span className="text-body-medium tracking-[0.25px] text-on-surface-variant whitespace-nowrap">.dataocelotschools.com</span>
           </div>
+          <p className="text-body-small tracking-[0.4px] text-on-surface-variant mt-1">Lowercase letters, numbers and hyphens only</p>
+        </div>
 
-          <div>
-            <label className="block text-sm text-gray-400 mb-1">School URL</label>
-            <div className="flex items-center bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 focus-within:border-indigo-500">
-              <input
-                type="text"
-                value={form.subdomain}
-                onChange={set('subdomain')}
-                placeholder="greenfield"
-                required
-                minLength={3}
-                maxLength={32}
-                className="bg-transparent outline-none flex-1 min-w-0"
-              />
-              <span className="text-gray-500 text-sm whitespace-nowrap">.dataocelotschools.com</span>
-            </div>
-            <p className="text-xs text-gray-600 mt-1">Lowercase letters, numbers and hyphens only</p>
-          </div>
+        <div>
+          <label className={labelClass}>Admin email</label>
+          <input
+            type="email"
+            value={form.email}
+            onChange={set('email')}
+            placeholder="admin@yourschool.com"
+            required
+            className={inputClass}
+          />
+        </div>
 
-          <div>
-            <label className="block text-sm text-gray-400 mb-1">Admin Email</label>
-            <input
-              type="email"
-              value={form.email}
-              onChange={set('email')}
-              placeholder="admin@yourschool.com"
-              required
-              className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 outline-none focus:border-indigo-500"
-            />
-          </div>
+        <div>
+          <label className={labelClass}>Password</label>
+          <input
+            type="password"
+            value={form.password}
+            onChange={set('password')}
+            placeholder="Minimum 8 characters"
+            required
+            minLength={8}
+            className={inputClass}
+          />
+        </div>
 
-          <div>
-            <label className="block text-sm text-gray-400 mb-1">Password</label>
-            <input
-              type="password"
-              value={form.password}
-              onChange={set('password')}
-              placeholder="Minimum 8 characters"
-              required
-              minLength={8}
-              className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 outline-none focus:border-indigo-500"
-            />
-          </div>
+        <div>
+          <label className={labelClass}>Confirm password</label>
+          <input
+            type="password"
+            value={form.confirm}
+            onChange={set('confirm')}
+            placeholder="Repeat password"
+            required
+            className={inputClass}
+          />
+        </div>
 
-          <div>
-            <label className="block text-sm text-gray-400 mb-1">Confirm Password</label>
-            <input
-              type="password"
-              value={form.confirm}
-              onChange={set('confirm')}
-              placeholder="Repeat password"
-              required
-              className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 outline-none focus:border-indigo-500"
-            />
-          </div>
+        {error && <p className="text-error text-body-medium tracking-[0.25px] text-center">{error}</p>}
 
-          {error && <p className="text-red-400 text-sm text-center">{error}</p>}
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full h-11 rounded-sm bg-primary text-on-primary font-medium text-label-large tracking-[0.1px] disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
+        >
+          {loading ? 'Creating account…' : 'Create account'}
+        </button>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:bg-gray-800 disabled:text-gray-600 text-white font-bold transition-colors"
-          >
-            {loading ? 'Creating account…' : 'Create Account'}
-          </button>
-
-          <p className="text-center text-sm text-gray-500">
-            Already have an account?{' '}
-            <Link href="/login" className="text-indigo-400 hover:text-indigo-300">Sign in</Link>
-          </p>
-        </form>
-
-      </div>
-    </div>
+        <p className="text-center text-body-medium tracking-[0.25px] text-on-surface-variant">
+          Already set up?{' '}
+          <Link href="/login" className="text-primary font-medium hover:opacity-80 transition-opacity">Sign in</Link>
+        </p>
+      </form>
+    </AuthLayout>
   )
 }
