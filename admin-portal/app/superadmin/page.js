@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase'
 async function getAllSchools() {
   const { data: schools } = await supabase
     .from('schools')
-    .select('id, name, subdomain, admin_email, status, archived_at, payment_due_at, payment_approved_at, created_at')
+    .select('id, name, subdomain, admin_email, status, school_type, archived_at, payment_due_at, payment_approved_at, pending_expires_at, created_at')
     .order('created_at', { ascending: false })
 
   if (!schools || schools.length === 0) return []

@@ -32,7 +32,7 @@ export async function POST(request) {
 
   const { data: school } = await supabase
     .from('schools')
-    .select('id, name, api_key, admin_email, admin_password_hash, status')
+    .select('id, name, api_key, admin_email, admin_password_hash, status, school_type')
     .eq('api_key', resolvedKey)
     .single()
 
@@ -75,6 +75,7 @@ export async function POST(request) {
   session.schoolId = school.id
   session.schoolName = school.name
   session.schoolKey = school.api_key
+  session.schoolType = school.school_type ?? 'primary'
   await session.save()
 
   return Response.json({ success: true, school: school.name })

@@ -51,6 +51,10 @@ ALTER TABLE schools ADD COLUMN IF NOT EXISTS status       TEXT        DEFAULT 'p
 ALTER TABLE schools ADD COLUMN IF NOT EXISTS archived_at  TIMESTAMPTZ;
 ALTER TABLE schools ADD COLUMN IF NOT EXISTS payment_approved_at TIMESTAMPTZ;
 ALTER TABLE schools ADD COLUMN IF NOT EXISTS payment_due_at      TIMESTAMPTZ;
+-- Pending registrations expire after 48 hours; subdomain is freed for re-registration after expiry
+ALTER TABLE schools ADD COLUMN IF NOT EXISTS pending_expires_at  TIMESTAMPTZ;
+-- School type for identification — primary, secondary, combined, nursery, tertiary
+ALTER TABLE schools ADD COLUMN IF NOT EXISTS school_type TEXT DEFAULT 'primary';
 
 -- Existing schools that were already active should stay active
 UPDATE schools SET status = 'active' WHERE status = 'pending' AND created_at < NOW() - INTERVAL '1 minute';

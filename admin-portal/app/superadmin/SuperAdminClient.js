@@ -28,7 +28,15 @@ function daysUntil(dateStr) {
 
 function PaymentBadge({ school }) {
   if (school.status === 'pending') {
-    return <span className="text-xs text-blue-400 font-medium">Awaiting approval</span>
+    const hours = school.pending_expires_at
+      ? Math.max(0, Math.ceil((new Date(school.pending_expires_at) - new Date()) / (1000 * 60 * 60)))
+      : null
+    const expired = hours !== null && hours === 0
+    return (
+      <span className={`text-xs font-medium ${expired ? 'text-red-400' : 'text-blue-400'}`}>
+        {expired ? 'Reservation expired' : hours !== null ? `Expires in ${hours}h` : 'Awaiting approval'}
+      </span>
+    )
   }
   if (school.status === 'payment_due') {
     const days = daysUntil(school.payment_due_at)
@@ -91,7 +99,7 @@ function ConfirmModal({ title, message, confirmLabel, confirmClass, onConfirm, o
 function SchoolRow({ school, onAction }) {
   const actionMap = {
     pending:     [{ label: 'Approve', action: 'approve', style: 'text-green-500 hover:text-green-400' },
-                  { label: 'Archive', action: 'archive', style: 'text-gray-500 hover:text-gray-400' }],
+                  { label: 'Reject',  action: 'reject',  style: 'text-red-500 hover:text-red-400' }],
     active:      [{ label: 'Suspend', action: 'suspend', style: 'text-yellow-500 hover:text-yellow-400' },
                   { label: 'Archive', action: 'archive', style: 'text-gray-500 hover:text-gray-400' }],
     payment_due: [{ label: 'Approve Renewal', action: 'approve', style: 'text-green-500 hover:text-green-400' },
@@ -107,6 +115,11 @@ function SchoolRow({ school, onAction }) {
       <td className="px-6 py-4">
         <p className="font-semibold">{school.name}</p>
         <p className="text-xs text-gray-500 mt-0.5">{school.subdomain}.dataocelotschools.com</p>
+        {school.school_type && (
+          <span className="inline-block mt-1 px-1.5 py-0.5 rounded text-xs bg-gray-800 text-gray-400 capitalize">
+            {school.school_type === 'combined' ? 'Primary + Secondary' : school.school_type}
+          </span>
+        )}
       </td>
       <td className="px-6 py-4 hidden sm:table-cell text-gray-400 text-sm">{school.admin_email}</td>
       <td className="px-6 py-4 hidden md:table-cell text-gray-400">{school.studentCount}</td>
@@ -152,6 +165,12 @@ export function SchoolsTable({ schools }) {
   const filtered = schools.filter(s => s.status === tab)
 
   const confirmConfig = {
+    reject: {
+      title: 'Reject Registration',
+      message: `This will permanently remove ${pending?.school.name}'s registration and free their subdomain immediately. They will need to sign up again.`,
+      confirmLabel: 'Reject & Delete',
+      confirmClass: 'bg-red-700 hover:bg-red-600 text-white',
+    },
     approve: {
       title: pending?.school.status === 'payment_due' ? 'Approve Renewal' : 'Approve School',
       message: pending?.school.status === 'payment_due'
@@ -194,6 +213,12 @@ export function SchoolsTable({ schools }) {
 
     if (action === 'delete') {
       await fetch(`/api/superadmin/schools?id=${school.id}`, { method: 'DELETE' })
+    } else if (action === 'reject') {
+      await fetch(`/api/superadmin/schools?id=${school.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'reject' })
+      })
     } else {
       await fetch(`/api/superadmin/schools?id=${school.id}`, {
         method: 'PATCH',
