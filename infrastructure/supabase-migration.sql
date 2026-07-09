@@ -41,11 +41,23 @@ ALTER TABLE students ADD COLUMN IF NOT EXISTS photo_url TEXT;
 -- ── 6. Add school_id to arrivals ────────────────────────────────────────────
 ALTER TABLE arrivals ADD COLUMN IF NOT EXISTS school_id UUID REFERENCES schools(id);
 
--- ── 8. School status — active | suspended | archived ────────────────────────
--- suspended: access blocked, data intact, fully restorable
--- archived:  soft-deleted, hidden from all queries, restorable by super admin
-ALTER TABLE schools ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'active';
-ALTER TABLE schools ADD COLUMN IF NOT EXISTS archived_at TIMESTAMPTZ;
+-- ── 8. School status ────────────────────────────────────────────────────────
+-- pending:     just registered, awaiting payment approval — no portal access
+-- active:      payment approved, full access
+-- payment_due: subscription expired — blocked until super admin approves renewal
+-- suspended:   manually blocked by super admin, data intact, restorable
+-- archived:    soft-deleted, hidden from all queries, restorable by super admin
+ALTER TABLE schools ADD COLUMN IF NOT EXISTS status       TEXT        DEFAULT 'pending';
+ALTER TABLE schools ADD COLUMN IF NOT EXISTS archived_at  TIMESTAMPTZ;
+ALTER TABLE schools ADD COLUMN IF NOT EXISTS payment_approved_at TIMESTAMPTZ;
+ALTER TABLE schools ADD COLUMN IF NOT EXISTS payment_due_at      TIMESTAMPTZ;
+-- Pending registrations expire after 48 hours; subdomain is freed for re-registration after expiry
+ALTER TABLE schools ADD COLUMN IF NOT EXISTS pending_expires_at  TIMESTAMPTZ;
+-- School type for identification — primary, secondary, combined, nursery, tertiary
+ALTER TABLE schools ADD COLUMN IF NOT EXISTS school_type TEXT DEFAULT 'primary';
+
+-- Existing schools that were already active should stay active
+UPDATE schools SET status = 'active' WHERE status = 'pending' AND created_at < NOW() - INTERVAL '1 minute';
 
 -- ── 9. Track which school year the gate code was generated for ──────────────
 -- e.g. "2025-2026". Code rotates when student is promoted; stays if repeating.

@@ -54,7 +54,14 @@ export default async function Dashboard() {
 
         <div className="mb-8 flex items-start justify-between">
           <div>
-            <h1 className="text-headline-medium font-bold text-on-surface">{session.schoolName}</h1>
+            <div className="flex items-center gap-3 flex-wrap">
+              <h1 className="text-headline-medium font-bold text-on-surface">{session.schoolName}</h1>
+              {session.schoolType && (
+                <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary capitalize">
+                  {session.schoolType === 'combined' ? 'Primary + Secondary' : session.schoolType}
+                </span>
+              )}
+            </div>
             <p className="text-body-large tracking-[0.5px] text-on-surface-variant mt-1">{today}</p>
           </div>
           <RefreshTicker />

@@ -7,17 +7,21 @@ A multi-tenant school arrival tracking SaaS. Each school gets its own isolated p
 ## Features
 
 - **Multi-tenant** — every school is fully data-isolated behind its own subdomain
+- **School type identification** — each school declares its type (primary, secondary, combined, nursery, tertiary) at signup; shown in the dashboard header and super admin panel for instant identification
 - **Gate scanner** — code entry, QR camera, or USB RFID reader (HID keyboard emulation)
 - **Student ID card result** — scan shows portrait photo, name, class, student ID, and arrival time in a clean card UI
 - **Live dashboard** — real-time arrival stats that auto-refresh every 10 seconds
-- **Student directory** — all enrolled students with gate codes, photos, and class info
+- **Student directory** — all enrolled students with gate codes, photos, and class info; admins can delete students (clears arrivals + verifications)
 - **Student code rotation** — codes tied to the school year; rotate automatically on promotion, preserved on class repeat
 - **Parent notifications** — SMS + WhatsApp via AWS Lambda on every arrival and departure
 - **Parent self-registration** — 2-step OTP flow; phone must match what the school registered (prevents students faking parent numbers)
-- **School self-registration** — any school signs up at `/signup`, no manual SQL needed
-- **Super admin panel** — platform owner can suspend, restore, archive, or permanently delete any school
-- **Rate limiting** — per-endpoint limits via Upstash Redis (gracefully skips if not configured)
-- **Admin auth** — encrypted session cookies via iron-session; bcrypt password hashing
+- **School self-registration** — any school signs up at `/signup`; account starts as **pending** until payment is confirmed
+- **Subdomain reservation** — subdomain held for 48 hours on signup; auto-released if not approved; expired slots are reclaimed automatically on new registration
+- **Subscription lifecycle** — pending → active → payment due → active (renewable); super admin sets payment due date on approval
+- **Super admin panel** — platform owner manages all schools: approve, reject, suspend, restore, archive, or permanently delete
+- **Rate limiting** — token bucket algorithm via Upstash Redis; no burst accumulation; gracefully skips if not configured
+- **Security hardening** — timing-safe credential comparison, `SESSION_SECRET` enforced at startup (app refuses to boot without it), bcrypt password hashing
+- **Docker support** — multi-stage Dockerfile with `output: standalone` for minimal production images; ready for ArgoCD / Kubernetes
 
 ---
 
@@ -44,7 +48,7 @@ Browser / Gate device
    AWS Lambda              SMS (SNS) + WhatsApp (End User Messaging Social)
 ```
 
-**Subdomain routing** — `proxy.js` intercepts every request, looks up the school by subdomain, checks its status (`active` / `suspended` / `archived`), and injects the school's API key only for active schools.
+**Subdomain routing** — `proxy.js` intercepts every request, looks up the school by subdomain, checks its status, and injects the school's API key only for `active` schools. All other statuses (`pending`, `payment_due`, `suspended`, `archived`) are silently blocked.
 
 ---
 
@@ -110,7 +114,7 @@ The schema creates:
 
 | Table | Key columns |
 |-------|-------------|
-| `schools` | `name`, `subdomain`, `api_key`, `status`, `archived_at` |
+| `schools` | `name`, `subdomain`, `api_key`, `status`, `school_type`, `payment_due_at`, `payment_approved_at`, `pending_expires_at`, `archived_at` |
 | `students` | `school_id`, `code`, `code_year`, `student_id`, `photo_url` |
 | `arrivals` | `school_id`, `student_id`, `type`, `date`, `scanned_at` |
 | `verifications` | `student_id`, `phone`, `otp`, `expires_at`, `used` |
@@ -182,28 +186,71 @@ The platform owner manages all schools at:
 https://dataocelotschools.com/superadmin
 ```
 
-Log in with `SUPER_ADMIN_EMAIL` and `SUPER_ADMIN_PASSWORD`. This panel is completely separate from school admin accounts — no school can access it.
+Log in with `SUPER_ADMIN_EMAIL` and `SUPER_ADMIN_PASSWORD`. This panel is completely separate from school admin accounts — no school can access it. Credentials are compared using a constant-time algorithm to prevent timing attacks.
+
+### School lifecycle
+
+```
+signup → pending → active → payment_due → active (renewed)
+                ↘ rejected (deleted)
+                         ↘ suspended ↗ restored
+                                    ↘ archived ↗ restored
+                                               ↘ deleted forever
+```
 
 ### School statuses
 
-| Status | Meaning | Data |
-|--------|---------|------|
-| **Active** | School has full access | Live |
-| **Suspended** | Access blocked (e.g. late payment) | Intact — fully restorable |
-| **Archived** | Soft-deleted, hidden from all queries | Intact in Supabase — restorable |
+| Status | Portal access | Meaning |
+|--------|--------------|---------|
+| **pending** | Blocked | Just registered — awaiting payment confirmation. Subdomain reserved for 48 hours. |
+| **active** | Full | Payment approved. Shows countdown to next payment due date. |
+| **payment_due** | Blocked | Payment period expired. Access restored on renewal approval. |
+| **suspended** | Blocked | Manually blocked (e.g. policy violation). Data intact, fully restorable. |
+| **archived** | Blocked | Soft-deleted. Hidden from all queries. Data in Supabase, restorable. |
 
 ### Actions per status
 
-| From | Actions available |
-|------|------------------|
+| Status | Actions available |
+|--------|------------------|
+| Pending | Approve (set payment due date) · Reject (delete + free subdomain) |
 | Active | Suspend · Archive |
+| Payment Due | Approve Renewal (set new due date) · Archive |
 | Suspended | Restore · Archive |
 | Archived | Restore · Delete forever |
 
-- **Suspend** — portal goes dark instantly, login blocked, all data untouched
+- **Approve** — sets status to `active`, records `payment_approved_at`, sets `payment_due_at` (configurable days, default 30)
+- **Reject** — permanently deletes the pending registration and immediately frees the subdomain for re-registration
+- **Suspend** — portal goes dark instantly, login shows a suspension message, all data untouched
 - **Restore** — one click, full access restored immediately
-- **Archive** — school is hidden from all queries but data stays in Supabase
-- **Delete forever** — only available on archived schools; permanently removes all students, arrivals, and parent records
+- **Archive** — school hidden from all queries, data preserved in Supabase
+- **Delete forever** — only available on archived schools; removes all students, arrivals, and parent records
+
+### Payment due date
+
+When approving a school, you set how many days until their next payment is due (default 30). The super admin panel shows:
+- **Active schools** — days remaining until payment due (turns orange under 7 days)
+- **Pending schools** — hours remaining on subdomain reservation
+- **Payment due schools** — how many days overdue
+
+Schools past their `payment_due_at` are automatically moved to `payment_due` status the next time the super admin panel loads.
+
+### School type identification
+
+Each school declares its type at signup. The type appears in the super admin table under the school name and subdomain, and in the school's own dashboard header — making it easy to distinguish two campuses of the same organisation.
+
+| Type | Label shown |
+|------|------------|
+| `primary` | Primary |
+| `secondary` | Secondary |
+| `combined` | Primary + Secondary |
+| `nursery` | Nursery |
+| `tertiary` | Tertiary |
+
+### Subdomain conflict rules
+
+- A subdomain is **taken** if held by any non-pending school, or by a pending school whose 48-hour reservation has not yet expired
+- A subdomain is **free** if the only school holding it is a pending school past its expiry — the expired record is auto-deleted when a new registration claims it
+- On approval, the API checks one final time that no other active school has claimed the subdomain; if there's a conflict it blocks the approval and asks you to reject the other school first
 
 ### Clear test data via SQL
 
@@ -792,15 +839,40 @@ curl -X POST https://dataocelotschools.com/api/superadmin/logout \
 
 ---
 
+## Docker
+
+A multi-stage Dockerfile lives in `admin-portal/` for building production images:
+
+```bash
+cd admin-portal
+docker build -t your-registry/schoolpass:latest .
+docker push your-registry/schoolpass:latest
+```
+
+The build uses `output: 'standalone'` in `next.config.mjs` — only the files Next.js actually needs end up in the final layer, keeping the image small.
+
+All environment variables must be injected at runtime via Kubernetes `Secret` or `ConfigMap` — never baked into the image:
+
+```yaml
+envFrom:
+  - secretRef:
+      name: schoolpass-secrets
+```
+
+---
+
 ## Rate Limits
 
-| Endpoint | Limit |
-|----------|-------|
-| `/api/scan` | 60 requests / minute per school |
-| `/api/register` | 5 requests / minute per IP |
-| `/api/auth/login` | 10 requests / 15 minutes per IP |
+Rate limiting uses a **token bucket** algorithm via Upstash Redis. Tokens refill at a constant rate and `maxTokens` equals the refill rate, so there is no burst accumulation — requests must arrive at a steady pace to avoid being blocked.
 
-Rate limiting uses Upstash Redis. If `UPSTASH_REDIS_REST_URL` is not set or is a placeholder, rate limiting is silently skipped (safe for local dev).
+| Endpoint | Limit | Keyed by |
+|----------|-------|----------|
+| `/api/scan` | 60 / minute | School ID |
+| `/api/register` | 5 / minute | IP address |
+| `/api/auth/login` | 10 / 15 minutes | IP address |
+| `/api/superadmin/login` | (inherits login limiter) | IP address |
+
+If `UPSTASH_REDIS_REST_URL` is not set, rate limiting is silently skipped (safe for local dev).
 
 ---
 

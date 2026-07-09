@@ -32,13 +32,27 @@ export async function POST(request) {
 
   const { data: school } = await supabase
     .from('schools')
-    .select('id, name, api_key, admin_email, admin_password_hash, status')
+    .select('id, name, api_key, admin_email, admin_password_hash, status, school_type')
     .eq('api_key', resolvedKey)
     .single()
 
   // Use same error for wrong email or wrong school to avoid enumeration
   if (!school || school.admin_email !== email.trim().toLowerCase()) {
     return Response.json({ error: 'Invalid email or password' }, { status: 401 })
+  }
+
+  if (school.status === 'pending') {
+    return Response.json(
+      { error: 'Your account is awaiting payment approval. Please contact DataOcelot Schools to proceed.' },
+      { status: 403 }
+    )
+  }
+
+  if (school.status === 'payment_due') {
+    return Response.json(
+      { error: 'Your subscription has expired. Please make payment to restore access.' },
+      { status: 403 }
+    )
   }
 
   if (school.status === 'suspended') {
@@ -61,6 +75,7 @@ export async function POST(request) {
   session.schoolId = school.id
   session.schoolName = school.name
   session.schoolKey = school.api_key
+  session.schoolType = school.school_type ?? 'primary'
   await session.save()
 
   return Response.json({ success: true, school: school.name })
