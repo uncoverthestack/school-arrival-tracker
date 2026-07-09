@@ -166,7 +166,7 @@ export function FaceScanView({ schoolKey, onScan, onEnterCode }) {
         onClick={onEnterCode}
         className="text-label-large font-medium tracking-[0.1px] text-primary bg-transparent border-none cursor-pointer p-0"
       >
-        Enter code instead →
+        ← Change method
       </button>
     </div>
   )

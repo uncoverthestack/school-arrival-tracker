@@ -27,7 +27,7 @@ function currentLagosClock() {
 // and the code-entry confirm step. QR scans call scanCard directly (no
 // confirm); manual codes go through lookupStudent -> confirm -> scanCard.
 export function useScanFlow(schoolKey) {
-  const [view, setView] = useState('scan') // 'scan' | 'code' | 'face' | 'confirm' | 'result'
+  const [view, setView] = useState('pick') // 'pick' | 'scan' | 'code' | 'face' | 'confirm' | 'result'
   const [scanType, setScanType] = useState(deriveScanType)
   const [confirmTarget, setConfirmTarget] = useState(null) // { student, code }
   const [result, setResult] = useState(null)
@@ -115,10 +115,6 @@ export function useScanFlow(schoolKey) {
     }
   }, [schoolKey, showResult])
 
-  // QR scanner — same start/stop lifecycle as the original page.js, just keyed
-  // off `view === 'scan'` instead of a `mode` toggle. Skipped while offline
-  // since GateScanner renders the "No connection" screen instead of the
-  // camera in that case (no #qr-reader element to attach to).
   useEffect(() => {
     if (view !== 'scan' || !online) return
     let scanner
@@ -141,6 +137,7 @@ export function useScanFlow(schoolKey) {
     }
   }, [view, online, handleScan])
 
+  const enterPickView = useCallback(() => setView('pick'), [])
   const enterCodeView = useCallback(() => setView('code'), [])
   const enterFaceView = useCallback(() => setView('face'), [])
   const backToScanner = useCallback(() => setView('scan'), [])
@@ -186,7 +183,7 @@ export function useScanFlow(schoolKey) {
 
   return {
     view, scanType, confirmTarget, result, arrivals, scanning, clock, online,
-    enterCodeView, enterFaceView, backToScanner, submitCode, confirmCheckIn, cancelConfirm,
+    enterPickView, enterCodeView, enterFaceView, backToScanner, submitCode, confirmCheckIn, cancelConfirm,
     directScan: handleScan
   }
 }
