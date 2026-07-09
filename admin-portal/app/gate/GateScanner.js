@@ -10,16 +10,18 @@ import { StudentDetails } from './components/StudentDetails'
 import { ScannerView } from './components/ScannerView'
 import { CodeEntryView } from './components/CodeEntryView'
 import { ConfirmView } from './components/ConfirmView'
+import { FaceScanView } from './components/FaceScanView'
 
 function footerNote({ online, view, result }) {
   if (!online) return 'not syncing'
   if (view === 'confirm') return 'confirm to check in'
   if (view === 'result' && result) {
-    if (result.state === 'success') return 'clears in 2s…'
+    if (result.state === 'success') return 'clears in 5s…'
     if (result.state === 'warning') return 'no new alert sent'
     if (result.state === 'error') return result.returnTo === 'code' ? 'back to keypad…' : 'returning to ready…'
   }
   if (view === 'scan') return 'ready for next student'
+  if (view === 'face') return 'watching for faces…'
   return ''
 }
 
@@ -78,7 +80,7 @@ function ResultScreen({ result }) {
 export function GateScanner({ schoolKey }) {
   const {
     view, scanType, confirmTarget, result, arrivals, scanning, clock, online,
-    enterCodeView, backToScanner, submitCode, confirmCheckIn, cancelConfirm
+    enterCodeView, enterFaceView, backToScanner, submitCode, confirmCheckIn, cancelConfirm, directScan
   } = useScanFlow(schoolKey)
 
   // Follow the OS light/dark preference. Scoped to this wrapper's
@@ -101,7 +103,13 @@ export function GateScanner({ schoolKey }) {
         {!online ? (
           <OfflineScreen />
         ) : view === 'scan' ? (
-          <ScannerView onEnterCode={enterCodeView} />
+          <ScannerView onEnterCode={enterCodeView} onFaceScan={enterFaceView} />
+        ) : view === 'face' ? (
+          <FaceScanView
+            schoolKey={schoolKey}
+            onScan={(code) => directScan(code, 'face')}
+            onEnterCode={enterCodeView}
+          />
         ) : view === 'code' ? (
           <CodeEntryView onSubmit={submitCode} onBack={backToScanner} scanning={scanning} />
         ) : view === 'confirm' && confirmTarget ? (

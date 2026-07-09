@@ -3,6 +3,26 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 
+const MODEL_URL = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@0.22.2/weights'
+
+// Module-level cache — shared with FaceScanView so models only load once.
+let cachedFaceApi = null
+
+async function getFaceApi() {
+  if (!cachedFaceApi) {
+    cachedFaceApi = await import('face-api.js')
+  }
+  const fa = cachedFaceApi
+  if (!fa.nets.tinyFaceDetector.isLoaded) {
+    await Promise.all([
+      fa.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+      fa.nets.faceLandmark68TinyNet.loadFromUri(MODEL_URL),
+      fa.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
+    ])
+  }
+  return fa
+}
+
 function EditModal({ student, onClose }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
@@ -92,8 +112,160 @@ function EditModal({ student, onClose }) {
   )
 }
 
+function EnrollFaceModal({ student, onClose }) {
+  const router = useRouter()
+  const [isPending, startTransition] = useTransition()
+  // idle | loading | done | error
+  const [status, setStatus] = useState('idle')
+  const [message, setMessage] = useState('')
+
+  async function handleEnroll() {
+    if (!student.photo_url) return
+    setStatus('loading')
+    setMessage('Loading AI models (first time may take a moment)…')
+
+    try {
+      const faceapi = await getFaceApi()
+      setMessage('Analysing photo…')
+
+      const img = await new Promise((resolve, reject) => {
+        const el = new Image()
+        el.crossOrigin = 'anonymous'
+        el.onload = () => resolve(el)
+        el.onerror = reject
+        el.src = student.photo_url
+      })
+
+      const detection = await faceapi
+        .detectSingleFace(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.5 }))
+        .withFaceLandmarks(true)
+        .withFaceDescriptor()
+
+      if (!detection) {
+        setStatus('error')
+        setMessage('No face detected. Upload a clear, front-facing photo then try again.')
+        return
+      }
+
+      const descriptor = Array.from(detection.descriptor)
+
+      const res = await fetch(`/api/students/${student.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ faceDescriptor: descriptor })
+      })
+
+      if (!res.ok) {
+        const err = await res.json()
+        setStatus('error')
+        setMessage(err.error ?? 'Failed to save face data.')
+        return
+      }
+
+      setStatus('done')
+      setMessage('Face enrolled! This student can now use face scan at the gate.')
+      startTransition(() => router.refresh())
+    } catch (err) {
+      console.error('EnrollFace:', err)
+      const isCors = err?.name === 'SecurityError' || String(err).toLowerCase().includes('cors')
+      setStatus('error')
+      setMessage(isCors
+        ? 'Photo blocked by CORS — configure your image storage to allow cross-origin reads.'
+        : `Something went wrong: ${err?.message ?? err}`)
+    }
+  }
+
+  async function handleRemove() {
+    setStatus('loading')
+    setMessage('Removing face data…')
+    try {
+      const res = await fetch(`/api/students/${student.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ faceDescriptor: null })
+      })
+      if (!res.ok) throw new Error('Failed')
+      setStatus('done')
+      setMessage('Face data removed.')
+      startTransition(() => router.refresh())
+    } catch {
+      setStatus('error')
+      setMessage('Could not remove face data.')
+    }
+  }
+
+  const hasEnrolled = !!student.face_descriptor
+
+  return (
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+      <div className="bg-gray-900 rounded-2xl p-6 w-full max-w-sm">
+        <h2 className="text-lg font-bold mb-1">Face ID — {student.name}</h2>
+        <p className="text-xs text-gray-500 mb-5">
+          {hasEnrolled
+            ? 'This student already has a face enrolled. You can re-enroll or remove it.'
+            : 'Enroll a face ID so this student can be recognised at the gate without a card or code.'}
+        </p>
+
+        {student.photo_url ? (
+          <img
+            src={student.photo_url}
+            alt={student.name}
+            crossOrigin="anonymous"
+            className="w-24 h-24 rounded-full object-cover mx-auto mb-5 border-2 border-gray-700"
+          />
+        ) : (
+          <p className="text-yellow-400 text-sm mb-5">
+            No photo on file — upload a photo first, then enroll the face.
+          </p>
+        )}
+
+        {status === 'loading' && (
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-5 h-5 rounded-full border-2 border-indigo-400 border-t-transparent animate-spin shrink-0" />
+            <p className="text-sm text-gray-300">{message}</p>
+          </div>
+        )}
+        {status === 'done' && <p className="text-green-400 text-sm mb-4">{message}</p>}
+        {status === 'error' && <p className="text-red-400 text-sm mb-4">{message}</p>}
+
+        <div className="flex flex-col gap-2">
+          {student.photo_url && (
+            <button
+              type="button"
+              onClick={handleEnroll}
+              disabled={status === 'loading' || isPending}
+              className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:bg-gray-800 disabled:text-gray-600 font-bold transition-colors"
+            >
+              {hasEnrolled ? 'Re-enroll Face' : 'Enroll Face'}
+            </button>
+          )}
+          {hasEnrolled && (
+            <button
+              type="button"
+              onClick={handleRemove}
+              disabled={status === 'loading' || isPending}
+              className="w-full py-3 rounded-xl bg-red-900/50 hover:bg-red-900 text-red-400 font-semibold transition-colors disabled:opacity-40"
+            >
+              Remove Face Data
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={status === 'loading'}
+            className="w-full py-3 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold transition-colors"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function StudentsClient({ students }) {
   const [editing, setEditing] = useState(null)
+  const [enrolling, setEnrolling] = useState(null)
 
   if (students.length === 0) {
     return (
@@ -107,6 +279,7 @@ export default function StudentsClient({ students }) {
   return (
     <>
       {editing && <EditModal student={editing} onClose={() => setEditing(null)} />}
+      {enrolling && <EnrollFaceModal student={enrolling} onClose={() => setEnrolling(null)} />}
 
       <div className="bg-gray-900 rounded-xl overflow-hidden">
         <table className="w-full text-sm">
@@ -134,7 +307,12 @@ export default function StudentsClient({ students }) {
                     </div>
                   )}
                 </td>
-                <td className="px-6 py-4 font-medium">{s.name}</td>
+                <td className="px-6 py-4 font-medium">
+                  <span>{s.name}</span>
+                  {s.face_descriptor && (
+                    <span className="ml-2 text-xs text-indigo-400" title="Face ID enrolled">⬡</span>
+                  )}
+                </td>
                 <td className="px-6 py-4 text-gray-400 font-mono text-xs hidden md:table-cell">
                   {s.student_id ?? '—'}
                 </td>
@@ -153,12 +331,20 @@ export default function StudentsClient({ students }) {
                   {s.parent_phone ?? <span className="text-gray-600 italic">not registered</span>}
                 </td>
                 <td className="px-6 py-4">
-                  <button
-                    onClick={() => setEditing(s)}
-                    className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold"
-                  >
-                    Edit
-                  </button>
+                  <div className="flex items-center gap-3 justify-end">
+                    <button
+                      onClick={() => setEnrolling(s)}
+                      className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold"
+                    >
+                      Face ID
+                    </button>
+                    <button
+                      onClick={() => setEditing(s)}
+                      className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold"
+                    >
+                      Edit
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}

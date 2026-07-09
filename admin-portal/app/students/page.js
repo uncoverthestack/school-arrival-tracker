@@ -7,7 +7,7 @@ import StudentsClient from './StudentsClient'
 async function getStudents(schoolId) {
   const { data } = await supabase
     .from('students')
-    .select('id, name, student_class, student_id, code, code_year, parent_name, parent_phone, photo_url')
+    .select('id, name, student_class, student_id, code, code_year, parent_name, parent_phone, photo_url, face_descriptor')
     .eq('school_id', schoolId)
     .order('name', { ascending: true })
   return data ?? []

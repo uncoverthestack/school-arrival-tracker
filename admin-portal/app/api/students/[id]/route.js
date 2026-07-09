@@ -32,7 +32,7 @@ export async function PATCH(request, { params }) {
     return Response.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
-  const { studentClass, name, photoUrl } = body
+  const { studentClass, name, photoUrl, faceDescriptor } = body
 
   // Fetch current student — must belong to this school
   const { data: student } = await supabase
@@ -50,6 +50,9 @@ export async function PATCH(request, { params }) {
 
   if (name) updates.name = String(name).trim().slice(0, 100)
   if (photoUrl !== undefined) updates.photo_url = photoUrl || null
+  if (faceDescriptor !== undefined) {
+    updates.face_descriptor = faceDescriptor ? JSON.stringify(Array.from(faceDescriptor)) : null
+  }
 
   if (studentClass && studentClass !== student.student_class) {
     // Class changed → student is promoted → rotate code
@@ -78,7 +81,7 @@ export async function PATCH(request, { params }) {
   return Response.json({ student: data, codeRotated: rotated })
 }
 
-export async function DELETE(request, { params }) {
+export async function DELETE(_request, { params }) {
   const session = await getAdminSession()
   if (!session.schoolId) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 })
