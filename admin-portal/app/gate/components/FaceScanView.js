@@ -63,7 +63,7 @@ export function FaceScanView({ schoolKey, onScan, onEnterCode }) {
         }
 
         const labeled = students.map(s => {
-          const arr = new Float32Array(JSON.parse(s.face_descriptor))
+          const arr = new Float32Array(JSON.parse(s.faceDescriptor))
           return new faceapi.LabeledFaceDescriptors(s.id, [arr])
         })
         matcherRef.current = {

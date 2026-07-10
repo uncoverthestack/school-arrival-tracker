@@ -1,26 +1,17 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { supabase } from '@/lib/supabase'
 import { getAdminSession } from '@/lib/session'
+import { getStudentsBySchool } from '@/lib/repo/students'
 import StudentsClient from './StudentsClient'
-
-async function getStudents(schoolId) {
-  const { data } = await supabase
-    .from('students')
-    .select('id, name, student_class, student_id, code, code_year, parent_name, parent_phone, photo_url, face_descriptor')
-    .eq('school_id', schoolId)
-    .order('name', { ascending: true })
-  return data ?? []
-}
 
 export default async function StudentsPage() {
   const session = await getAdminSession()
   if (!session.schoolId) redirect('/login')
 
-  const students = await getStudents(session.schoolId)
+  const students = await getStudentsBySchool(session.schoolId)
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-8">
+    <div className="min-h-screen bg-gray-950 text-white p-4 sm:p-8">
       <div className="max-w-6xl mx-auto">
 
         <div className="mb-8 flex items-center justify-between">

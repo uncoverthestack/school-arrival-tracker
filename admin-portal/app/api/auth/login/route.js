@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs'
-import { supabase } from '@/lib/supabase'
 import { getAdminSession } from '@/lib/session'
 import { checkLimit, loginLimiter } from '@/lib/ratelimit'
+import { getSchoolByApiKeyFull } from '@/lib/repo/schools'
 
 export async function POST(request) {
   const { allowed } = await checkLimit(loginLimiter, null, request)
@@ -21,7 +21,6 @@ export async function POST(request) {
     return Response.json({ error: 'Email and password are required' }, { status: 400 })
   }
 
-  // Resolve school via middleware header (subdomain) or explicit schoolKey from body
   const { headers } = request
   const keyFromMiddleware = headers.get('x-school-key')
   const resolvedKey = keyFromMiddleware || schoolKey
@@ -30,14 +29,9 @@ export async function POST(request) {
     return Response.json({ error: 'Could not identify school. Access via your school URL.' }, { status: 400 })
   }
 
-  const { data: school } = await supabase
-    .from('schools')
-    .select('id, name, api_key, admin_email, admin_password_hash, status, school_type')
-    .eq('api_key', resolvedKey)
-    .single()
+  const school = await getSchoolByApiKeyFull(resolvedKey)
 
-  // Use same error for wrong email or wrong school to avoid enumeration
-  if (!school || school.admin_email !== email.trim().toLowerCase()) {
+  if (!school || school.adminEmail !== email.trim().toLowerCase()) {
     return Response.json({ error: 'Invalid email or password' }, { status: 401 })
   }
 
@@ -66,7 +60,7 @@ export async function POST(request) {
     return Response.json({ error: 'This account no longer exists.' }, { status: 403 })
   }
 
-  const valid = await bcrypt.compare(password, school.admin_password_hash)
+  const valid = await bcrypt.compare(password, school.adminPasswordHash)
   if (!valid) {
     return Response.json({ error: 'Invalid email or password' }, { status: 401 })
   }
@@ -74,8 +68,8 @@ export async function POST(request) {
   const session = await getAdminSession()
   session.schoolId = school.id
   session.schoolName = school.name
-  session.schoolKey = school.api_key
-  session.schoolType = school.school_type ?? 'primary'
+  session.schoolKey = school.apiKey
+  session.schoolType = school.schoolType ?? 'primary'
   await session.save()
 
   return Response.json({ success: true, school: school.name })

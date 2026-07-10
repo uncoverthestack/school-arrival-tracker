@@ -27,11 +27,11 @@ function EditModal({ student, onClose }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [name, setName] = useState(student.name)
-  const [studentClass, setStudentClass] = useState(student.student_class ?? '')
+  const [studentClass, setStudentClass] = useState(student.studentClass ?? '')
   const [error, setError] = useState('')
   const [result, setResult] = useState(null)
 
-  const classChanged = studentClass.trim() !== (student.student_class ?? '')
+  const classChanged = studentClass.trim() !== (student.studentClass ?? '')
 
   async function handleSave(e) {
     e.preventDefault()
@@ -120,7 +120,7 @@ function EnrollFaceModal({ student, onClose }) {
   const [message, setMessage] = useState('')
 
   async function handleEnroll() {
-    if (!student.photo_url) return
+    if (!student.photoUrl) return
     setStatus('loading')
     setMessage('Loading AI models (first time may take a moment)…')
 
@@ -133,7 +133,7 @@ function EnrollFaceModal({ student, onClose }) {
         el.crossOrigin = 'anonymous'
         el.onload = () => resolve(el)
         el.onerror = reject
-        el.src = student.photo_url
+        el.src = student.photoUrl
       })
 
       const detection = await faceapi
@@ -194,7 +194,7 @@ function EnrollFaceModal({ student, onClose }) {
     }
   }
 
-  const hasEnrolled = !!student.face_descriptor
+  const hasEnrolled = !!student.faceDescriptor
 
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
@@ -206,9 +206,9 @@ function EnrollFaceModal({ student, onClose }) {
             : 'Enroll a face ID so this student can be recognised at the gate without a card or code.'}
         </p>
 
-        {student.photo_url ? (
+        {student.photoUrl ? (
           <img
-            src={student.photo_url}
+            src={student.photoUrl}
             alt={student.name}
             crossOrigin="anonymous"
             className="w-24 h-24 rounded-full object-cover mx-auto mb-5 border-2 border-gray-700"
@@ -229,7 +229,7 @@ function EnrollFaceModal({ student, onClose }) {
         {status === 'error' && <p className="text-red-400 text-sm mb-4">{message}</p>}
 
         <div className="flex flex-col gap-2">
-          {student.photo_url && (
+          {student.photoUrl && (
             <button
               type="button"
               onClick={handleEnroll}
@@ -282,7 +282,8 @@ export default function StudentsClient({ students }) {
       {enrolling && <EnrollFaceModal student={enrolling} onClose={() => setEnrolling(null)} />}
 
       <div className="bg-gray-900 rounded-xl overflow-hidden">
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+        <table className="w-full text-sm min-w-160">
           <thead>
             <tr className="text-gray-400 border-b border-gray-800">
               <th className="text-left px-6 py-4 w-14"></th>
@@ -299,8 +300,8 @@ export default function StudentsClient({ students }) {
             {students.map(s => (
               <tr key={s.id} className="hover:bg-gray-800/50 transition-colors">
                 <td className="px-6 py-4">
-                  {s.photo_url ? (
-                    <img src={s.photo_url} alt={s.name} className="w-10 h-10 rounded-full object-cover" />
+                  {s.photoUrl ? (
+                    <img src={s.photoUrl} alt={s.name} className="w-10 h-10 rounded-full object-cover" />
                   ) : (
                     <div className="w-10 h-10 rounded-full bg-indigo-900 flex items-center justify-center text-base font-bold text-indigo-300">
                       {s.name?.[0] ?? '?'}
@@ -309,15 +310,15 @@ export default function StudentsClient({ students }) {
                 </td>
                 <td className="px-6 py-4 font-medium">
                   <span>{s.name}</span>
-                  {s.face_descriptor && (
+                  {s.faceDescriptor && (
                     <span className="ml-2 text-xs text-indigo-400" title="Face ID enrolled">⬡</span>
                   )}
                 </td>
                 <td className="px-6 py-4 text-gray-400 font-mono text-xs hidden md:table-cell">
-                  {s.student_id ?? '—'}
+                  {s.studentId ?? '—'}
                 </td>
                 <td className="px-6 py-4 text-gray-400 hidden sm:table-cell">
-                  {s.student_class ?? '—'}
+                  {s.studentClass ?? '—'}
                 </td>
                 <td className="px-6 py-4">
                   <span className="font-mono text-lg font-bold tracking-widest text-indigo-400">
@@ -325,10 +326,10 @@ export default function StudentsClient({ students }) {
                   </span>
                 </td>
                 <td className="px-6 py-4 text-gray-500 text-xs hidden lg:table-cell">
-                  {s.code_year ?? '—'}
+                  {s.codeYear ?? '—'}
                 </td>
                 <td className="px-6 py-4 text-gray-400 hidden lg:table-cell">
-                  {s.parent_phone ?? <span className="text-gray-600 italic">not registered</span>}
+                  {s.parentPhone ?? <span className="text-gray-600 italic">not registered</span>}
                 </td>
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3 justify-end">
@@ -350,6 +351,7 @@ export default function StudentsClient({ students }) {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
     </>
   )

@@ -28,8 +28,8 @@ function daysUntil(dateStr) {
 
 function PaymentBadge({ school }) {
   if (school.status === 'pending') {
-    const hours = school.pending_expires_at
-      ? Math.max(0, Math.ceil((new Date(school.pending_expires_at) - new Date()) / (1000 * 60 * 60)))
+    const hours = school.pendingExpiresAt
+      ? Math.max(0, Math.ceil((new Date(school.pendingExpiresAt) - new Date()) / (1000 * 60 * 60)))
       : null
     const expired = hours !== null && hours === 0
     return (
@@ -39,12 +39,12 @@ function PaymentBadge({ school }) {
     )
   }
   if (school.status === 'payment_due') {
-    const days = daysUntil(school.payment_due_at)
+    const days = daysUntil(school.paymentDueAt)
     const overdue = days !== null ? Math.abs(days) : '?'
     return <span className="text-xs text-red-400 font-medium">Overdue {overdue}d</span>
   }
-  if (school.status === 'active' && school.payment_due_at) {
-    const days = daysUntil(school.payment_due_at)
+  if (school.status === 'active' && school.paymentDueAt) {
+    const days = daysUntil(school.paymentDueAt)
     if (days === null) return null
     const color = days <= 7 ? 'text-orange-400' : 'text-gray-500'
     return <span className={`text-xs font-medium ${color}`}>{days}d left</span>
@@ -115,13 +115,13 @@ function SchoolRow({ school, onAction }) {
       <td className="px-6 py-4">
         <p className="font-semibold">{school.name}</p>
         <p className="text-xs text-gray-500 mt-0.5">{school.subdomain}.dataocelotschools.com</p>
-        {school.school_type && (
+        {school.schoolType && (
           <span className="inline-block mt-1 px-1.5 py-0.5 rounded text-xs bg-gray-800 text-gray-400 capitalize">
-            {school.school_type === 'combined' ? 'Primary + Secondary' : school.school_type}
+            {school.schoolType === 'combined' ? 'Primary + Secondary' : school.schoolType}
           </span>
         )}
       </td>
-      <td className="px-6 py-4 hidden sm:table-cell text-gray-400 text-sm">{school.admin_email}</td>
+      <td className="px-6 py-4 hidden sm:table-cell text-gray-400 text-sm">{school.adminEmail}</td>
       <td className="px-6 py-4 hidden md:table-cell text-gray-400">{school.studentCount}</td>
       <td className="px-6 py-4 hidden lg:table-cell">
         <div className="flex flex-col gap-1">
@@ -130,7 +130,7 @@ function SchoolRow({ school, onAction }) {
         </div>
       </td>
       <td className="px-6 py-4 hidden lg:table-cell text-gray-500 text-xs">
-        {new Date(school.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+        {new Date(school.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
       </td>
       <td className="px-6 py-4">
         <div className="flex items-center gap-3 justify-end">
@@ -281,7 +281,8 @@ export function SchoolsTable({ schools }) {
             No {tab.replace('_', ' ')} schools.
           </div>
         ) : (
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full text-sm min-w-125">
             <thead>
               <tr className="text-gray-400 border-b border-gray-800">
                 <th className="text-left px-6 py-4">School</th>
@@ -299,6 +300,7 @@ export function SchoolsTable({ schools }) {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
     </>

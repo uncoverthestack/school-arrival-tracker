@@ -1,38 +1,16 @@
 import { redirect } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
 import { getAdminSession } from '@/lib/session'
+import { countStudentsBySchool } from '@/lib/repo/students'
+import { countArrivalsToday, getArrivalsBySchoolAndDate } from '@/lib/repo/arrivals'
 import RefreshTicker from './RefreshTicker'
 
 async function getStats(schoolId) {
   const today = new Date().toISOString().split('T')[0]
-  const [{ count: totalStudents }, { data: todayArrivals }] = await Promise.all([
-    supabase.from('students').select('*', { count: 'exact', head: true }).eq('school_id', schoolId),
-    supabase.from('arrivals').select('student_id').eq('school_id', schoolId).eq('date', today).eq('type', 'arrival')
+  const [total, arrivedCount] = await Promise.all([
+    countStudentsBySchool(schoolId),
+    countArrivalsToday(schoolId, today),
   ])
-  const arrivedCount = todayArrivals?.length ?? 0
-  const total = totalStudents ?? 0
   return { totalStudents: total, arrivedToday: arrivedCount, notArrived: Math.max(0, total - arrivedCount) }
-}
-
-async function getRecentArrivals(schoolId) {
-  const today = new Date().toISOString().split('T')[0]
-  const { data } = await supabase
-    .from('arrivals')
-    .select('id, type, scanned_at, students(name, student_class, student_id, photo_url)')
-    .eq('school_id', schoolId)
-    .eq('date', today)
-    .order('scanned_at', { ascending: false })
-    .limit(20)
-
-  return (data ?? []).map(a => ({
-    id: a.id,
-    name: a.students?.name ?? '—',
-    cls: a.students?.student_class ?? '—',
-    studentId: a.students?.student_id ?? null,
-    photoUrl: a.students?.photo_url ?? null,
-    time: new Date(a.scanned_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Lagos' }),
-    type: a.type
-  }))
 }
 
 export default async function Dashboard() {
@@ -40,16 +18,17 @@ export default async function Dashboard() {
   if (!session.schoolId) redirect('/login')
 
   const today = new Date().toLocaleDateString('en-GB', {
-    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Africa/Lagos'
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Africa/Lagos',
   })
+  const todayDate = new Date().toISOString().split('T')[0]
 
   const [stats, arrivals] = await Promise.all([
     getStats(session.schoolId),
-    getRecentArrivals(session.schoolId)
+    getArrivalsBySchoolAndDate(session.schoolId, todayDate, { limit: 20 }),
   ])
 
   return (
-    <div className="theme-auto font-kiosk min-h-screen bg-surface text-on-surface p-8">
+    <div className="theme-auto font-kiosk min-h-screen bg-surface text-on-surface p-4 sm:p-8">
       <div className="max-w-6xl mx-auto">
 
         <div className="mb-8 flex items-start justify-between">
@@ -87,7 +66,8 @@ export default async function Dashboard() {
           {arrivals.length === 0 ? (
             <p className="text-body-medium tracking-[0.25px] text-on-surface-variant">No arrivals recorded today yet.</p>
           ) : (
-            <table className="w-full text-body-medium tracking-[0.25px]">
+            <div className="overflow-x-auto -mx-6 px-6">
+            <table className="w-full text-body-medium tracking-[0.25px] min-w-125">
               <thead>
                 <tr className="text-on-surface-variant border-b border-outline-variant">
                   <th className="text-left pb-3 w-12"></th>
@@ -113,7 +93,7 @@ export default async function Dashboard() {
                       <p className="text-label-large font-medium text-on-surface">{a.name}</p>
                       {a.studentId && <p className="text-body-small tracking-[0.4px] text-on-surface-variant">{a.studentId}</p>}
                     </td>
-                    <td className="py-3 text-on-surface-variant hidden md:table-cell">{a.cls}</td>
+                    <td className="py-3 text-on-surface-variant hidden md:table-cell">{a.studentClass}</td>
                     <td className="py-3 text-on-surface-variant hidden sm:table-cell">{a.time}</td>
                     <td className="py-3">
                       <span className={`px-2 py-1 rounded-full text-label-small font-bold tracking-[0.5px] ${
@@ -128,6 +108,7 @@ export default async function Dashboard() {
                 ))}
               </tbody>
             </table>
+            </div>
           )}
         </div>
 

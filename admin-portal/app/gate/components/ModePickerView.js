@@ -67,7 +67,7 @@ export function ModePickerView({ onCardScan, onCodeEntry, onFaceScan }) {
         </p>
       </div>
 
-      <div className="grid grid-cols-3 gap-4 w-full">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full">
         {OPTIONS.map(({ key, Icon, title, desc }) => (
           <button
             key={key}

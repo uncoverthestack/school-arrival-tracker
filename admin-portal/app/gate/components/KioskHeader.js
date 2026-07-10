@@ -1,6 +1,6 @@
 export function KioskHeader({ title, scanType, online, time }) {
   return (
-    <header className="flex items-center justify-between px-10 py-6 border-b border-outline-variant">
+    <header className="flex flex-wrap items-center justify-between gap-3 px-4 sm:px-10 py-4 sm:py-6 border-b border-outline-variant">
       <p className="text-title-large text-on-surface">{title}</p>
       <div className="flex items-center gap-4">
         <div

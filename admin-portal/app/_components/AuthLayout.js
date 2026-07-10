@@ -15,11 +15,8 @@ export function AuthLayout({ children }) {
 
         {/* Logo */}
         <div className="relative flex items-center gap-3">
-          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M12 2l8 3v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V5l8-3Z" fill="white"/>
-            <path d="M8.5 12.5l2.5 2.5 4.5-5" stroke="#124f8f" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-          <p className="text-title-large text-white">Attendance Tracker</p>
+          <img src="/logo.svg" alt="SchoolPass logo" width="40" height="40" className="drop-shadow-md" />
+          <p className="text-title-large text-white font-bold">SchoolPass</p>
         </div>
 
         {/* Tagline + features — always visible */}
@@ -46,7 +43,7 @@ export function AuthLayout({ children }) {
 
       {/* Form panel */}
       <div className="flex flex-1 items-center justify-center p-8 lg:p-16">
-        <div className="w-full max-w-[400px] flex flex-col gap-5">
+        <div className="w-full max-w-100 flex flex-col gap-5">
           {children}
         </div>
       </div>
