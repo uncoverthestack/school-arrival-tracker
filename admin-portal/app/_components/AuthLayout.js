@@ -11,12 +11,15 @@ export function AuthLayout({ children }) {
       {/* Brand panel — top on mobile, left on desktop */}
       <div className="relative flex flex-col justify-between h-[45vh] lg:h-auto w-full lg:w-150 lg:shrink-0 p-10 lg:p-16 overflow-hidden">
         <img src="/auth-hero.jpg" alt="" className="absolute inset-0 w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-b from-[rgba(18,79,143,0.55)] via-[55%] via-[rgba(15,69,125,0.8)] to-[rgba(10,51,102,0.97)]" />
+        <div className="absolute inset-0 bg-linear-to-b from-[rgba(18,79,143,0.55)] via-55% via-[rgba(15,69,125,0.8)] to-[rgba(10,51,102,0.97)]" />
 
         {/* Logo */}
         <div className="relative flex items-center gap-3">
-          <img src="/logo.svg" alt="SchoolPass logo" width="40" height="40" className="drop-shadow-md" />
-          <p className="text-title-large text-white font-bold">SchoolPass</p>
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 2l8 3v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V5l8-3Z" fill="white"/>
+            <path d="M8.5 12.5l2.5 2.5 4.5-5" stroke="#124f8f" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          <p className="text-title-large text-white">Attendance Tracker</p>
         </div>
 
         {/* Tagline + features — always visible */}

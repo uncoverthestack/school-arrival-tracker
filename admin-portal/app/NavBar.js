@@ -11,9 +11,7 @@ export default function NavBar({ schoolId, schoolName }) {
       <div className="px-4 sm:px-6 py-3 flex items-center gap-3">
         {/* Logo + brand name */}
         <Link href="/" className="flex items-center gap-2 shrink-0" onClick={() => setOpen(false)}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.svg" alt="SchoolPass logo" width={32} height={32} />
-          <span className="text-white font-bold text-sm tracking-wide hidden sm:inline">SchoolPass</span>
+          <span className="text-white font-bold text-sm tracking-wide">SchoolPass</span>
         </Link>
 
         {schoolId ? (
@@ -33,13 +31,13 @@ export default function NavBar({ schoolId, schoolName }) {
 
             {/* Right side — school name + logout (desktop) */}
             <div className="hidden md:flex ml-auto items-center gap-4">
-              <span className="text-sm text-gray-500 truncate max-w-[180px]">{schoolName}</span>
+              <span className="text-sm text-gray-500 truncate max-w-45">{schoolName}</span>
               <LogoutLink />
             </div>
 
             {/* Mobile: school name + hamburger */}
             <div className="ml-auto flex md:hidden items-center gap-3">
-              <span className="text-xs text-gray-500 truncate max-w-[100px]">{schoolName}</span>
+              <span className="text-xs text-gray-500 truncate max-w-25">{schoolName}</span>
               <button
                 onClick={() => setOpen(o => !o)}
                 aria-label="Toggle menu"
