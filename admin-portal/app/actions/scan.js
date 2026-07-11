@@ -80,19 +80,25 @@ export async function scanCard(cardId, type, schoolKey) {
     return { duplicate: true, student: studentInfo, time, message: `Already checked in at ${time}` }
   }
 
-  await supabase.from('arrivals').insert({
-    student_id: student.id,
-    school_id: school.id,
-    type,
-    date: today
-  })
+  const { data: arrival } = await supabase
+    .from('arrivals')
+    .insert({
+      student_id: student.id,
+      school_id: school.id,
+      type,
+      date: today
+    })
+    .select('id')
+    .single()
 
   const time = new Date().toLocaleTimeString('en-GB', {
     hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Lagos'
   })
 
   if (student.parent_phone) {
-    notifyParent(student.parent_phone, student.name, type, time).catch(console.error)
+    notifyParent(student.parent_phone, student.name, type, time)
+      .then(() => supabase.from('arrivals').update({ alerted_at: new Date().toISOString() }).eq('id', arrival.id))
+      .catch(console.error)
   }
 
   return {

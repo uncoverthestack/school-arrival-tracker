@@ -13,7 +13,7 @@ const inputClass =
 
 export default function SignupPage() {
   const router = useRouter()
-  const [form, setForm] = useState({ schoolName: '', subdomain: '', email: '', password: '', confirm: '' })
+  const [form, setForm] = useState({ schoolName: '', adminName: '', subdomain: '', email: '', password: '', confirm: '' })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -42,6 +42,7 @@ export default function SignupPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           schoolName: form.schoolName,
+          adminName: form.adminName,
           subdomain: form.subdomain,
           email: form.email,
           password: form.password
@@ -80,6 +81,18 @@ export default function SignupPage() {
             placeholder="e.g. Greenfield Academy"
             required
             autoFocus
+            className={inputClass}
+          />
+        </div>
+
+        <div>
+          <label className={labelClass}>Your name</label>
+          <input
+            type="text"
+            value={form.adminName}
+            onChange={set('adminName')}
+            placeholder="e.g. Ada Okeke"
+            required
             className={inputClass}
           />
         </div>

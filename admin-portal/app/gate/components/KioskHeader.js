@@ -1,7 +1,21 @@
+import Link from 'next/link'
+
 export function KioskHeader({ title, scanType, online, time }) {
   return (
     <header className="flex items-center justify-between px-10 py-6 border-b border-outline-variant">
-      <p className="text-title-large text-on-surface">{title}</p>
+      <div className="flex items-center gap-4">
+        <Link
+          href="/"
+          className="flex items-center gap-1.5 text-title-medium text-on-surface-variant hover:text-on-surface transition-colors"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          Dashboard
+        </Link>
+        <span className="text-outline-variant">|</span>
+        <p className="text-title-large text-on-surface">{title}</p>
+      </div>
       <div className="flex items-center gap-4">
         <div
           className={`inline-flex items-center gap-2 h-7 px-3 rounded-full ${

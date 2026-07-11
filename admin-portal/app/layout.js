@@ -1,7 +1,6 @@
-import Link from 'next/link'
 import './globals.css'
 import { getAdminSession } from '@/lib/session'
-import LogoutButton from './LogoutButton'
+import { SiteNav } from './_components/SiteNav'
 
 export const metadata = {
   title: 'School Arrival Tracker',
@@ -15,30 +14,7 @@ export default async function RootLayout({ children }) {
     <html lang="en" className="h-full antialiased">
       <body className="min-h-full flex flex-col bg-gray-950">
 
-        <nav className="bg-gray-900 border-b border-gray-800 px-6 py-3 flex items-center gap-6">
-          <span className="text-white font-bold text-sm tracking-wide">SchoolPass</span>
-          {session.schoolId ? (
-            <>
-              <Link href="/" className="text-sm text-gray-400 hover:text-white transition-colors">
-                Dashboard
-              </Link>
-              <Link href="/gate" className="text-sm text-gray-400 hover:text-white transition-colors">
-                Gate Scanner
-              </Link>
-              <Link href="/students" className="text-sm text-gray-400 hover:text-white transition-colors">
-                Students
-              </Link>
-              <div className="ml-auto flex items-center gap-4">
-                <span className="text-sm text-gray-500">{session.schoolName}</span>
-                <LogoutButton />
-              </div>
-            </>
-          ) : (
-            <Link href="/login" className="ml-auto text-sm text-gray-400 hover:text-white transition-colors">
-              Sign In
-            </Link>
-          )}
-        </nav>
+        <SiteNav schoolId={session.schoolId} schoolName={session.schoolName} />
 
         <main className="flex-1">{children}</main>
 

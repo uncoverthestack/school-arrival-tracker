@@ -25,9 +25,9 @@ export async function POST(request) {
     return Response.json({ error: 'Invalid request' }, { status: 400 })
   }
 
-  const { schoolName, subdomain, email, password } = body
+  const { schoolName, adminName, subdomain, email, password } = body
 
-  if (!schoolName || !subdomain || !email || !password) {
+  if (!schoolName || !adminName || !subdomain || !email || !password) {
     return Response.json({ error: 'All fields are required' }, { status: 400 })
   }
 
@@ -70,12 +70,13 @@ export async function POST(request) {
     .from('schools')
     .insert({
       name: String(schoolName).trim().slice(0, 100),
+      admin_name: String(adminName).trim().slice(0, 100),
       subdomain: cleanSubdomain,
       admin_email: cleanEmail,
       admin_password_hash: passwordHash,
       api_key: apiKey
     })
-    .select('id, name, api_key')
+    .select('id, name, admin_name, api_key')
     .single()
 
   if (error) {
@@ -86,6 +87,7 @@ export async function POST(request) {
   const session = await getAdminSession()
   session.schoolId = school.id
   session.schoolName = school.name
+  session.adminName = school.admin_name
   session.schoolKey = school.api_key
   await session.save()
 
