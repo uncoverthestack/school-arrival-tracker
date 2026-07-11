@@ -124,7 +124,14 @@ export default async function Dashboard() {
     <DashboardShell watchlistCount={data.needsAttention.length}>
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-headline-small text-on-surface">{getGreeting()}, {displayName}</p>
+            <div className="flex items-center gap-2 flex-wrap">
+              <p className="text-headline-small text-on-surface">{getGreeting()}, {displayName}</p>
+              {session.schoolType && (
+                <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary capitalize">
+                  {session.schoolType === 'combined' ? 'Primary + Secondary' : session.schoolType}
+                </span>
+              )}
+            </div>
             <p className="text-body-medium tracking-[0.25px] text-on-surface-variant mt-1">
               {session.schoolName} · {dateLabel}
             </p>

@@ -1,4 +1,16 @@
+import { timingSafeEqual } from 'crypto'
 import { getSuperSession } from '@/lib/superSession'
+
+function safeCompare(a, b) {
+  const bufA = Buffer.from(String(a))
+  const bufB = Buffer.from(String(b))
+  if (bufA.length !== bufB.length) {
+    // Still run a comparison to avoid leaking length via timing
+    timingSafeEqual(bufA, bufA)
+    return false
+  }
+  return timingSafeEqual(bufA, bufB)
+}
 
 export async function POST(request) {
   let body
@@ -15,11 +27,11 @@ export async function POST(request) {
     return Response.json({ error: 'Super admin not configured' }, { status: 500 })
   }
 
+  const emailMatch    = safeCompare(String(email).trim().toLowerCase(), adminEmail.toLowerCase())
+  const passwordMatch = safeCompare(String(password), adminPassword)
+
   // Use same error message for wrong email or password to prevent enumeration
-  if (
-    String(email).trim().toLowerCase() !== adminEmail.toLowerCase() ||
-    String(password) !== adminPassword
-  ) {
+  if (!emailMatch || !passwordMatch) {
     return Response.json({ error: 'Invalid credentials' }, { status: 401 })
   }
 

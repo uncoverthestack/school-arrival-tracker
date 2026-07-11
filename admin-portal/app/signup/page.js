@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { AuthLayout } from '../_components/AuthLayout'
 
@@ -11,11 +10,21 @@ const inputClass =
   'text-on-surface text-body-large tracking-[0.5px] outline-none ' +
   'focus:outline-2 focus:outline-primary focus:-outline-offset-1 focus:border-transparent'
 
+const SCHOOL_TYPES = [
+  { value: 'primary',   label: 'Primary School' },
+  { value: 'secondary', label: 'Secondary School' },
+  { value: 'combined',  label: 'Combined (Primary + Secondary)' },
+  { value: 'nursery',   label: 'Nursery / Kindergarten' },
+  { value: 'tertiary',  label: 'Tertiary / University' },
+]
+
 export default function SignupPage() {
-  const router = useRouter()
-  const [form, setForm] = useState({ schoolName: '', adminName: '', subdomain: '', email: '', password: '', confirm: '' })
+  const [form, setForm] = useState({
+    schoolName: '', adminName: '', subdomain: '', schoolType: 'primary', email: '', password: '', confirm: ''
+  })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [submitted, setSubmitted] = useState(false)
 
   function set(field) {
     return e => {
@@ -44,6 +53,7 @@ export default function SignupPage() {
           schoolName: form.schoolName,
           adminName: form.adminName,
           subdomain: form.subdomain,
+          schoolType: form.schoolType,
           email: form.email,
           password: form.password
         })
@@ -52,14 +62,48 @@ export default function SignupPage() {
 
       if (!res.ok) { setError(data.error ?? 'Something went wrong'); return }
 
-      // Redirect to dashboard after successful signup
-      router.push('/')
-      router.refresh()
+      setSubmitted(true)
     } catch {
       setError('Network error — please try again')
     } finally {
       setLoading(false)
     }
+  }
+
+  if (submitted) {
+    return (
+      <AuthLayout>
+        <div className="flex flex-col gap-4 text-center">
+          <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+              <path d="M12 2l8 3v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V5l8-3Z" fill="currentColor" className="text-primary" fillOpacity="0.3"/>
+              <path d="M8.5 12.5l2.5 2.5 4.5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary"/>
+            </svg>
+          </div>
+          <div>
+            <p className="text-headline-small text-on-surface font-bold">Registration received</p>
+            <p className="text-body-medium tracking-[0.25px] text-on-surface-variant mt-2">
+              Your account for <strong>{form.subdomain}.dataocelotschools.com</strong> is under review.
+              You will receive access once your payment is confirmed by our team.
+            </p>
+          </div>
+          <div className="bg-surface-container-lowest border border-outline-variant rounded-lg p-4 text-left">
+            <p className="text-body-small tracking-[0.4px] text-on-surface-variant">What happens next</p>
+            <ul className="mt-2 flex flex-col gap-2">
+              {['Our team reviews your registration', 'Payment is confirmed', 'Your portal goes live at your subdomain'].map((s, i) => (
+                <li key={i} className="flex items-start gap-2 text-body-medium tracking-[0.25px] text-on-surface">
+                  <span className="w-5 h-5 rounded-full bg-primary/10 text-primary text-xs flex items-center justify-center shrink-0 mt-0.5">{i + 1}</span>
+                  {s}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <Link href="/login" className="text-body-medium tracking-[0.25px] text-primary font-medium hover:opacity-80 transition-opacity">
+            Back to sign in
+          </Link>
+        </div>
+      </AuthLayout>
+    )
   }
 
   return (
@@ -98,13 +142,26 @@ export default function SignupPage() {
         </div>
 
         <div>
+          <label className={labelClass}>School type</label>
+          <select
+            value={form.schoolType}
+            onChange={set('schoolType')}
+            className={inputClass}
+          >
+            {SCHOOL_TYPES.map(t => (
+              <option key={t.value} value={t.value}>{t.label}</option>
+            ))}
+          </select>
+        </div>
+
+        <div>
           <label className={labelClass}>School URL</label>
           <div className="flex items-center h-12 px-4 rounded-sm bg-surface-container-lowest border border-outline-variant focus-within:outline-2 focus-within:outline-primary focus-within:-outline-offset-1 focus-within:border-transparent">
             <input
               type="text"
               value={form.subdomain}
               onChange={set('subdomain')}
-              placeholder="greenfield"
+              placeholder="greenfield-primary"
               required
               minLength={3}
               maxLength={32}

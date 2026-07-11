@@ -1,6 +1,5 @@
 import bcrypt from 'bcryptjs'
 import { supabase } from '@/lib/supabase'
-import { getAdminSession } from '@/lib/session'
 import { checkLimit, registerLimiter } from '@/lib/ratelimit'
 import { randomBytes } from 'crypto'
 
@@ -25,11 +24,14 @@ export async function POST(request) {
     return Response.json({ error: 'Invalid request' }, { status: 400 })
   }
 
-  const { schoolName, adminName, subdomain, email, password } = body
+  const { schoolName, adminName, subdomain, email, password, schoolType } = body
 
   if (!schoolName || !adminName || !subdomain || !email || !password) {
     return Response.json({ error: 'All fields are required' }, { status: 400 })
   }
+
+  const validTypes = ['primary', 'secondary', 'combined', 'nursery', 'tertiary']
+  const cleanType = validTypes.includes(schoolType) ? schoolType : 'primary'
 
   const cleanSubdomain = String(subdomain).toLowerCase().trim()
   if (!isValidSubdomain(cleanSubdomain)) {
@@ -48,15 +50,33 @@ export async function POST(request) {
     return Response.json({ error: 'Password must be at least 8 characters' }, { status: 400 })
   }
 
-  // Check subdomain and email availability in parallel
+  const now = new Date().toISOString()
+
+  // Subdomain is considered taken only if held by a non-pending school,
+  // OR by a pending school whose 48-hour reservation has not yet expired.
   const [{ data: existingSubdomain }, { data: existingEmail }] = await Promise.all([
-    supabase.from('schools').select('id').eq('subdomain', cleanSubdomain).maybeSingle(),
+    supabase
+      .from('schools')
+      .select('id, status, pending_expires_at')
+      .eq('subdomain', cleanSubdomain)
+      .or(`status.neq.pending,pending_expires_at.gt.${now}`)
+      .maybeSingle(),
     supabase.from('schools').select('id').eq('admin_email', cleanEmail).maybeSingle()
   ])
 
   if (existingSubdomain) {
-    return Response.json({ error: 'That subdomain is already taken' }, { status: 409 })
+    const isExpiredPending =
+      existingSubdomain.status === 'pending' &&
+      existingSubdomain.pending_expires_at &&
+      new Date(existingSubdomain.pending_expires_at) < new Date()
+
+    if (!isExpiredPending) {
+      return Response.json({ error: 'That subdomain is already taken' }, { status: 409 })
+    }
+    // Expired pending — clean it up so the new registration can proceed
+    await supabase.from('schools').delete().eq('id', existingSubdomain.id)
   }
+
   if (existingEmail) {
     return Response.json({ error: 'An account with that email already exists' }, { status: 409 })
   }
@@ -74,7 +94,10 @@ export async function POST(request) {
       subdomain: cleanSubdomain,
       admin_email: cleanEmail,
       admin_password_hash: passwordHash,
-      api_key: apiKey
+      api_key: apiKey,
+      status: 'pending',
+      school_type: cleanType,
+      pending_expires_at: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString()
     })
     .select('id, name, admin_name, api_key')
     .single()
@@ -83,13 +106,12 @@ export async function POST(request) {
     return Response.json({ error: 'Could not create account. Try again.' }, { status: 500 })
   }
 
-  // Log the school admin in immediately
-  const session = await getAdminSession()
-  session.schoolId = school.id
-  session.schoolName = school.name
-  session.adminName = school.admin_name
-  session.schoolKey = school.api_key
-  await session.save()
-
-  return Response.json({ success: true, subdomain: cleanSubdomain, school: school.name }, { status: 201 })
+  // Do not create a session — school is pending approval and has no portal access yet
+  return Response.json({
+    success: true,
+    pending: true,
+    subdomain: cleanSubdomain,
+    school: school.name,
+    message: 'Registration received. You will get access once your payment is confirmed by our team.'
+  }, { status: 201 })
 }

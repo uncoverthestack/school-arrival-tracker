@@ -45,16 +45,54 @@ export async function PATCH(request) {
     return Response.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
-  const { action } = body // 'suspend' | 'restore' | 'archive'
-  const validActions = ['suspend', 'restore', 'archive']
+  const { action, paymentDays } = body // 'approve' | 'reject' | 'suspend' | 'restore' | 'archive'
+  const validActions = ['approve', 'reject', 'suspend', 'restore', 'archive']
   if (!validActions.includes(action)) {
-    return Response.json({ error: 'action must be suspend, restore, or archive' }, { status: 400 })
+    return Response.json({ error: 'action must be approve, reject, suspend, restore, or archive' }, { status: 400 })
+  }
+
+  // Reject — only valid for pending schools; deletes the record and frees the subdomain
+  if (action === 'reject') {
+    const { data: school } = await supabase
+      .from('schools').select('status').eq('id', schoolId).maybeSingle()
+    if (!school) return Response.json({ error: 'School not found' }, { status: 404 })
+    if (school.status !== 'pending') {
+      return Response.json({ error: 'Only pending schools can be rejected' }, { status: 400 })
+    }
+    await supabase.from('schools').delete().eq('id', schoolId)
+    return Response.json({ success: true, action: 'reject' })
+  }
+
+  const now = new Date()
+  const daysUntilDue = Number(paymentDays) > 0 ? Number(paymentDays) : 30
+  const paymentDueAt = new Date(now.getTime() + daysUntilDue * 24 * 60 * 60 * 1000).toISOString()
+
+  // On approve, verify no other active school has claimed this subdomain in the meantime
+  if (action === 'approve') {
+    const { data: schoolToApprove } = await supabase
+      .from('schools').select('subdomain').eq('id', schoolId).maybeSingle()
+    if (schoolToApprove) {
+      const { data: conflict } = await supabase
+        .from('schools')
+        .select('id')
+        .eq('subdomain', schoolToApprove.subdomain)
+        .eq('status', 'active')
+        .neq('id', schoolId)
+        .maybeSingle()
+      if (conflict) {
+        return Response.json(
+          { error: 'Another active school already holds this subdomain. Reject or reassign it first.' },
+          { status: 409 }
+        )
+      }
+    }
   }
 
   const updates =
+    action === 'approve'  ? { status: 'active',    archived_at: null, payment_approved_at: now.toISOString(), payment_due_at: paymentDueAt, pending_expires_at: null } :
     action === 'suspend'  ? { status: 'suspended', archived_at: null } :
     action === 'restore'  ? { status: 'active',    archived_at: null } :
-    /* archive */           { status: 'archived',   archived_at: new Date().toISOString() }
+    /* archive */           { status: 'archived',   archived_at: now.toISOString() }
 
   const { error } = await supabase
     .from('schools')
