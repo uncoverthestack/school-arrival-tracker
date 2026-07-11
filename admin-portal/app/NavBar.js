@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 
 export default function NavBar({ schoolId, schoolName }) {
   const [open, setOpen] = useState(false)
@@ -12,7 +11,8 @@ export default function NavBar({ schoolId, schoolName }) {
       <div className="px-4 sm:px-6 py-3 flex items-center gap-3">
         {/* Logo + brand name */}
         <Link href="/" className="flex items-center gap-2 shrink-0" onClick={() => setOpen(false)}>
-          <Image src="/logo.svg" alt="SchoolPass logo" width={32} height={32} priority />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.svg" alt="SchoolPass logo" width={32} height={32} />
           <span className="text-white font-bold text-sm tracking-wide hidden sm:inline">SchoolPass</span>
         </Link>
 
