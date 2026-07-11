@@ -1,5 +1,7 @@
+import { after } from 'next/server'
 import { supabase } from '@/lib/supabase'
 import { getSuperSession } from '@/lib/superSession'
+import { sendPaymentConfirmedEmail } from '@/lib/email'
 
 async function authorize() {
   const session = await getSuperSession()
@@ -68,9 +70,11 @@ export async function PATCH(request) {
   const paymentDueAt = new Date(now.getTime() + daysUntilDue * 24 * 60 * 60 * 1000).toISOString()
 
   // On approve, verify no other active school has claimed this subdomain in the meantime
+  let schoolToApprove = null
   if (action === 'approve') {
-    const { data: schoolToApprove } = await supabase
-      .from('schools').select('subdomain').eq('id', schoolId).maybeSingle()
+    const { data } = await supabase
+      .from('schools').select('subdomain, name, admin_email, status').eq('id', schoolId).maybeSingle()
+    schoolToApprove = data
     if (schoolToApprove) {
       const { data: conflict } = await supabase
         .from('schools')
@@ -89,7 +93,7 @@ export async function PATCH(request) {
   }
 
   const updates =
-    action === 'approve'  ? { status: 'active',    archived_at: null, payment_approved_at: now.toISOString(), payment_due_at: paymentDueAt, pending_expires_at: null } :
+    action === 'approve'  ? { status: 'active',    archived_at: null, payment_approved_at: now.toISOString(), payment_due_at: paymentDueAt, pending_expires_at: null, payment_reminder_sent_at: null } :
     action === 'suspend'  ? { status: 'suspended', archived_at: null } :
     action === 'restore'  ? { status: 'active',    archived_at: null } :
     /* archive */           { status: 'archived',   archived_at: now.toISOString() }
@@ -100,6 +104,15 @@ export async function PATCH(request) {
     .eq('id', schoolId)
 
   if (error) return Response.json({ error: error.message }, { status: 500 })
+
+  if (action === 'approve' && schoolToApprove) {
+    after(() => sendPaymentConfirmedEmail({
+      toEmail: schoolToApprove.admin_email,
+      schoolName: schoolToApprove.name,
+      subdomain: schoolToApprove.subdomain,
+      isRenewal: schoolToApprove.status === 'payment_due',
+    }))
+  }
 
   return Response.json({ success: true, action })
 }
