@@ -1,7 +1,9 @@
 import bcrypt from 'bcryptjs'
+import { after } from 'next/server'
 import { supabase } from '@/lib/supabase'
 import { checkLimit, registerLimiter } from '@/lib/ratelimit'
 import { randomBytes } from 'crypto'
+import { sendSignupConfirmationEmail } from '@/lib/email'
 
 function generateApiKey() {
   return randomBytes(24).toString('hex')
@@ -105,6 +107,8 @@ export async function POST(request) {
   if (error) {
     return Response.json({ error: 'Could not create account. Try again.' }, { status: 500 })
   }
+
+  after(() => sendSignupConfirmationEmail({ toEmail: cleanEmail, schoolName: school.name, subdomain: cleanSubdomain }))
 
   // Do not create a session — school is pending approval and has no portal access yet
   return Response.json({
