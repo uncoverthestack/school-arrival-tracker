@@ -33,6 +33,14 @@ export const students = pgTable('students', {
   createdAt:      timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 })
 
+export const classes = pgTable('classes', {
+  id:        uuid('id').defaultRandom().primaryKey(),
+  schoolId:  uuid('school_id').references(() => schools.id).notNull(),
+  level:     text('level').notNull(),  // e.g. 'JSS1', 'JSS2', 'SS1'
+  arm:       text('arm').notNull(),    // e.g. 'A', 'B', 'C', 'D'...
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+})
+
 export const arrivals = pgTable('arrivals', {
   id:        uuid('id').defaultRandom().primaryKey(),
   studentId: uuid('student_id').references(() => students.id),

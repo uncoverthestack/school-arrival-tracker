@@ -123,9 +123,11 @@
    dashboard): add className="theme-auto" to follow the OS preference via
    pure CSS instead. Keep this block's values in sync with [data-theme="dark"]
    above — same palette, just triggered by prefers-color-scheme instead of a
-   JS-set attribute. */
+   JS-set attribute. Scoped to html:not([data-theme]) so an explicit choice
+   made in Settings (which sets data-theme on <html>) always wins over the
+   OS preference. */
 @media (prefers-color-scheme: dark) {
-  .theme-auto {
+  html:not([data-theme]) .theme-auto {
     --c-primary: #b2cae1;
     --c-on-primary: #0c3053;
     --c-primary-container: #0c3053;

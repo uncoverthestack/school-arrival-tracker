@@ -82,7 +82,8 @@ function ResultScreen({ result }) {
 export function GateScanner({ schoolKey }) {
   const {
     view, scanType, confirmTarget, result, arrivals, scanning, clock, online,
-    enterPickView, enterCodeView, enterFaceView, backToScanner, submitCode, confirmCheckIn, cancelConfirm, directScan
+    enterPickView, enterCodeView, enterFaceView, backToScanner, submitCode, confirmCheckIn, cancelConfirm, directScan,
+    toggleScanType
   } = useScanFlow(schoolKey)
 
   // Follow the OS light/dark preference. Scoped to this wrapper's
@@ -99,7 +100,7 @@ export function GateScanner({ schoolKey }) {
 
   return (
     <div data-theme={theme} className="font-kiosk min-h-screen flex flex-col bg-surface text-on-surface">
-      <KioskHeader title="Gate Scanner" scanType={scanType} online={online} time={clock} />
+      <KioskHeader title="Gate Scanner" scanType={scanType} online={online} time={clock} onToggleScanType={toggleScanType} />
 
       <main className="flex-1 flex items-center justify-center px-4 py-10">
         {!online ? (

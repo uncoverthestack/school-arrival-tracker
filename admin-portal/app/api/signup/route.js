@@ -1,6 +1,5 @@
 import bcrypt from 'bcryptjs'
-<<<<<<< HEAD
-import { getAdminSession } from '@/lib/session'
+import { after } from 'next/server'
 import { checkLimit, registerLimiter } from '@/lib/ratelimit'
 import { randomBytes } from 'crypto'
 import {
@@ -9,13 +8,7 @@ import {
   deleteExpiredPendingBySubdomain,
   createSchool,
 } from '@/lib/repo/schools'
-=======
-import { after } from 'next/server'
-import { supabase } from '@/lib/supabase'
-import { checkLimit, registerLimiter } from '@/lib/ratelimit'
-import { randomBytes } from 'crypto'
 import { sendSignupConfirmationEmail } from '@/lib/email'
->>>>>>> frontend/ui-changes
 
 function generateApiKey() {
   return randomBytes(24).toString('hex')
@@ -97,23 +90,13 @@ export async function POST(request) {
       schoolType: cleanType,
       pendingExpiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000),
     })
-<<<<<<< HEAD
   } catch {
     return Response.json({ error: 'Could not create account. Try again.' }, { status: 500 })
   }
 
-=======
-    .select('id, name, admin_name, api_key')
-    .single()
-
-  if (error) {
-    return Response.json({ error: 'Could not create account. Try again.' }, { status: 500 })
-  }
-
-  after(() => sendSignupConfirmationEmail({ toEmail: cleanEmail, schoolName: school.name, subdomain: cleanSubdomain }))
+  after(() => sendSignupConfirmationEmail({ toEmail: cleanEmail, schoolName: school.name }))
 
   // Do not create a session — school is pending approval and has no portal access yet
->>>>>>> frontend/ui-changes
   return Response.json({
     success: true,
     pending: true,

@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+import { after } from 'next/server'
 import { getSuperSession } from '@/lib/superSession'
 import {
   getAllSchools,
@@ -11,12 +11,7 @@ import {
 import { getStudentIdsBySchool, deleteStudentsBySchool } from '@/lib/repo/students'
 import { deleteVerificationsByStudentIds } from '@/lib/repo/verifications'
 import { deleteArrivalsBySchool } from '@/lib/repo/arrivals'
-=======
-import { after } from 'next/server'
-import { supabase } from '@/lib/supabase'
-import { getSuperSession } from '@/lib/superSession'
 import { sendPaymentConfirmedEmail } from '@/lib/email'
->>>>>>> frontend/ui-changes
 
 async function authorize() {
   const session = await getSuperSession()
@@ -66,17 +61,10 @@ export async function PATCH(request) {
   const daysUntilDue = Number(paymentDays) > 0 ? Number(paymentDays) : 30
   const paymentDueAt = new Date(now.getTime() + daysUntilDue * 24 * 60 * 60 * 1000)
 
-<<<<<<< HEAD
-  if (action === 'approve') {
-    const schoolToApprove = await getSchoolById(schoolId)
-=======
   // On approve, verify no other active school has claimed this subdomain in the meantime
   let schoolToApprove = null
   if (action === 'approve') {
-    const { data } = await supabase
-      .from('schools').select('subdomain, name, admin_email, status').eq('id', schoolId).maybeSingle()
-    schoolToApprove = data
->>>>>>> frontend/ui-changes
+    schoolToApprove = await getSchoolById(schoolId)
     if (schoolToApprove) {
       const conflict = await hasActiveSubdomainConflict(schoolToApprove.subdomain, schoolId)
       if (conflict) {
@@ -89,24 +77,17 @@ export async function PATCH(request) {
   }
 
   const updates =
-<<<<<<< HEAD
     action === 'approve' ? { status: 'active',    archivedAt: null, paymentApprovedAt: now, paymentDueAt, pendingExpiresAt: null } :
     action === 'suspend' ? { status: 'suspended', archivedAt: null } :
     action === 'restore' ? { status: 'active',    archivedAt: null } :
     /* archive */          { status: 'archived',   archivedAt: now }
-=======
-    action === 'approve'  ? { status: 'active',    archived_at: null, payment_approved_at: now.toISOString(), payment_due_at: paymentDueAt, pending_expires_at: null, payment_reminder_sent_at: null } :
-    action === 'suspend'  ? { status: 'suspended', archived_at: null } :
-    action === 'restore'  ? { status: 'active',    archived_at: null } :
-    /* archive */           { status: 'archived',   archived_at: now.toISOString() }
->>>>>>> frontend/ui-changes
 
   const updated = await updateSchool(schoolId, updates)
   if (!updated) return Response.json({ error: 'School not found' }, { status: 404 })
 
   if (action === 'approve' && schoolToApprove) {
     after(() => sendPaymentConfirmedEmail({
-      toEmail: schoolToApprove.admin_email,
+      toEmail: schoolToApprove.adminEmail,
       schoolName: schoolToApprove.name,
       subdomain: schoolToApprove.subdomain,
       isRenewal: schoolToApprove.status === 'payment_due',

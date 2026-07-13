@@ -43,14 +43,12 @@ function layout(title, bodyHtml) {
   `
 }
 
-export async function sendSignupConfirmationEmail({ toEmail, schoolName, subdomain }) {
+export async function sendSignupConfirmationEmail({ toEmail, schoolName }) {
   const subject = 'SchoolPass — Registration received'
-  const text = `Thanks for registering ${schoolName} with SchoolPass. Your account (${subdomain}.dataocelotschools.com) is pending review and will be activated once your payment is confirmed by our team.`
+  const text = `Thanks for registering ${schoolName} with SchoolPass. Your account is pending review and will be activated once your payment is confirmed by our team. We'll email you your portal address as soon as it's ready.`
   const html = layout('Registration received', `
     <p>Thanks for registering <strong>${schoolName}</strong> with SchoolPass.</p>
-    <p>Your portal address will be:</p>
-    <p style="font-family:monospace;background:#f4f4f5;padding:8px 12px;border-radius:6px">${subdomain}.dataocelotschools.com</p>
-    <p>Your account is pending review and will be activated once your payment is confirmed by our team. We'll email you as soon as it's ready.</p>
+    <p>Your account is pending review and will be activated once your payment is confirmed by our team. We'll email you your portal address as soon as it's ready.</p>
   `)
   await sendEmail({ to: toEmail, subject, html, text })
 }

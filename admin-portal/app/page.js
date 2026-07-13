@@ -1,26 +1,11 @@
 import { redirect } from 'next/navigation'
 import { getAdminSession } from '@/lib/session'
-<<<<<<< HEAD
-import { countStudentsBySchool } from '@/lib/repo/students'
-import { countArrivalsToday, getArrivalsBySchoolAndDate } from '@/lib/repo/arrivals'
-=======
 import { isValidPhone } from '@/lib/validation'
->>>>>>> frontend/ui-changes
+import { supabase } from '@/lib/supabase'
 import RefreshTicker from './RefreshTicker'
 import { DashboardShell } from './_components/DashboardShell'
 import { ArrivalFlowChart } from './_components/ArrivalFlowChart'
 
-<<<<<<< HEAD
-async function getStats(schoolId) {
-  const today = new Date().toISOString().split('T')[0]
-  const [total, arrivedCount] = await Promise.all([
-    countStudentsBySchool(schoolId),
-    countArrivalsToday(schoolId, today),
-  ])
-  return { totalStudents: total, arrivedToday: arrivedCount, notArrived: Math.max(0, total - arrivedCount) }
-}
-
-=======
 // Before this time (Africa/Lagos) nobody is "unaccounted" yet — they just
 // haven't arrived. Matches the ARRIVAL_CUTOFF_HOUR-style pattern used for
 // the gate scanner's arrival/departure split.
@@ -92,13 +77,16 @@ async function getDashboardData(schoolId) {
   const allStudents = students ?? []
   const todaysArrivals = arrivals ?? []
   const arrivalRows = todaysArrivals.filter(a => a.type === 'arrival')
+  const departureRows = todaysArrivals.filter(a => a.type === 'departure')
 
   const totalStudents = allStudents.length
   const arrivedToday = arrivalRows.length
+  const departedToday = departureRows.length
   const alertsSentToday = todaysArrivals.filter(a => a.alerted_at).length
   const pastCutoff = isPastCutoff()
   const unaccounted = pastCutoff ? Math.max(0, totalStudents - arrivedToday) : 0
   const percentArrived = totalStudents > 0 ? Math.round((arrivedToday / totalStudents) * 100) : 0
+  const percentDeparted = totalStudents > 0 ? Math.round((departedToday / totalStudents) * 100) : 0
 
   const arrivedStudentIds = new Set(arrivalRows.map(a => a.student_id))
 
@@ -119,45 +107,25 @@ async function getDashboardData(schoolId) {
   const arrivalFlow = buildArrivalFlow(arrivalRows.map(a => a.scanned_at))
 
   return {
-    totalStudents, arrivedToday, unaccounted, alertsSentToday, percentArrived,
+    totalStudents, arrivedToday, departedToday, unaccounted, alertsSentToday, percentArrived, percentDeparted,
     needsAttention, arrivalFlow
   }
 }
 
->>>>>>> frontend/ui-changes
 export default async function Dashboard() {
   const session = await getAdminSession()
   if (!session.schoolId) redirect('/login')
 
-<<<<<<< HEAD
-  const today = new Date().toLocaleDateString('en-GB', {
-    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Africa/Lagos',
-=======
   const dateLabel = new Date().toLocaleDateString('en-GB', {
     weekday: 'short', day: 'numeric', month: 'long', timeZone: 'Africa/Lagos'
->>>>>>> frontend/ui-changes
   })
-  const todayDate = new Date().toISOString().split('T')[0]
 
-<<<<<<< HEAD
-  const [stats, arrivals] = await Promise.all([
-    getStats(session.schoolId),
-    getArrivalsBySchoolAndDate(session.schoolId, todayDate, { limit: 20 }),
-  ])
-
-  return (
-    <div className="theme-auto font-kiosk min-h-screen bg-surface text-on-surface p-4 sm:p-8">
-      <div className="max-w-6xl mx-auto">
-
-        <div className="mb-8 flex items-start justify-between">
-=======
   const data = await getDashboardData(session.schoolId)
   const displayName = session.adminName || session.schoolName
 
   return (
     <DashboardShell watchlistCount={data.needsAttention.length}>
         <div className="flex items-center justify-between">
->>>>>>> frontend/ui-changes
           <div>
             <div className="flex items-center gap-2 flex-wrap">
               <p className="text-headline-small text-on-surface">{getGreeting()}, {displayName}</p>
@@ -181,11 +149,16 @@ export default async function Dashboard() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
           <MetricCard
             label="Checked in" value={data.arrivedToday} sublabel={`${data.percentArrived}% of expected`}
             bg="bg-success-container" text="text-on-success-container" iconBg="bg-success" iconText="text-on-success"
             icon={<path d="M4 12l5 5L20 6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />}
+          />
+          <MetricCard
+            label="Checked out" value={data.departedToday} sublabel={`${data.percentDeparted}% of expected`}
+            bg="bg-secondary-container" text="text-on-secondary-container" iconBg="bg-secondary" iconText="text-on-secondary"
+            icon={<path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4M10 16l4-4-4-4M14 12H3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />}
           />
           <MetricCard
             label="Expected" value={data.totalStudents} sublabel="enrolled today"
@@ -224,50 +197,6 @@ export default async function Dashboard() {
               Nothing to flag right now.
             </p>
           ) : (
-<<<<<<< HEAD
-            <div className="overflow-x-auto -mx-6 px-6">
-            <table className="w-full text-body-medium tracking-[0.25px] min-w-125">
-              <thead>
-                <tr className="text-on-surface-variant border-b border-outline-variant">
-                  <th className="text-left pb-3 w-12"></th>
-                  <th className="text-left pb-3">Student</th>
-                  <th className="text-left pb-3 hidden md:table-cell">Class</th>
-                  <th className="text-left pb-3 hidden sm:table-cell">Time</th>
-                  <th className="text-left pb-3">Event</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-outline-variant">
-                {arrivals.map(a => (
-                  <tr key={a.id}>
-                    <td className="py-3 pr-3">
-                      {a.photoUrl ? (
-                        <img src={a.photoUrl} alt={a.name} className="w-10 h-10 rounded-full object-cover" />
-                      ) : (
-                        <div className="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-base font-bold text-on-surface shrink-0">
-                          {a.name?.[0] ?? '?'}
-                        </div>
-                      )}
-                    </td>
-                    <td className="py-3">
-                      <p className="text-label-large font-medium text-on-surface">{a.name}</p>
-                      {a.studentId && <p className="text-body-small tracking-[0.4px] text-on-surface-variant">{a.studentId}</p>}
-                    </td>
-                    <td className="py-3 text-on-surface-variant hidden md:table-cell">{a.studentClass}</td>
-                    <td className="py-3 text-on-surface-variant hidden sm:table-cell">{a.time}</td>
-                    <td className="py-3">
-                      <span className={`px-2 py-1 rounded-full text-label-small font-bold tracking-[0.5px] ${
-                        a.type === 'arrival'
-                          ? 'bg-success-container text-on-success-container'
-                          : 'bg-tertiary-container text-on-tertiary-container'
-                      }`}>
-                        {a.type === 'arrival' ? 'Arrived' : 'Departed'}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-=======
             <div className="flex flex-col">
               {data.needsAttention.slice(0, ATTENTION_PREVIEW_LIMIT).map(({ student, reason }, i, arr) => (
                 <div
@@ -295,7 +224,6 @@ export default async function Dashboard() {
                   )}
                 </div>
               ))}
->>>>>>> frontend/ui-changes
             </div>
           )}
         </div>
