@@ -53,15 +53,6 @@ function MessagesIcon() {
   )
 }
 
-function SettingsIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-      <circle cx="10" cy="10" r="2.5" stroke="currentColor" strokeWidth="1.5" />
-      <path d="M10 2.5v2M10 15.5v2M17.5 10h-2M4.5 10h-2M15.4 4.6l-1.4 1.4M6 12.6l-1.4 1.4M15.4 15.4l-1.4-1.4M6 7.4 4.6 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-  )
-}
-
 function LogoutIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
@@ -81,7 +72,7 @@ export function Sidebar({ watchlistCount = 0 }) {
   }
 
   return (
-    <div className="bg-surface-container-lowest border-r border-outline-variant flex flex-col justify-between p-4 py-8 shrink-0 w-[252px] self-stretch">
+    <div className="bg-surface-container-lowest border-r border-outline-variant flex flex-col p-4 py-8 shrink-0 w-[252px] self-stretch">
       <div className="flex flex-col gap-1 w-full">
         <div className="flex items-center gap-2.5 pb-6 pt-1 px-1">
           <div className="bg-primary flex items-center justify-center rounded-sm size-8 shrink-0">
@@ -123,14 +114,6 @@ export function Sidebar({ watchlistCount = 0 }) {
         <div className={itemClass}>
           <MessagesIcon />
           <span className="flex-1">Messages</span>
-        </div>
-      </div>
-
-      <div className="flex flex-col gap-1 w-full">
-        {/* Not built yet — visual only, matching the Figma sidebar. */}
-        <div className={itemClass}>
-          <SettingsIcon />
-          <span className="flex-1">Settings</span>
         </div>
 
         <button onClick={handleLogout} className={`${itemClass} cursor-pointer`}>
