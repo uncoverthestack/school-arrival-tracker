@@ -21,7 +21,7 @@ export default function RefreshTicker({ intervalMs = 10_000 }) {
   }, [refresh, intervalMs])
 
   return (
-    <div className="flex items-center gap-2 text-body-small tracking-[0.4px] text-on-surface-variant">
+    <div className="flex items-center gap-2 bg-success-container text-on-success-container text-label-large tracking-[0.1px] rounded-full px-3 py-2">
       <span className="w-2 h-2 rounded-full bg-success animate-pulse inline-block" />
       Live {lastUpdated && `· updated ${lastUpdated}`}
     </div>

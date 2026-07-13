@@ -27,7 +27,12 @@ function currentLagosClock() {
 // and the code-entry confirm step. QR scans call scanCard directly (no
 // confirm); manual codes go through lookupStudent -> confirm -> scanCard.
 export function useScanFlow(schoolKey) {
+<<<<<<< HEAD
   const [view, setView] = useState('pick') // 'pick' | 'scan' | 'code' | 'face' | 'confirm' | 'result'
+=======
+  // Code entry is the default screen; the camera scanner is the fallback.
+  const [view, setView] = useState('code') // 'scan' | 'code' | 'confirm' | 'result'
+>>>>>>> frontend/ui-changes
   const [scanType, setScanType] = useState(deriveScanType)
   const [confirmTarget, setConfirmTarget] = useState(null) // { student, code }
   const [result, setResult] = useState(null)
@@ -40,7 +45,7 @@ export function useScanFlow(schoolKey) {
   const lastScannedRef = useRef(null)
   const resultTimerRef = useRef(null)
   const qrScannerRef = useRef(null)
-  const priorViewRef = useRef('scan')
+  const priorViewRef = useRef('code')
 
   useEffect(() => { scanTypeRef.current = scanType }, [scanType])
 

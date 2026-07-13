@@ -60,14 +60,34 @@ export async function POST(request) {
     })
   }
 
+<<<<<<< HEAD
   await createArrival({ studentId: student.id, schoolId: school.id, type, date: today })
+=======
+  const { data: arrival } = await supabase
+    .from('arrivals')
+    .insert({
+      student_id: student.id,
+      school_id: school.id,
+      type,
+      date: today
+    })
+    .select('id')
+    .single()
+>>>>>>> frontend/ui-changes
 
   const time = new Date().toLocaleTimeString('en-GB', {
     hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Lagos',
   })
 
+<<<<<<< HEAD
   if (student.parentPhone) {
     notifyParent(student.parentPhone, student.name, type, time).catch(console.error)
+=======
+  if (student.parent_phone) {
+    notifyParent(student.parent_phone, student.name, type, time)
+      .then(() => supabase.from('arrivals').update({ alerted_at: new Date().toISOString() }).eq('id', arrival.id))
+      .catch(console.error)
+>>>>>>> frontend/ui-changes
   }
 
   return Response.json({

@@ -29,7 +29,15 @@ export async function POST(request) {
     return Response.json({ error: 'Could not identify school. Access via your school URL.' }, { status: 400 })
   }
 
+<<<<<<< HEAD
   const school = await getSchoolByApiKeyFull(resolvedKey)
+=======
+  const { data: school } = await supabase
+    .from('schools')
+    .select('id, name, admin_name, api_key, admin_email, admin_password_hash, status, school_type')
+    .eq('api_key', resolvedKey)
+    .single()
+>>>>>>> frontend/ui-changes
 
   if (!school || school.adminEmail !== email.trim().toLowerCase()) {
     return Response.json({ error: 'Invalid email or password' }, { status: 401 })
@@ -68,8 +76,14 @@ export async function POST(request) {
   const session = await getAdminSession()
   session.schoolId = school.id
   session.schoolName = school.name
+<<<<<<< HEAD
   session.schoolKey = school.apiKey
   session.schoolType = school.schoolType ?? 'primary'
+=======
+  session.adminName = school.admin_name
+  session.schoolKey = school.api_key
+  session.schoolType = school.school_type ?? 'primary'
+>>>>>>> frontend/ui-changes
   await session.save()
 
   return Response.json({ success: true, school: school.name })
