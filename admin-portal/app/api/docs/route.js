@@ -23,6 +23,7 @@ Your school API key is shown in the dashboard after login.
 | \`/api/scan\` | 60 req / min |
 | \`/api/auth/login\` | 10 req / 15 min |
 | \`/api/signup\`, \`/api/register\` | 5 req / min |
+| \`/api/demo-requests\` | 3 req / 15 min |
 
 ## Base URL
 
@@ -37,9 +38,11 @@ Production: \`https://{subdomain}.dataocelotschools.com\`
     { name: 'School Signup', description: 'Register a new school on the platform' },
     { name: 'Authentication', description: 'School admin login / logout' },
     { name: 'Students', description: 'Student management — requires API key or admin session' },
+    { name: 'Classes', description: 'Class levels & arms (e.g. JSS1A, JSS1B) — requires admin session' },
     { name: 'Arrivals & Scanning', description: 'Gate scan and arrival log — requires API key' },
     { name: 'Stats', description: 'Attendance summary — requires API key' },
     { name: 'Parent Registration', description: 'Parent phone OTP verification flow' },
+    { name: 'Demo Requests', description: 'Public "Request a Demo" form on the landing page' },
     { name: 'Super Admin', description: 'Platform-level school management — requires super admin session' }
   ],
   components: {
@@ -107,6 +110,30 @@ Production: \`https://{subdomain}.dataocelotschools.com\`
           pending_expires_at: { type: 'string', format: 'date-time', nullable: true },
           archived_at: { type: 'string', format: 'date-time', nullable: true },
           created_at: { type: 'string', format: 'date-time' }
+        }
+      },
+      Class: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', format: 'uuid' },
+          schoolId: { type: 'string', format: 'uuid' },
+          level: { type: 'string', example: 'JSS1', description: 'Class level' },
+          arm: { type: 'string', example: 'A', description: 'Arm/section within the level' },
+          createdAt: { type: 'string', format: 'date-time' }
+        }
+      },
+      DemoRequest: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', format: 'uuid' },
+          firstName: { type: 'string' },
+          lastName: { type: 'string' },
+          phone: { type: 'string' },
+          schoolName: { type: 'string' },
+          schoolEmail: { type: 'string', format: 'email' },
+          schoolAddress: { type: 'string' },
+          contacted: { type: 'boolean' },
+          createdAt: { type: 'string', format: 'date-time' }
         }
       },
       Error: {
@@ -392,6 +419,166 @@ Production: \`https://{subdomain}.dataocelotschools.com\`
         }
       }
     },
+    '/api/students/photo': {
+      post: {
+        tags: ['Students'],
+        summary: 'Upload a student photo',
+        description: 'Uploads an image file to Supabase Storage and returns its public URL. Use the returned `photoUrl` with `POST /api/students` or `PATCH /api/students/{id}`. Max 5MB, JPEG/PNG/WEBP only. Requires admin session (browser use only — not API-key authenticated).',
+        requestBody: {
+          required: true,
+          content: {
+            'multipart/form-data': {
+              schema: {
+                type: 'object',
+                required: ['file'],
+                properties: {
+                  file: { type: 'string', format: 'binary' }
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          201: {
+            description: 'Uploaded',
+            content: {
+              'application/json': {
+                schema: { type: 'object', properties: { photoUrl: { type: 'string', format: 'uri' } } }
+              }
+            }
+          },
+          400: { description: 'Missing file, wrong type, or over 5MB', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+          401: { description: 'Unauthorized', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+          500: { description: 'Upload failed', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } }
+        }
+      }
+    },
+    '/api/students/bulk': {
+      post: {
+        tags: ['Students'],
+        summary: 'Bulk import students',
+        description: 'Creates up to 1000 students in one request — used by the CSV import UI. Each row auto-generates a `student_id` and 6-digit gate `code`, same as the single-create endpoint. Invalid rows are skipped and reported individually; valid rows are still created. Requires admin session.',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['rows'],
+                properties: {
+                  rows: {
+                    type: 'array',
+                    maxItems: 1000,
+                    items: {
+                      type: 'object',
+                      required: ['name', 'studentClass', 'parentPhone'],
+                      properties: {
+                        name: { type: 'string' },
+                        studentClass: { type: 'string', example: 'JSS1A' },
+                        parentPhone: { type: 'string' },
+                        parentName: { type: 'string', nullable: true },
+                        parentEmail: { type: 'string', format: 'email', nullable: true },
+                        cardId: { type: 'string', nullable: true }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          201: {
+            description: 'Import processed (check `errors` for any skipped rows)',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    created: { type: 'integer', description: 'Number of students successfully created' },
+                    errors: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          row: { type: 'integer', description: '1-indexed row number' },
+                          name: { type: 'string', nullable: true },
+                          error: { type: 'string' }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          400: { description: 'rows missing, empty, or over 1000 entries', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+          401: { description: 'Unauthorized', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } }
+        }
+      }
+    },
+
+    // ── Classes ──────────────────────────────────────────────────────
+    '/api/classes': {
+      get: {
+        tags: ['Classes'],
+        summary: 'List class levels & arms',
+        description: 'Returns all configured classes for the school, ordered by level then arm. Requires admin session.',
+        responses: {
+          200: {
+            description: 'Classes list',
+            content: {
+              'application/json': {
+                schema: { type: 'object', properties: { classes: { type: 'array', items: { $ref: '#/components/schemas/Class' } } } }
+              }
+            }
+          },
+          401: { description: 'Unauthorized', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } }
+        }
+      },
+      post: {
+        tags: ['Classes'],
+        summary: 'Add a class level/arm',
+        description: 'Creates a new level+arm combination (e.g. `JSS1` + `D`). Level and arm are uppercased automatically. Requires admin session.',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['level', 'arm'],
+                properties: {
+                  level: { type: 'string', example: 'JSS1' },
+                  arm: { type: 'string', example: 'D' }
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          201: {
+            description: 'Class created',
+            content: { 'application/json': { schema: { type: 'object', properties: { class: { $ref: '#/components/schemas/Class' } } } } }
+          },
+          400: { description: 'Missing level or arm', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+          401: { description: 'Unauthorized', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+          409: { description: 'That level+arm already exists', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } }
+        }
+      },
+      delete: {
+        tags: ['Classes'],
+        summary: 'Remove a class level/arm',
+        description: 'Deletes a class. Students already assigned to it keep their `studentClass` value as free text — this only affects the picker list. Requires admin session.',
+        parameters: [
+          { name: 'id', in: 'query', required: true, schema: { type: 'string', format: 'uuid' }, description: 'Class ID' }
+        ],
+        responses: {
+          200: { description: 'Deleted', content: { 'application/json': { schema: { type: 'object', properties: { success: { type: 'boolean' } } } } } },
+          400: { description: 'Missing id', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+          401: { description: 'Unauthorized', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } }
+        }
+      }
+    },
 
     // ── Arrivals & Scanning ──────────────────────────────────────────
     '/api/scan': {
@@ -622,6 +809,39 @@ Production: \`https://{subdomain}.dataocelotschools.com\`
       }
     },
 
+    // ── Demo Requests ────────────────────────────────────────────────
+    '/api/demo-requests': {
+      post: {
+        tags: ['Demo Requests'],
+        summary: 'Submit a demo request',
+        description: 'Public endpoint behind the landing page\'s "Request Demo" form. Stores the submission and emails a notification to the platform super admin. No authentication required.\n\n**Rate limit:** 3 req / 15 min per IP.',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['firstName', 'lastName', 'phone', 'schoolName', 'schoolEmail', 'schoolAddress'],
+                properties: {
+                  firstName: { type: 'string', example: 'Bola' },
+                  lastName: { type: 'string', example: 'Adeyemi' },
+                  phone: { type: 'string', example: '+2348012345678' },
+                  schoolName: { type: 'string', example: 'Greenfield International School' },
+                  schoolEmail: { type: 'string', format: 'email', example: 'admin@greenfield.edu.ng' },
+                  schoolAddress: { type: 'string', example: '12 Admiralty Way, Lekki, Lagos' }
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          201: { description: 'Request received', content: { 'application/json': { schema: { type: 'object', properties: { success: { type: 'boolean' } } } } } },
+          400: { description: 'Missing field or invalid schoolEmail', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+          429: { description: 'Rate limited', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } }
+        }
+      }
+    },
+
     // ── Super Admin ──────────────────────────────────────────────────
     '/api/superadmin/login': {
       post: {
@@ -728,6 +948,39 @@ Production: \`https://{subdomain}.dataocelotschools.com\`
           200: { description: 'Deleted', content: { 'application/json': { schema: { type: 'object', properties: { success: { type: 'boolean' } } } } } },
           401: { description: 'Unauthorized', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
           404: { description: 'School not found', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } }
+        }
+      }
+    },
+    '/api/superadmin/demo-requests': {
+      patch: {
+        tags: ['Super Admin'],
+        summary: 'Mark a demo request as contacted',
+        description: 'Toggles the `contacted` flag used by the Demo Requests admin page. Requires super admin session.',
+        parameters: [
+          { name: 'id', in: 'query', required: true, schema: { type: 'string', format: 'uuid' }, description: 'Demo request ID' }
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['contacted'],
+                properties: {
+                  contacted: { type: 'boolean' }
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          200: {
+            description: 'Updated',
+            content: { 'application/json': { schema: { type: 'object', properties: { demoRequest: { $ref: '#/components/schemas/DemoRequest' } } } } }
+          },
+          400: { description: 'Missing id or invalid JSON', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+          401: { description: 'Unauthorized', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+          404: { description: 'Demo request not found', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } }
         }
       }
     }
