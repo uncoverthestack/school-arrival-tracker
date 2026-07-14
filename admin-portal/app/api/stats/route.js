@@ -1,5 +1,6 @@
-import { supabase } from '@/lib/supabase'
 import { getSchool } from '@/lib/schools'
+import { countStudentsBySchool } from '@/lib/repo/students'
+import { countArrivalsToday } from '@/lib/repo/arrivals'
 
 export async function GET(request) {
   const apiKey = request.headers.get('x-api-key')
@@ -9,26 +10,16 @@ export async function GET(request) {
   }
 
   const today = new Date().toISOString().split('T')[0]
-
-  const [{ count: totalStudents }, { data: todayArrivals }] = await Promise.all([
-    supabase.from('students').select('*', { count: 'exact', head: true }).eq('school_id', school.id),
-    supabase
-      .from('arrivals')
-      .select('student_id')
-      .eq('school_id', school.id)
-      .eq('date', today)
-      .eq('type', 'arrival')
+  const [total, arrivedCount] = await Promise.all([
+    countStudentsBySchool(school.id),
+    countArrivalsToday(school.id, today),
   ])
-
-  const arrivedCount = todayArrivals?.length ?? 0
-  const total = totalStudents ?? 0
-  const notArrivedCount = Math.max(0, total - arrivedCount)
 
   return Response.json({
     school: school.name,
     totalStudents: total,
     arrivedToday: arrivedCount,
-    notArrived: notArrivedCount,
-    date: today
+    notArrived: Math.max(0, total - arrivedCount),
+    date: today,
   })
 }

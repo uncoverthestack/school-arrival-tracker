@@ -1,8 +1,13 @@
 import bcrypt from 'bcryptjs'
 import { after } from 'next/server'
-import { supabase } from '@/lib/supabase'
 import { checkLimit, registerLimiter } from '@/lib/ratelimit'
 import { randomBytes } from 'crypto'
+import {
+  isSubdomainTaken,
+  isEmailTaken,
+  deleteExpiredPendingBySubdomain,
+  createSchool,
+} from '@/lib/repo/schools'
 import { sendSignupConfirmationEmail } from '@/lib/email'
 
 function generateApiKey() {
@@ -52,63 +57,44 @@ export async function POST(request) {
     return Response.json({ error: 'Password must be at least 8 characters' }, { status: 400 })
   }
 
-  const now = new Date().toISOString()
-
-  // Subdomain is considered taken only if held by a non-pending school,
-  // OR by a pending school whose 48-hour reservation has not yet expired.
-  const [{ data: existingSubdomain }, { data: existingEmail }] = await Promise.all([
-    supabase
-      .from('schools')
-      .select('id, status, pending_expires_at')
-      .eq('subdomain', cleanSubdomain)
-      .or(`status.neq.pending,pending_expires_at.gt.${now}`)
-      .maybeSingle(),
-    supabase.from('schools').select('id').eq('admin_email', cleanEmail).maybeSingle()
+  const [subTaken, emailTaken] = await Promise.all([
+    isSubdomainTaken(cleanSubdomain),
+    isEmailTaken(cleanEmail),
   ])
 
-  if (existingSubdomain) {
-    const isExpiredPending =
-      existingSubdomain.status === 'pending' &&
-      existingSubdomain.pending_expires_at &&
-      new Date(existingSubdomain.pending_expires_at) < new Date()
-
-    if (!isExpiredPending) {
-      return Response.json({ error: 'That subdomain is already taken' }, { status: 409 })
-    }
-    // Expired pending — clean it up so the new registration can proceed
-    await supabase.from('schools').delete().eq('id', existingSubdomain.id)
+  if (subTaken) {
+    return Response.json({ error: 'That subdomain is already taken' }, { status: 409 })
   }
-
-  if (existingEmail) {
+  if (emailTaken) {
     return Response.json({ error: 'An account with that email already exists' }, { status: 409 })
   }
 
+  // Clean up any expired pending school squatting this subdomain before inserting
+  await deleteExpiredPendingBySubdomain(cleanSubdomain)
+
   const [passwordHash, apiKey] = await Promise.all([
     bcrypt.hash(String(password), 10),
-    Promise.resolve(generateApiKey())
+    Promise.resolve(generateApiKey()),
   ])
 
-  const { data: school, error } = await supabase
-    .from('schools')
-    .insert({
+  let school
+  try {
+    school = await createSchool({
       name: String(schoolName).trim().slice(0, 100),
       admin_name: String(adminName).trim().slice(0, 100),
       subdomain: cleanSubdomain,
-      admin_email: cleanEmail,
-      admin_password_hash: passwordHash,
-      api_key: apiKey,
+      adminEmail: cleanEmail,
+      adminPasswordHash: passwordHash,
+      apiKey,
       status: 'pending',
-      school_type: cleanType,
-      pending_expires_at: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString()
+      schoolType: cleanType,
+      pendingExpiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000),
     })
-    .select('id, name, admin_name, api_key')
-    .single()
-
-  if (error) {
+  } catch {
     return Response.json({ error: 'Could not create account. Try again.' }, { status: 500 })
   }
 
-  after(() => sendSignupConfirmationEmail({ toEmail: cleanEmail, schoolName: school.name, subdomain: cleanSubdomain }))
+  after(() => sendSignupConfirmationEmail({ toEmail: cleanEmail, schoolName: school.name }))
 
   // Do not create a session — school is pending approval and has no portal access yet
   return Response.json({
@@ -116,6 +102,6 @@ export async function POST(request) {
     pending: true,
     subdomain: cleanSubdomain,
     school: school.name,
-    message: 'Registration received. You will get access once your payment is confirmed by our team.'
+    message: 'Registration received. You will get access once your payment is confirmed by our team.',
   }, { status: 201 })
 }

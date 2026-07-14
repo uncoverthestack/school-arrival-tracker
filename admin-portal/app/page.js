@@ -1,10 +1,10 @@
-import { redirect } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
 import { getAdminSession } from '@/lib/session'
 import { isValidPhone } from '@/lib/validation'
+import { supabase } from '@/lib/supabase'
 import RefreshTicker from './RefreshTicker'
 import { DashboardShell } from './_components/DashboardShell'
 import { ArrivalFlowChart } from './_components/ArrivalFlowChart'
+import { LandingPage } from './_components/LandingPage'
 
 // Before this time (Africa/Lagos) nobody is "unaccounted" yet — they just
 // haven't arrived. Matches the ARRIVAL_CUTOFF_HOUR-style pattern used for
@@ -77,13 +77,16 @@ async function getDashboardData(schoolId) {
   const allStudents = students ?? []
   const todaysArrivals = arrivals ?? []
   const arrivalRows = todaysArrivals.filter(a => a.type === 'arrival')
+  const departureRows = todaysArrivals.filter(a => a.type === 'departure')
 
   const totalStudents = allStudents.length
   const arrivedToday = arrivalRows.length
+  const departedToday = departureRows.length
   const alertsSentToday = todaysArrivals.filter(a => a.alerted_at).length
   const pastCutoff = isPastCutoff()
   const unaccounted = pastCutoff ? Math.max(0, totalStudents - arrivedToday) : 0
   const percentArrived = totalStudents > 0 ? Math.round((arrivedToday / totalStudents) * 100) : 0
+  const percentDeparted = totalStudents > 0 ? Math.round((departedToday / totalStudents) * 100) : 0
 
   const arrivedStudentIds = new Set(arrivalRows.map(a => a.student_id))
 
@@ -104,14 +107,14 @@ async function getDashboardData(schoolId) {
   const arrivalFlow = buildArrivalFlow(arrivalRows.map(a => a.scanned_at))
 
   return {
-    totalStudents, arrivedToday, unaccounted, alertsSentToday, percentArrived,
+    totalStudents, arrivedToday, departedToday, unaccounted, alertsSentToday, percentArrived, percentDeparted,
     needsAttention, arrivalFlow
   }
 }
 
-export default async function Dashboard() {
+export default async function Home() {
   const session = await getAdminSession()
-  if (!session.schoolId) redirect('/login')
+  if (!session.schoolId) return <LandingPage />
 
   const dateLabel = new Date().toLocaleDateString('en-GB', {
     weekday: 'short', day: 'numeric', month: 'long', timeZone: 'Africa/Lagos'
@@ -146,11 +149,16 @@ export default async function Dashboard() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
           <MetricCard
             label="Checked in" value={data.arrivedToday} sublabel={`${data.percentArrived}% of expected`}
             bg="bg-success-container" text="text-on-success-container" iconBg="bg-success" iconText="text-on-success"
             icon={<path d="M4 12l5 5L20 6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />}
+          />
+          <MetricCard
+            label="Checked out" value={data.departedToday} sublabel={`${data.percentDeparted}% of expected`}
+            bg="bg-secondary-container" text="text-on-secondary-container" iconBg="bg-secondary" iconText="text-on-secondary"
+            icon={<path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4M10 16l4-4-4-4M14 12H3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />}
           />
           <MetricCard
             label="Expected" value={data.totalStudents} sublabel="enrolled today"

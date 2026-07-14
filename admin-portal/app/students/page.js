@@ -1,23 +1,18 @@
 import { redirect } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
 import { getAdminSession } from '@/lib/session'
+import { getStudentsBySchool } from '@/lib/repo/students'
+import { getClassesBySchool } from '@/lib/repo/classes'
 import { DashboardShell } from '../_components/DashboardShell'
 import StudentsClient from './StudentsClient'
-
-async function getStudents(schoolId) {
-  const { data } = await supabase
-    .from('students')
-    .select('id, name, student_class, student_id, code, code_year, parent_name, parent_phone, photo_url')
-    .eq('school_id', schoolId)
-    .order('name', { ascending: true })
-  return data ?? []
-}
 
 export default async function StudentsPage() {
   const session = await getAdminSession()
   if (!session.schoolId) redirect('/login')
 
-  const students = await getStudents(session.schoolId)
+  const [students, classes] = await Promise.all([
+    getStudentsBySchool(session.schoolId),
+    getClassesBySchool(session.schoolId),
+  ])
 
   return (
     <DashboardShell>
@@ -28,7 +23,7 @@ export default async function StudentsPage() {
         </p>
       </div>
 
-      <StudentsClient students={students} />
+      <StudentsClient students={students} classes={classes} />
     </DashboardShell>
   )
 }

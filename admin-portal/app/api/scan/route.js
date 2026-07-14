@@ -1,7 +1,8 @@
-import { supabase } from '@/lib/supabase'
 import { notifyParent } from '@/lib/notify'
 import { getSchool } from '@/lib/schools'
 import { checkLimit, scanLimiter } from '@/lib/ratelimit'
+import { findStudentByIdentifier } from '@/lib/repo/students'
+import { getTodayArrivalByStudent, createArrival } from '@/lib/repo/arrivals'
 
 export async function POST(request) {
   const apiKey = request.headers.get('x-api-key')
@@ -35,73 +36,49 @@ export async function POST(request) {
     return Response.json({ error: 'cardId contains invalid characters' }, { status: 400 })
   }
 
-  const { data: student } = await supabase
-    .from('students')
-    .select('*')
-    .eq('school_id', school.id)
-    .or(`card_id.eq.${safeId},student_id.eq.${safeId},code.eq.${safeId}`)
-    .single()
-
+  const student = await findStudentByIdentifier(safeId, school.id)
   if (!student) {
     return Response.json({ error: 'Student not found', cardId }, { status: 404 })
   }
 
   const today = new Date().toISOString().split('T')[0]
-
-  const { data: existing } = await supabase
-    .from('arrivals')
-    .select('id, scanned_at')
-    .eq('student_id', student.id)
-    .eq('type', type)
-    .eq('date', today)
-    .maybeSingle()
+  const existing = await getTodayArrivalByStudent(student.id, type, today)
 
   if (existing) {
-    const time = new Date(existing.scanned_at).toLocaleTimeString('en-GB', {
-      hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Lagos'
+    const time = new Date(existing.scannedAt).toLocaleTimeString('en-GB', {
+      hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Lagos',
     })
     return Response.json({
       duplicate: true,
       student: {
         name: student.name,
-        studentClass: student.student_class,
-        studentId: student.student_id,
-        photoUrl: student.photo_url ?? null
+        studentClass: student.studentClass,
+        studentId: student.studentId,
+        photoUrl: student.photoUrl ?? null,
       },
-      message: `Already scanned at ${time}`
+      message: `Already scanned at ${time}`,
     })
   }
 
-  const { data: arrival } = await supabase
-    .from('arrivals')
-    .insert({
-      student_id: student.id,
-      school_id: school.id,
-      type,
-      date: today
-    })
-    .select('id')
-    .single()
+  await createArrival({ studentId: student.id, schoolId: school.id, type, date: today })
 
   const time = new Date().toLocaleTimeString('en-GB', {
-    hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Lagos'
+    hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Lagos',
   })
 
-  if (student.parent_phone) {
-    notifyParent(student.parent_phone, student.name, type, time)
-      .then(() => supabase.from('arrivals').update({ alerted_at: new Date().toISOString() }).eq('id', arrival.id))
-      .catch(console.error)
+  if (student.parentPhone) {
+    notifyParent(student.parentPhone, student.name, type, time).catch(console.error)
   }
 
   return Response.json({
     success: true,
     student: {
       name: student.name,
-      studentClass: student.student_class,
-      studentId: student.student_id,
-      photoUrl: student.photo_url ?? null
+      studentClass: student.studentClass,
+      studentId: student.studentId,
+      photoUrl: student.photoUrl ?? null,
     },
     time,
-    message: `${type === 'arrival' ? 'Arrived' : 'Departed'} at ${time} — parent notified`
+    message: `${type === 'arrival' ? 'Arrived' : 'Departed'} at ${time} — parent notified`,
   })
 }

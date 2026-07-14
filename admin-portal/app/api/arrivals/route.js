@@ -1,6 +1,6 @@
-import { supabase } from '@/lib/supabase'
 import { getSchool } from '@/lib/schools'
 import { getAdminSession } from '@/lib/session'
+import { getArrivalsBySchoolAndDate } from '@/lib/repo/arrivals'
 
 export async function GET(request) {
   const session = await getAdminSession()
@@ -15,37 +15,6 @@ export async function GET(request) {
   const { searchParams } = new URL(request.url)
   const date = searchParams.get('date') ?? new Date().toISOString().split('T')[0]
 
-  const { data, error } = await supabase
-    .from('arrivals')
-    .select(`
-      id,
-      type,
-      scanned_at,
-      students (
-        student_id,
-        name,
-        student_class
-      )
-    `)
-    .eq('school_id', school.id)
-    .eq('date', date)
-    .order('scanned_at', { ascending: false })
-
-  if (error) {
-    return Response.json({ error: error.message }, { status: 500 })
-  }
-
-  const arrivals = data.map(a => ({
-    id: a.id,
-    type: a.type,
-    scannedAt: a.scanned_at,
-    time: new Date(a.scanned_at).toLocaleTimeString('en-GB', {
-      hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Lagos'
-    }),
-    name: a.students?.name,
-    studentClass: a.students?.student_class,
-    studentId: a.students?.student_id
-  }))
-
+  const arrivals = await getArrivalsBySchoolAndDate(school.id, date)
   return Response.json({ arrivals, date })
 }

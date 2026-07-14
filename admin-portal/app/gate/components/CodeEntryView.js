@@ -57,7 +57,7 @@ export function CodeEntryView({ onSubmit, onBack, scanning }) {
           onClick={onBack}
           className="self-center text-label-large font-medium tracking-[0.1px] text-primary bg-transparent border-none cursor-pointer p-0"
         >
-          Use card instead
+          ← Change method
         </button>
       </div>
 

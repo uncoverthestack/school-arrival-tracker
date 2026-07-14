@@ -1,18 +1,18 @@
-import { supabase } from '@/lib/supabase'
 import { getAdminSession } from '@/lib/session'
+import { getStudentById, updateStudent, deleteStudent, isCodeUnique } from '@/lib/repo/students'
+import { deleteVerificationsByStudent } from '@/lib/repo/verifications'
+import { deleteArrivalsByStudent } from '@/lib/repo/arrivals'
 
 function currentSchoolYear() {
   const now = new Date()
   const year = now.getFullYear()
-  // Nigerian school year: September–June. From Sept onwards it's year/year+1
   return now.getMonth() >= 8 ? `${year}-${year + 1}` : `${year - 1}-${year}`
 }
 
 async function generateUniqueCode() {
   for (let attempt = 0; attempt < 10; attempt++) {
     const candidate = String(Math.floor(100000 + Math.random() * 900000))
-    const { data } = await supabase.from('students').select('id').eq('code', candidate).maybeSingle()
-    if (!data) return candidate
+    if (await isCodeUnique(candidate)) return candidate
   }
   throw new Error('Could not generate unique code')
 }
@@ -32,16 +32,9 @@ export async function PATCH(request, { params }) {
     return Response.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
-  const { studentClass, name, photoUrl } = body
+  const { studentClass, name, photoUrl, faceDescriptor } = body
 
-  // Fetch current student — must belong to this school
-  const { data: student } = await supabase
-    .from('students')
-    .select('id, student_class, code, code_year')
-    .eq('id', id)
-    .eq('school_id', session.schoolId)
-    .maybeSingle()
-
+  const student = await getStudentById(id, session.schoolId)
   if (!student) {
     return Response.json({ error: 'Student not found' }, { status: 404 })
   }
@@ -49,36 +42,27 @@ export async function PATCH(request, { params }) {
   const updates = {}
 
   if (name) updates.name = String(name).trim().slice(0, 100)
-  if (photoUrl !== undefined) updates.photo_url = photoUrl || null
+  if (photoUrl !== undefined) updates.photoUrl = photoUrl || null
+  if (faceDescriptor !== undefined) {
+    updates.faceDescriptor = faceDescriptor ? JSON.stringify(Array.from(faceDescriptor)) : null
+  }
 
-  if (studentClass && studentClass !== student.student_class) {
-    // Class changed → student is promoted → rotate code
-    updates.student_class = studentClass
+  if (studentClass && studentClass !== student.studentClass) {
+    updates.studentClass = studentClass
     updates.code = await generateUniqueCode()
-    updates.code_year = currentSchoolYear()
-  } else if (studentClass && studentClass === student.student_class) {
-    // Same class → student is repeating → keep code, just update year marker
-    updates.student_class = studentClass
-    updates.code_year = currentSchoolYear()
+    updates.codeYear = currentSchoolYear()
+  } else if (studentClass && studentClass === student.studentClass) {
+    updates.studentClass = studentClass
+    updates.codeYear = currentSchoolYear()
   }
 
-  const { data, error } = await supabase
-    .from('students')
-    .update(updates)
-    .eq('id', id)
-    .eq('school_id', session.schoolId)
-    .select()
-    .single()
-
-  if (error) {
-    return Response.json({ error: error.message }, { status: 500 })
-  }
-
+  const updated = await updateStudent(id, session.schoolId, updates)
   const rotated = 'code' in updates
-  return Response.json({ student: data, codeRotated: rotated })
+
+  return Response.json({ student: updated, codeRotated: rotated })
 }
 
-export async function DELETE(request, { params }) {
+export async function DELETE(_request, { params }) {
   const session = await getAdminSession()
   if (!session.schoolId) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 })
@@ -86,21 +70,14 @@ export async function DELETE(request, { params }) {
 
   const { id } = await params
 
-  // Confirm the student belongs to this school before deleting
-  const { data: student } = await supabase
-    .from('students')
-    .select('id')
-    .eq('id', id)
-    .eq('school_id', session.schoolId)
-    .maybeSingle()
-
+  const student = await getStudentById(id, session.schoolId)
   if (!student) {
     return Response.json({ error: 'Student not found' }, { status: 404 })
   }
 
-  await supabase.from('verifications').delete().eq('student_id', id)
-  await supabase.from('arrivals').delete().eq('student_id', id)
-  await supabase.from('students').delete().eq('id', id)
+  await deleteVerificationsByStudent(id)
+  await deleteArrivalsByStudent(id)
+  await deleteStudent(id)
 
   return Response.json({ success: true })
 }

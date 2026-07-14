@@ -67,6 +67,61 @@
   --font-family-kiosk: 'Manrope', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
 }
 
+/* Forces light regardless of an ancestor's [data-theme="dark"] — used by
+   public pages (landing, auth) that shouldn't follow the logged-in app's
+   theme preference. Same values as :root's light defaults. */
+[data-theme="light"] {
+  --c-primary: #185fa5;
+  --c-on-primary: #ffffff;
+  --c-primary-container: #ecf2f7;
+  --c-on-primary-container: #061829;
+
+  --c-secondary: #3e5c7e;
+  --c-on-secondary: #ffffff;
+  --c-secondary-container: #dfe4e9;
+  --c-on-secondary-container: #101720;
+
+  --c-tertiary: #2e6b6b;
+  --c-on-tertiary: #ffffff;
+  --c-tertiary-container: #eef3f3;
+  --c-on-tertiary-container: #0c1b1b;
+
+  --c-error: #a32d2d;
+  --c-on-error: #ffffff;
+  --c-error-container: #f0dcdc;
+  --c-on-error-container: #a32d2d;
+
+  --c-success: #3b6d11;
+  --c-on-success: #ffffff;
+  --c-success-container: #eff3eb;
+  --c-on-success-container: #1e3709;
+
+  --c-warning: #854f0b;
+  --c-on-warning: #ffffff;
+  --c-warning-container: #f5f0eb;
+  --c-on-warning-container: #432806;
+
+  --c-surface: #fcfcfc;
+  --c-on-surface: #181816;
+  --c-surface-variant: #e2e3e4;
+  --c-on-surface-variant: #424548;
+  --c-surface-dim: #dcdcda;
+  --c-surface-bright: #fafaf9;
+
+  --c-surface-container-lowest: #ffffff;
+  --c-surface-container-low: #f4f4f3;
+  --c-surface-container: #efefee;
+  --c-surface-container-high: #e9e9e8;
+  --c-surface-container-highest: #e4e4e2;
+
+  --c-outline: #6e7378;
+  --c-outline-variant: #e2e3e4;
+
+  --c-inverse-surface: #30302c;
+  --c-inverse-on-surface: #f1f1f1;
+  --c-inverse-primary: #b2cae1;
+}
+
 [data-theme="dark"] {
   --c-primary: #b2cae1;
   --c-on-primary: #0c3053;
@@ -123,9 +178,11 @@
    dashboard): add className="theme-auto" to follow the OS preference via
    pure CSS instead. Keep this block's values in sync with [data-theme="dark"]
    above — same palette, just triggered by prefers-color-scheme instead of a
-   JS-set attribute. */
+   JS-set attribute. Scoped to html:not([data-theme]) so an explicit choice
+   made in Settings (which sets data-theme on <html>) always wins over the
+   OS preference. */
 @media (prefers-color-scheme: dark) {
-  .theme-auto {
+  html:not([data-theme]) .theme-auto {
     --c-primary: #b2cae1;
     --c-on-primary: #0c3053;
     --c-primary-container: #0c3053;
