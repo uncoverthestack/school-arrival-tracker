@@ -50,6 +50,18 @@ export const arrivals = pgTable('arrivals', {
   scannedAt: timestamp('scanned_at', { withTimezone: true }).defaultNow().notNull(),
 })
 
+export const demoRequests = pgTable('demo_requests', {
+  id:            uuid('id').defaultRandom().primaryKey(),
+  firstName:     text('first_name').notNull(),
+  lastName:      text('last_name').notNull(),
+  phone:         text('phone').notNull(),
+  schoolName:    text('school_name').notNull(),
+  schoolEmail:   text('school_email').notNull(),
+  schoolAddress: text('school_address').notNull(),
+  contacted:     boolean('contacted').default(false).notNull(),
+  createdAt:     timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+})
+
 export const verifications = pgTable('verifications', {
   id:         uuid('id').defaultRandom().primaryKey(),
   studentId:  uuid('student_id').references(() => students.id),

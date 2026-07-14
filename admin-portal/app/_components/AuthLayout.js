@@ -6,7 +6,7 @@ const FEATURES = [
 
 export function AuthLayout({ children }) {
   return (
-    <div className="theme-auto font-kiosk flex flex-col lg:flex-row min-h-screen bg-surface">
+    <div data-theme="light" className="font-kiosk flex flex-col lg:flex-row min-h-screen bg-white">
 
       {/* Brand panel — top on mobile, left on desktop */}
       <div className="relative flex flex-col justify-between h-[45vh] lg:h-auto w-full lg:w-150 lg:shrink-0 p-10 lg:p-16 overflow-hidden">
@@ -15,10 +15,12 @@ export function AuthLayout({ children }) {
 
         {/* Logo */}
         <div className="relative flex items-center gap-3">
-          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M12 2l8 3v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V5l8-3Z" fill="white"/>
-            <path d="M8.5 12.5l2.5 2.5 4.5-5" stroke="#124f8f" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
+          <div className="bg-primary flex items-center justify-center rounded-sm size-10 shrink-0">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M12 2l8 3v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V5l8-3Z" fill="white"/>
+              <path d="M8.5 12.5l2.5 2.5 4.5-5" stroke="#124f8f" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
           <p className="text-title-large text-white">Attendance Tracker</p>
         </div>
 

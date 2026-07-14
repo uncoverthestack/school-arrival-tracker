@@ -1,7 +1,9 @@
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import { getSuperSession } from '@/lib/superSession'
 import { LogoutButton, SchoolsTable } from './SuperAdminClient'
 import { getAllSchools, countStudentsInSchool, expireOverdueSchools } from '@/lib/repo/schools'
+import { getAllDemoRequests } from '@/lib/repo/demoRequests'
 
 async function getSchoolsWithCounts() {
   const schools = await getAllSchools()
@@ -25,7 +27,8 @@ export default async function SuperAdminPage() {
   const session = await getSuperSession()
   if (!session.isSuperAdmin) redirect('/superadmin/login')
 
-  const schools = await getSchoolsWithCounts()
+  const [schools, demoRequests] = await Promise.all([getSchoolsWithCounts(), getAllDemoRequests()])
+  const pendingDemoRequests = demoRequests.filter(r => !r.contacted).length
 
   return (
     <div className="min-h-screen bg-gray-950 text-white p-4 sm:p-8">
@@ -39,7 +42,15 @@ export default async function SuperAdminPage() {
             </div>
             <p className="text-gray-400">{schools.length} school{schools.length !== 1 ? 's' : ''} registered on the platform</p>
           </div>
-          <LogoutButton />
+          <div className="flex items-center gap-5">
+            <Link href="/superadmin/demo-requests" className="text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-2">
+              Demo Requests
+              {pendingDemoRequests > 0 && (
+                <span className="bg-yellow-900/50 text-yellow-400 text-xs font-bold px-2 py-0.5 rounded-full">{pendingDemoRequests}</span>
+              )}
+            </Link>
+            <LogoutButton />
+          </div>
         </div>
 
         <SchoolsTable schools={schools} />

@@ -1,10 +1,10 @@
-import { redirect } from 'next/navigation'
 import { getAdminSession } from '@/lib/session'
 import { isValidPhone } from '@/lib/validation'
 import { supabase } from '@/lib/supabase'
 import RefreshTicker from './RefreshTicker'
 import { DashboardShell } from './_components/DashboardShell'
 import { ArrivalFlowChart } from './_components/ArrivalFlowChart'
+import { LandingPage } from './_components/LandingPage'
 
 // Before this time (Africa/Lagos) nobody is "unaccounted" yet — they just
 // haven't arrived. Matches the ARRIVAL_CUTOFF_HOUR-style pattern used for
@@ -112,9 +112,9 @@ async function getDashboardData(schoolId) {
   }
 }
 
-export default async function Dashboard() {
+export default async function Home() {
   const session = await getAdminSession()
-  if (!session.schoolId) redirect('/login')
+  if (!session.schoolId) return <LandingPage />
 
   const dateLabel = new Date().toLocaleDateString('en-GB', {
     weekday: 'short', day: 'numeric', month: 'long', timeZone: 'Africa/Lagos'

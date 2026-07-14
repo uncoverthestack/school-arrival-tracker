@@ -67,6 +67,21 @@ export async function sendPaymentDueReminderEmail({ toEmail, schoolName, subdoma
   await sendEmail({ to: toEmail, subject, html, text })
 }
 
+export async function sendDemoRequestNotification({ firstName, lastName, phone, schoolName, schoolEmail, schoolAddress }) {
+  const toEmail = process.env.SUPER_ADMIN_EMAIL
+  if (!toEmail) return
+
+  const subject = `SchoolPass — Demo request from ${schoolName}`
+  const text = `${firstName} ${lastName} from ${schoolName} requested a demo.\nPhone: ${phone}\nSchool email: ${schoolEmail}\nSchool address: ${schoolAddress}`
+  const html = layout('New demo request', `
+    <p><strong>${firstName} ${lastName}</strong> from <strong>${schoolName}</strong> requested a demo.</p>
+    <p>Phone: <a href="tel:${phone}">${phone}</a></p>
+    <p>School email: <a href="mailto:${schoolEmail}">${schoolEmail}</a></p>
+    <p>School address: ${schoolAddress}</p>
+  `)
+  await sendEmail({ to: toEmail, subject, html, text })
+}
+
 export async function sendPaymentConfirmedEmail({ toEmail, schoolName, subdomain, isRenewal }) {
   const url = `https://${subdomain}.dataocelotschools.com`
   const subject = isRenewal ? 'SchoolPass — Payment confirmed, access renewed' : 'SchoolPass — You\'re approved!'
