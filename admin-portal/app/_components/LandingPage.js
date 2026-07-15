@@ -73,7 +73,7 @@ const WHY_US = [
   },
   {
     title: 'Instant Notifications',
-    desc: 'Parents receive a message the moment their child arrives or leaves — no more wondering.',
+    desc: 'Parents receive a message the moment their child arrives or leaves, no more wondering.',
   },
   {
     title: 'Unique Gate Codes',
@@ -81,7 +81,7 @@ const WHY_US = [
   },
   {
     title: 'Multiple Check-In Modes',
-    desc: 'ID card, code entry, or Face ID — staff can pick whichever is fastest for the gate that day.',
+    desc: 'ID card, code entry, or Face ID, staff can pick whichever is fastest for the gate that day.',
   },
 ]
 
@@ -116,7 +116,6 @@ export function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-8 py-20 sm:py-32 grid lg:grid-cols-12 gap-16 items-center">
           <div className="lg:col-span-5">
             <span className="inline-block px-3 py-1.5 rounded-full bg-surface-container-lowest border border-outline-variant text-xs font-semibold text-on-surface-variant mb-6">
-              🎒 Real-time school arrival &amp; departure tracking
             </span>
             <h1 className="text-4xl sm:text-6xl font-extrabold leading-tight text-on-surface">
               Track Every Arrival, <span className="text-primary">Departure.</span>
