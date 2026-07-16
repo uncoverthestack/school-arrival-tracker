@@ -106,10 +106,10 @@ export function LandingPage() {
     <div data-theme="light" className="min-h-screen bg-surface text-on-surface font-kiosk">
       <header className="sticky top-0 z-40 bg-surface/95 backdrop-blur border-b border-outline-variant">
         <div className="max-w-6xl mx-auto flex items-center justify-between px-4 sm:px-8 py-4">
-          <p className="text-xl font-extrabold text-on-surface">SchoolPass</p>
+          <p className="text-xl font-extrabold text-on-surface">Childmap</p>
           <nav className="hidden sm:flex items-center gap-8 text-sm font-medium text-on-surface-variant">
             <a href="#features" className="hover:text-on-surface transition-colors">Features</a>
-            <a href="#why-us" className="hover:text-on-surface transition-colors">Why SchoolPass</a>
+            <a href="#why-us" className="hover:text-on-surface transition-colors">Why Childmap</a>
             <a href="#pricing" className="hover:text-on-surface transition-colors">Pricing</a>
           </nav>
           <div className="flex items-center gap-2">
@@ -173,7 +173,7 @@ export function LandingPage() {
               </div>
               <div className="flex">
                 <div className="hidden md:flex flex-col gap-1 w-40 shrink-0 border-r border-outline-variant p-3">
-                  <p className="text-xs font-bold text-on-surface px-2 pb-2">Attendance Guard</p>
+                  <p className="text-xs font-bold text-on-surface px-2 pb-2">Childmap</p>
                   <span className="text-xs font-medium rounded-md px-2 py-1.5 bg-primary-container text-on-primary-container">Today</span>
                   <span className="text-xs font-medium rounded-md px-2 py-1.5 text-on-surface-variant">Gate scanner</span>
                   <span className="text-xs font-medium rounded-md px-2 py-1.5 text-on-surface-variant">Watchlist</span>
@@ -238,6 +238,7 @@ export function LandingPage() {
           >
             Why Schools Choose SchoolPass
           </motion.h2>
+          <h2 className="text-3xl font-extrabold text-center mb-12 text-on-surface">Why Schools Choose Childmap</h2>
           <div className="grid lg:grid-cols-2 gap-10 items-center">
             <motion.div
               initial="hidden" whileInView="show" viewport={scrollReveal} variants={staggerContainer}
@@ -335,9 +336,9 @@ export function LandingPage() {
 
       <footer className="border-t border-outline-variant">
         <div className="max-w-6xl mx-auto px-4 sm:px-8 py-8 flex flex-col items-center gap-1 text-center">
-          <p className="font-extrabold text-on-surface">SchoolPass</p>
+          <p className="font-extrabold text-on-surface">Childmap</p>
           <p className="text-sm text-on-surface-variant">Real-time school arrival &amp; departure tracking.</p>
-          <p className="text-sm text-on-surface-variant mt-3">© {new Date().getFullYear()} SchoolPass. All rights reserved.</p>
+          <p className="text-sm text-on-surface-variant mt-3">© {new Date().getFullYear()} Childmap. All rights reserved.</p>
         </div>
       </footer>
     </div>

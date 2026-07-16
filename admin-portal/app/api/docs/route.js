@@ -1,7 +1,7 @@
 const spec = {
   openapi: '3.0.3',
   info: {
-    title: 'SchoolPass — DataOcelot Schools API',
+    title: 'Childmap — DataOcelot Schools API',
     version: '1.0.0',
     description: `
 ## Authentication

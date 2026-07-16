@@ -11,7 +11,7 @@ export default function NavBar({ schoolId, schoolName }) {
       <div className="px-4 sm:px-6 py-3 flex items-center gap-3">
         {/* Logo + brand name */}
         <Link href="/" className="flex items-center gap-2 shrink-0" onClick={() => setOpen(false)}>
-          <span className="text-white font-bold text-sm tracking-wide">SchoolPass</span>
+          <span className="text-white font-bold text-sm tracking-wide">Childmap</span>
         </Link>
 
         {schoolId ? (

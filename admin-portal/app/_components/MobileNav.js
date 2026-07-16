@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 
 const LINKS = [
   { href: '#features', label: 'Features' },
-  { href: '#why-us', label: 'Why SchoolPass' },
+  { href: '#why-us', label: 'Why Childmap' },
   { href: '#pricing', label: 'Pricing' },
 ]
 
