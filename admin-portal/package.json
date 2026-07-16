@@ -17,6 +17,7 @@
     "bcryptjs": "^3.0.3",
     "drizzle-orm": "^0.45.2",
     "face-api.js": "^0.22.2",
+    "framer-motion": "^12.42.2",
     "html5-qrcode": "^2.3.8",
     "iron-session": "^8.0.4",
     "next": "16.2.7",

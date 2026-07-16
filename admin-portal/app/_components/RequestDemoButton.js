@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 
 const inputClass =
   'w-full bg-surface-container border border-outline-variant rounded-xl px-4 py-3 text-sm outline-none focus:border-primary'
@@ -35,8 +36,18 @@ function RequestDemoModal({ onClose }) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4" onClick={onClose}>
-      <div
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.92, y: 16 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.92, y: 16 }}
+        transition={{ duration: 0.2, ease: 'easeOut' }}
         className="bg-surface-container-lowest rounded-2xl p-6 w-full max-w-sm max-h-[90vh] overflow-y-auto"
         onClick={e => e.stopPropagation()}
       >
@@ -115,8 +126,8 @@ function RequestDemoModal({ onClose }) {
             </form>
           </>
         )}
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   )
 }
 
@@ -125,10 +136,18 @@ export function RequestDemoButton({ className, children }) {
 
   return (
     <>
-      <button type="button" onClick={() => setOpen(true)} className={className}>
+      <motion.button
+        type="button"
+        onClick={() => setOpen(true)}
+        whileHover={{ scale: 1.03 }}
+        whileTap={{ scale: 0.97 }}
+        className={className}
+      >
         {children}
-      </button>
-      {open && <RequestDemoModal onClose={() => setOpen(false)} />}
+      </motion.button>
+      <AnimatePresence>
+        {open && <RequestDemoModal onClose={() => setOpen(false)} />}
+      </AnimatePresence>
     </>
   )
 }

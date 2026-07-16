@@ -1,6 +1,22 @@
+'use client'
+
 import Link from 'next/link'
+import { motion } from 'framer-motion'
 import { RequestDemoButton } from './RequestDemoButton'
 import { MobileNav } from './MobileNav'
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 24 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' } },
+}
+
+const staggerContainer = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.1 } },
+}
+
+// Section headings/subtitles fade in once when scrolled into view — doesn't replay on every scroll past.
+const scrollReveal = { once: true, amount: 0.3 }
 
 const FEATURES = [
   {
@@ -114,16 +130,19 @@ export function LandingPage() {
 
       <section className="bg-linear-to-b from-primary-container/70 via-primary-container/25 to-surface">
         <div className="max-w-7xl mx-auto px-4 sm:px-8 py-20 sm:py-32 grid lg:grid-cols-12 gap-16 items-center">
-          <div className="lg:col-span-5">
-            <span className="inline-block px-3 py-1.5 rounded-full bg-surface-container-lowest border border-outline-variant text-xs font-semibold text-on-surface-variant mb-6">
-            </span>
-            <h1 className="text-4xl sm:text-6xl font-extrabold leading-tight text-on-surface">
+          <motion.div initial="hidden" animate="show" variants={staggerContainer} className="lg:col-span-5">
+            <motion.span
+              variants={fadeUp}
+              className="inline-block px-3 py-1.5 rounded-full bg-surface-container-lowest border border-outline-variant text-xs font-semibold text-on-surface-variant mb-6"
+            >
+            </motion.span>
+            <motion.h1 variants={fadeUp} className="text-4xl sm:text-6xl font-extrabold leading-tight text-on-surface">
               Track Every Arrival, <span className="text-primary">Departure.</span>
-            </h1>
-            <p className="mt-5 text-lg text-on-surface-variant max-w-md">
+            </motion.h1>
+            <motion.p variants={fadeUp} className="mt-5 text-lg text-on-surface-variant max-w-md">
               Replace the paper logbook with instant gate check-ins, live dashboards, and SMS alerts parents actually see.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
+            </motion.p>
+            <motion.div variants={fadeUp} className="mt-8 flex flex-wrap gap-3">
               <RequestDemoButton className="px-6 py-3 rounded-xl bg-primary text-on-primary font-bold transition-opacity hover:opacity-90">
                 Request Demo
               </RequestDemoButton>
@@ -133,11 +152,15 @@ export function LandingPage() {
               >
                 Learn More ↓
               </a>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
 
           {/* Dashboard mockup — a stylized preview of the real Today dashboard, always dark to match the app screenshot */}
-          <div data-theme="dark" className="lg:col-span-7">
+          <motion.div
+            initial={{ opacity: 0, x: 40 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.25, ease: 'easeOut' }}
+            data-theme="dark" className="lg:col-span-7">
             <div className="rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-2xl overflow-hidden">
               <div className="flex items-center gap-1.5 px-4 py-3 border-b border-outline-variant bg-surface-container">
                 <span className="w-2.5 h-2.5 rounded-full bg-error" />
@@ -179,35 +202,49 @@ export function LandingPage() {
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
       </section>
 
       <section id="features" className="max-w-6xl mx-auto px-4 sm:px-8 py-20">
-        <div className="text-center max-w-xl mx-auto mb-12">
+        <motion.div
+          initial="hidden" whileInView="show" viewport={scrollReveal} variants={fadeUp}
+          className="text-center max-w-xl mx-auto mb-12"
+        >
           <h2 className="text-3xl font-extrabold text-on-surface">Everything your gate needs</h2>
           <p className="mt-3 text-on-surface-variant">One system connecting the gate, the office, and every parent.</p>
-        </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        </motion.div>
+        <motion.div
+          initial="hidden" whileInView="show" viewport={scrollReveal} variants={staggerContainer}
+          className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5"
+        >
           {FEATURES.map(f => (
-            <div key={f.title} className="p-6 rounded-2xl bg-surface-container border border-outline-variant">
+            <motion.div key={f.title} variants={fadeUp} className="p-6 rounded-2xl bg-surface-container border border-outline-variant">
               <div className="w-11 h-11 rounded-xl bg-primary-container text-primary flex items-center justify-center mb-4">
                 <svg width="22" height="22" viewBox="0 0 20 20" fill="none" aria-hidden="true">{f.icon}</svg>
               </div>
               <p className="text-lg font-bold text-on-surface">{f.title}</p>
               <p className="mt-1.5 text-sm text-on-surface-variant">{f.desc}</p>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </section>
 
       <section id="why-us" className="bg-secondary-container/40">
         <div className="max-w-6xl mx-auto px-4 sm:px-8 py-20">
-          <h2 className="text-3xl font-extrabold text-center mb-12 text-on-surface">Why Schools Choose SchoolPass</h2>
+          <motion.h2
+            initial="hidden" whileInView="show" viewport={scrollReveal} variants={fadeUp}
+            className="text-3xl font-extrabold text-center mb-12 text-on-surface"
+          >
+            Why Schools Choose SchoolPass
+          </motion.h2>
           <div className="grid lg:grid-cols-2 gap-10 items-center">
-            <div className="flex flex-col gap-8">
+            <motion.div
+              initial="hidden" whileInView="show" viewport={scrollReveal} variants={staggerContainer}
+              className="flex flex-col gap-8"
+            >
               {WHY_US.map((item, i) => (
-                <div key={item.title} className="flex gap-4">
+                <motion.div key={item.title} variants={fadeUp} className="flex gap-4">
                   <span className="shrink-0 w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold text-sm">
                     {i + 1}
                   </span>
@@ -215,29 +252,42 @@ export function LandingPage() {
                     <p className="font-bold text-on-surface">{item.title}</p>
                     <p className="mt-1 text-sm text-on-surface-variant">{item.desc}</p>
                   </div>
-                </div>
+                </motion.div>
               ))}
-            </div>
-            <div className="rounded-2xl bg-surface-container border border-outline-variant p-10 flex flex-col items-center justify-center text-center gap-4 min-h-64">
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={scrollReveal}
+              transition={{ duration: 0.5, ease: 'easeOut' }}
+              className="rounded-2xl bg-surface-container border border-outline-variant p-10 flex flex-col items-center justify-center text-center gap-4 min-h-64"
+            >
               <svg width="56" height="56" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="text-primary">
                 <path d="M12 2l8 3v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V5l8-3Z" fill="currentColor" opacity="0.15" />
                 <path d="M12 2l8 3v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V5l8-3Z" stroke="currentColor" strokeWidth="1.5" />
               </svg>
               <p className="italic text-on-surface-variant">&ldquo;Safety isn&apos;t expensive, it&apos;s priceless.&rdquo;</p>
-            </div>
+            </motion.div>
           </div>
         </div>
       </section>
 
       <section id="pricing" className="max-w-6xl mx-auto px-4 sm:px-8 py-20">
-        <div className="text-center max-w-xl mx-auto mb-12">
+        <motion.div
+          initial="hidden" whileInView="show" viewport={scrollReveal} variants={fadeUp}
+          className="text-center max-w-xl mx-auto mb-12"
+        >
           <h2 className="text-3xl font-extrabold text-on-surface">Simple, Fair Pricing</h2>
           <p className="mt-3 text-on-surface-variant">Choose the plan that fits your school&apos;s size. Start small, grow big.</p>
-        </div>
-        <div className="grid sm:grid-cols-2 gap-6 max-w-3xl mx-auto">
+        </motion.div>
+        <motion.div
+          initial="hidden" whileInView="show" viewport={scrollReveal} variants={staggerContainer}
+          className="grid sm:grid-cols-2 gap-6 max-w-3xl mx-auto"
+        >
           {PRICING.map(plan => (
-            <div
+            <motion.div
               key={plan.name}
+              variants={fadeUp}
               className={`relative rounded-2xl p-8 border ${
                 plan.highlighted ? 'border-primary bg-surface-container-lowest shadow-lg' : 'border-outline-variant bg-surface-container-lowest'
               }`}
@@ -263,21 +313,24 @@ export function LandingPage() {
                   </li>
                 ))}
               </ul>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </section>
 
       <section className="bg-primary text-on-primary">
-        <div className="max-w-3xl mx-auto px-4 sm:px-8 py-16 text-center">
-          <h2 className="text-3xl font-extrabold">Ready to get started?</h2>
-          <p className="mt-3 opacity-90">Tell us about your school and we&apos;ll set up a walkthrough.</p>
-          <div className="mt-8">
+        <motion.div
+          initial="hidden" whileInView="show" viewport={scrollReveal} variants={staggerContainer}
+          className="max-w-3xl mx-auto px-4 sm:px-8 py-16 text-center"
+        >
+          <motion.h2 variants={fadeUp} className="text-3xl font-extrabold">Ready to get started?</motion.h2>
+          <motion.p variants={fadeUp} className="mt-3 opacity-90">Tell us about your school and we&apos;ll set up a walkthrough.</motion.p>
+          <motion.div variants={fadeUp} className="mt-8">
             <RequestDemoButton className="px-8 py-3.5 rounded-xl bg-surface-container-lowest text-primary font-bold transition-opacity hover:opacity-90">
               Request Demo
             </RequestDemoButton>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </section>
 
       <footer className="border-t border-outline-variant">
