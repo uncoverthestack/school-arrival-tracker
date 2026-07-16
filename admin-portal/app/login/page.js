@@ -61,7 +61,7 @@ export default function LoginPage() {
       <div>
         <p className="text-headline-small text-on-surface">Welcome back</p>
         <p className="text-body-medium tracking-[0.25px] text-on-surface-variant mt-1">
-          Sign in to your Attendance Guard account
+          Sign in to your Childmap account
         </p>
       </div>
 
@@ -107,7 +107,7 @@ export default function LoginPage() {
         </button>
 
         <p className="text-center text-body-medium tracking-[0.25px] text-on-surface-variant">
-          New to Attendance Guard?{' '}
+          New to Childmap?{' '}
           <Link href="/signup" className="text-primary font-medium hover:opacity-80 transition-opacity">Create account</Link>
         </p>
       </form>

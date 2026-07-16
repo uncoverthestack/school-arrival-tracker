@@ -16,10 +16,10 @@ export function AuthLayout({ children }) {
         {/* Logo */}
         <div className="relative flex items-center gap-3">
           <svg width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M12 2l8 3v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V5l8-3Z" fill="white"/>
-            <path d="M8.5 12.5l2.5 2.5 4.5-5" stroke="#124f8f" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M12 2C7.58 2 4 5.58 4 10c0 5.25 6.72 11.19 7.02 11.44a1.5 1.5 0 0 0 1.96 0C13.28 21.19 20 15.25 20 10c0-4.42-3.58-8-8-8Z" fill="white"/>
+            <circle cx="12" cy="10" r="3" fill="#124f8f"/>
           </svg>
-          <p className="text-title-large text-white">Attendance Tracker</p>
+          <p className="text-title-large text-white">Childmap</p>
         </div>
 
         {/* Tagline + features — always visible */}
@@ -28,7 +28,7 @@ export function AuthLayout({ children }) {
             Every child accounted for, the moment they arrive.
           </p>
           <p className="hidden lg:block text-body-large tracking-[0.5px] text-white/90">
-            Attendance Guard checks students in at the gate and texts parents instantly — even on a basic phone.
+            Childmap checks students in at the gate and texts parents instantly — even on a basic phone.
           </p>
           <div className="flex flex-col gap-2 lg:gap-3">
             {FEATURES.map((item) => (
