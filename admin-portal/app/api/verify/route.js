@@ -1,4 +1,5 @@
-import { supabase } from '@/lib/supabase'
+import { getVerificationById, markVerificationUsed } from '@/lib/repo/verifications'
+import { updateStudent, getStudentById } from '@/lib/repo/students'
 
 export async function POST(request) {
   let body
@@ -13,12 +14,7 @@ export async function POST(request) {
     return Response.json({ error: 'verificationId, otp, and parentName are required' }, { status: 400 })
   }
 
-  const { data: verification } = await supabase
-    .from('verifications')
-    .select('id, student_id, phone, otp, expires_at, used')
-    .eq('id', verificationId)
-    .single()
-
+  const verification = await getVerificationById(verificationId)
   if (!verification) {
     return Response.json({ error: 'Invalid verification' }, { status: 404 })
   }
@@ -27,7 +23,7 @@ export async function POST(request) {
     return Response.json({ error: 'This code has already been used' }, { status: 410 })
   }
 
-  if (new Date(verification.expires_at) < new Date()) {
+  if (new Date(verification.expiresAt) < new Date()) {
     return Response.json({ error: 'Verification code has expired. Please register again.' }, { status: 410 })
   }
 
@@ -35,23 +31,19 @@ export async function POST(request) {
     return Response.json({ error: 'Incorrect code — check your SMS and try again' }, { status: 400 })
   }
 
-  // Mark used and save parent info
   await Promise.all([
-    supabase.from('verifications').update({ used: true }).eq('id', verificationId),
-    supabase.from('students')
-      .update({ parent_name: String(parentName).trim().slice(0, 100), parent_phone: verification.phone })
-      .eq('id', verification.student_id)
+    markVerificationUsed(verificationId),
+    updateStudent(verification.studentId, null, {
+      parentName: String(parentName).trim().slice(0, 100),
+      parentPhone: verification.phone,
+    }),
   ])
 
-  const { data: student } = await supabase
-    .from('students')
-    .select('name, student_class')
-    .eq('id', verification.student_id)
-    .single()
+  const student = await getStudentById(verification.studentId, null)
 
   return Response.json({
     success: true,
-    student: { name: student.name, studentClass: student.student_class },
-    message: `You will receive notifications for ${student.name}`
+    student: { name: student.name, studentClass: student.studentClass },
+    message: `You will receive notifications for ${student.name}`,
   })
 }

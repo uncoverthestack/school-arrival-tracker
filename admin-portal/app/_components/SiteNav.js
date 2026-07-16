@@ -16,7 +16,7 @@ export function SiteNav({ schoolId, schoolName }) {
 
   return (
     <nav className="bg-gray-900 border-b border-gray-800 px-6 py-3 flex items-center gap-6">
-      <span className="text-white font-bold text-sm tracking-wide">SchoolPass</span>
+      <span className="text-white font-bold text-sm tracking-wide">Childmap</span>
       {schoolId ? (
         <>
           <Link href="/" className="text-sm text-gray-400 hover:text-white transition-colors">

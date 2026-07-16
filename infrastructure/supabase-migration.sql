@@ -63,7 +63,12 @@ UPDATE schools SET status = 'active' WHERE status = 'pending' AND created_at < N
 -- e.g. "2025-2026". Code rotates when student is promoted; stays if repeating.
 ALTER TABLE students ADD COLUMN IF NOT EXISTS code_year TEXT;
 
--- ── 9. Performance indexes ───────────────────────────────────────────────────
+-- ── 10. Face descriptor for gate face recognition ───────────────────────────
+-- Stored as a JSON array of 128 floats (Float32Array from face-api.js).
+-- NULL means no face enrolled for this student.
+ALTER TABLE students ADD COLUMN IF NOT EXISTS face_descriptor TEXT;
+
+-- ── 11. Performance indexes ──────────────────────────────────────────────────
 CREATE INDEX IF NOT EXISTS students_school_id_idx        ON students(school_id);
 CREATE INDEX IF NOT EXISTS students_code_idx             ON students(code);
 CREATE INDEX IF NOT EXISTS arrivals_school_id_date_idx   ON arrivals(school_id, date);

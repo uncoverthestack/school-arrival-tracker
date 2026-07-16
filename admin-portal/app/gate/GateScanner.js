@@ -7,19 +7,23 @@ import { KioskFooter } from './components/KioskFooter'
 import { IdCard } from './components/IdCard'
 import { ResultBanner } from './components/ResultBanner'
 import { StudentDetails } from './components/StudentDetails'
+import { ModePickerView } from './components/ModePickerView'
 import { ScannerView } from './components/ScannerView'
 import { CodeEntryView } from './components/CodeEntryView'
 import { ConfirmView } from './components/ConfirmView'
+import { FaceScanView } from './components/FaceScanView'
 
 function footerNote({ online, view, result }) {
   if (!online) return 'not syncing'
+  if (view === 'pick') return 'ready for next student'
+  if (view === 'scan') return 'hold card to the reader'
+  if (view === 'face') return 'watching for faces…'
   if (view === 'confirm') return 'confirm to check in'
   if (view === 'result' && result) {
-    if (result.state === 'success') return 'clears in 2s…'
+    if (result.state === 'success') return 'clears in 5s…'
     if (result.state === 'warning') return 'no new alert sent'
-    if (result.state === 'error') return result.returnTo === 'code' ? 'back to keypad…' : 'returning to ready…'
+    if (result.state === 'error') return result.returnTo === 'code' ? 'back to keypad…' : 'returning to scanner…'
   }
-  if (view === 'scan') return 'ready for next student'
   return ''
 }
 
@@ -78,7 +82,8 @@ function ResultScreen({ result }) {
 export function GateScanner({ schoolKey }) {
   const {
     view, scanType, confirmTarget, result, arrivals, scanning, clock, online,
-    enterCodeView, backToScanner, submitCode, confirmCheckIn, cancelConfirm
+    enterPickView, enterCodeView, enterFaceView, backToScanner, submitCode, confirmCheckIn, cancelConfirm, directScan,
+    toggleScanType
   } = useScanFlow(schoolKey)
 
   // Follow the OS light/dark preference. Scoped to this wrapper's
@@ -95,15 +100,27 @@ export function GateScanner({ schoolKey }) {
 
   return (
     <div data-theme={theme} className="font-kiosk min-h-screen flex flex-col bg-surface text-on-surface">
-      <KioskHeader title="Gate Scanner" scanType={scanType} online={online} time={clock} />
+      <KioskHeader title="Gate Scanner" scanType={scanType} online={online} time={clock} onToggleScanType={toggleScanType} />
 
       <main className="flex-1 flex items-center justify-center px-4 py-10">
         {!online ? (
           <OfflineScreen />
+        ) : view === 'pick' ? (
+          <ModePickerView
+            onCardScan={backToScanner}
+            onCodeEntry={enterCodeView}
+            onFaceScan={enterFaceView}
+          />
         ) : view === 'scan' ? (
-          <ScannerView onEnterCode={enterCodeView} />
+          <ScannerView onBack={enterPickView} />
+        ) : view === 'face' ? (
+          <FaceScanView
+            schoolKey={schoolKey}
+            onScan={(code) => directScan(code, 'face')}
+            onEnterCode={enterPickView}
+          />
         ) : view === 'code' ? (
-          <CodeEntryView onSubmit={submitCode} onBack={backToScanner} scanning={scanning} />
+          <CodeEntryView onSubmit={submitCode} onBack={enterPickView} scanning={scanning} />
         ) : view === 'confirm' && confirmTarget ? (
           <ConfirmView
             student={confirmTarget.student}

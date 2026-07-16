@@ -1,6 +1,16 @@
 import { after } from 'next/server'
-import { supabase } from '@/lib/supabase'
 import { getSuperSession } from '@/lib/superSession'
+import {
+  getAllSchools,
+  getSchoolById,
+  updateSchool,
+  deleteSchool,
+  countStudentsInSchool,
+  hasActiveSubdomainConflict,
+} from '@/lib/repo/schools'
+import { getStudentIdsBySchool, deleteStudentsBySchool } from '@/lib/repo/students'
+import { deleteVerificationsByStudentIds } from '@/lib/repo/verifications'
+import { deleteArrivalsBySchool } from '@/lib/repo/arrivals'
 import { sendPaymentConfirmedEmail } from '@/lib/email'
 
 async function authorize() {
@@ -11,30 +21,14 @@ async function authorize() {
 export async function GET() {
   if (!await authorize()) return Response.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { data: schools } = await supabase
-    .from('schools')
-    .select('id, name, subdomain, admin_email, status, archived_at, created_at')
-    .order('created_at', { ascending: false })
+  const schools = await getAllSchools()
 
-  if (!schools) return Response.json({ schools: [] })
+  const counts = await Promise.all(schools.map(s => countStudentsInSchool(s.id)))
+  const result = schools.map((s, i) => ({ ...s, studentCount: counts[i] }))
 
-  const counts = await Promise.all(
-    schools.map(s =>
-      supabase
-        .from('students')
-        .select('*', { count: 'exact', head: true })
-        .eq('school_id', s.id)
-        .then(({ count }) => ({ id: s.id, count: count ?? 0 }))
-    )
-  )
-
-  const countMap = Object.fromEntries(counts.map(c => [c.id, c.count]))
-  return Response.json({
-    schools: schools.map(s => ({ ...s, studentCount: countMap[s.id] ?? 0 }))
-  })
+  return Response.json({ schools: result })
 }
 
-// Suspend, restore, or archive a school
 export async function PATCH(request) {
   if (!await authorize()) return Response.json({ error: 'Unauthorized' }, { status: 401 })
 
@@ -47,42 +41,32 @@ export async function PATCH(request) {
     return Response.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
-  const { action, paymentDays } = body // 'approve' | 'reject' | 'suspend' | 'restore' | 'archive'
+  const { action, paymentDays } = body
   const validActions = ['approve', 'reject', 'suspend', 'restore', 'archive']
   if (!validActions.includes(action)) {
     return Response.json({ error: 'action must be approve, reject, suspend, restore, or archive' }, { status: 400 })
   }
 
-  // Reject — only valid for pending schools; deletes the record and frees the subdomain
   if (action === 'reject') {
-    const { data: school } = await supabase
-      .from('schools').select('status').eq('id', schoolId).maybeSingle()
+    const school = await getSchoolById(schoolId)
     if (!school) return Response.json({ error: 'School not found' }, { status: 404 })
     if (school.status !== 'pending') {
       return Response.json({ error: 'Only pending schools can be rejected' }, { status: 400 })
     }
-    await supabase.from('schools').delete().eq('id', schoolId)
+    await deleteSchool(schoolId)
     return Response.json({ success: true, action: 'reject' })
   }
 
   const now = new Date()
   const daysUntilDue = Number(paymentDays) > 0 ? Number(paymentDays) : 30
-  const paymentDueAt = new Date(now.getTime() + daysUntilDue * 24 * 60 * 60 * 1000).toISOString()
+  const paymentDueAt = new Date(now.getTime() + daysUntilDue * 24 * 60 * 60 * 1000)
 
   // On approve, verify no other active school has claimed this subdomain in the meantime
   let schoolToApprove = null
   if (action === 'approve') {
-    const { data } = await supabase
-      .from('schools').select('subdomain, name, admin_email, status').eq('id', schoolId).maybeSingle()
-    schoolToApprove = data
+    schoolToApprove = await getSchoolById(schoolId)
     if (schoolToApprove) {
-      const { data: conflict } = await supabase
-        .from('schools')
-        .select('id')
-        .eq('subdomain', schoolToApprove.subdomain)
-        .eq('status', 'active')
-        .neq('id', schoolId)
-        .maybeSingle()
+      const conflict = await hasActiveSubdomainConflict(schoolToApprove.subdomain, schoolId)
       if (conflict) {
         return Response.json(
           { error: 'Another active school already holds this subdomain. Reject or reassign it first.' },
@@ -93,21 +77,17 @@ export async function PATCH(request) {
   }
 
   const updates =
-    action === 'approve'  ? { status: 'active',    archived_at: null, payment_approved_at: now.toISOString(), payment_due_at: paymentDueAt, pending_expires_at: null, payment_reminder_sent_at: null } :
-    action === 'suspend'  ? { status: 'suspended', archived_at: null } :
-    action === 'restore'  ? { status: 'active',    archived_at: null } :
-    /* archive */           { status: 'archived',   archived_at: now.toISOString() }
+    action === 'approve' ? { status: 'active',    archivedAt: null, paymentApprovedAt: now, paymentDueAt, pendingExpiresAt: null } :
+    action === 'suspend' ? { status: 'suspended', archivedAt: null } :
+    action === 'restore' ? { status: 'active',    archivedAt: null } :
+    /* archive */          { status: 'archived',   archivedAt: now }
 
-  const { error } = await supabase
-    .from('schools')
-    .update(updates)
-    .eq('id', schoolId)
-
-  if (error) return Response.json({ error: error.message }, { status: 500 })
+  const updated = await updateSchool(schoolId, updates)
+  if (!updated) return Response.json({ error: 'School not found' }, { status: 404 })
 
   if (action === 'approve' && schoolToApprove) {
     after(() => sendPaymentConfirmedEmail({
-      toEmail: schoolToApprove.admin_email,
+      toEmail: schoolToApprove.adminEmail,
       schoolName: schoolToApprove.name,
       subdomain: schoolToApprove.subdomain,
       isRenewal: schoolToApprove.status === 'payment_due',
@@ -117,7 +97,6 @@ export async function PATCH(request) {
   return Response.json({ success: true, action })
 }
 
-// Hard delete — only for schools that are already archived
 export async function DELETE(request) {
   if (!await authorize()) return Response.json({ error: 'Unauthorized' }, { status: 401 })
 
@@ -125,10 +104,7 @@ export async function DELETE(request) {
   const schoolId = searchParams.get('id')
   if (!schoolId) return Response.json({ error: 'id is required' }, { status: 400 })
 
-  // Safety: only allow hard delete on archived schools
-  const { data: school } = await supabase
-    .from('schools').select('status').eq('id', schoolId).maybeSingle()
-
+  const school = await getSchoolById(schoolId)
   if (!school) return Response.json({ error: 'School not found' }, { status: 404 })
   if (school.status !== 'archived') {
     return Response.json(
@@ -137,16 +113,11 @@ export async function DELETE(request) {
     )
   }
 
-  const studentIds = await supabase
-    .from('students').select('id').eq('school_id', schoolId)
-    .then(({ data }) => (data ?? []).map(s => s.id))
-
-  if (studentIds.length > 0) {
-    await supabase.from('verifications').delete().in('student_id', studentIds)
-  }
-  await supabase.from('arrivals').delete().eq('school_id', schoolId)
-  await supabase.from('students').delete().eq('school_id', schoolId)
-  await supabase.from('schools').delete().eq('id', schoolId)
+  const studentIds = await getStudentIdsBySchool(schoolId)
+  await deleteVerificationsByStudentIds(studentIds)
+  await deleteArrivalsBySchool(schoolId)
+  await deleteStudentsBySchool(schoolId)
+  await deleteSchool(schoolId)
 
   return Response.json({ success: true })
 }

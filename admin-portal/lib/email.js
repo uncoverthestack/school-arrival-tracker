@@ -43,14 +43,12 @@ function layout(title, bodyHtml) {
   `
 }
 
-export async function sendSignupConfirmationEmail({ toEmail, schoolName, subdomain }) {
+export async function sendSignupConfirmationEmail({ toEmail, schoolName }) {
   const subject = 'SchoolPass — Registration received'
-  const text = `Thanks for registering ${schoolName} with SchoolPass. Your account (${subdomain}.dataocelotschools.com) is pending review and will be activated once your payment is confirmed by our team.`
+  const text = `Thanks for registering ${schoolName} with SchoolPass. Your account is pending review and will be activated once your payment is confirmed by our team. We'll email you your portal address as soon as it's ready.`
   const html = layout('Registration received', `
     <p>Thanks for registering <strong>${schoolName}</strong> with SchoolPass.</p>
-    <p>Your portal address will be:</p>
-    <p style="font-family:monospace;background:#f4f4f5;padding:8px 12px;border-radius:6px">${subdomain}.dataocelotschools.com</p>
-    <p>Your account is pending review and will be activated once your payment is confirmed by our team. We'll email you as soon as it's ready.</p>
+    <p>Your account is pending review and will be activated once your payment is confirmed by our team. We'll email you your portal address as soon as it's ready.</p>
   `)
   await sendEmail({ to: toEmail, subject, html, text })
 }
@@ -65,6 +63,21 @@ export async function sendPaymentDueReminderEmail({ toEmail, schoolName, subdoma
     <p><strong>${schoolName}</strong>'s SchoolPass subscription is due on <strong>${dueDate}</strong>.</p>
     <p>Please arrange payment to keep <span style="font-family:monospace">${subdomain}.dataocelotschools.com</span> active without interruption.</p>
     <p>If payment isn't received by the due date, portal access will be paused until renewal is approved.</p>
+  `)
+  await sendEmail({ to: toEmail, subject, html, text })
+}
+
+export async function sendDemoRequestNotification({ firstName, lastName, phone, schoolName, schoolEmail, schoolAddress }) {
+  const toEmail = process.env.SUPER_ADMIN_EMAIL
+  if (!toEmail) return
+
+  const subject = `SchoolPass — Demo request from ${schoolName}`
+  const text = `${firstName} ${lastName} from ${schoolName} requested a demo.\nPhone: ${phone}\nSchool email: ${schoolEmail}\nSchool address: ${schoolAddress}`
+  const html = layout('New demo request', `
+    <p><strong>${firstName} ${lastName}</strong> from <strong>${schoolName}</strong> requested a demo.</p>
+    <p>Phone: <a href="tel:${phone}">${phone}</a></p>
+    <p>School email: <a href="mailto:${schoolEmail}">${schoolEmail}</a></p>
+    <p>School address: ${schoolAddress}</p>
   `)
   await sendEmail({ to: toEmail, subject, html, text })
 }

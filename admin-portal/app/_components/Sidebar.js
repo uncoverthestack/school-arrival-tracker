@@ -53,6 +53,15 @@ function MessagesIcon() {
   )
 }
 
+function SettingsIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+      <circle cx="10" cy="10" r="2.5" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M10 2.5v2M10 15.5v2M17.5 10h-2M4.5 10h-2M15.3 4.7l-1.4 1.4M6.1 13.9l-1.4 1.4M15.3 15.3l-1.4-1.4M6.1 6.1 4.7 4.7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  )
+}
+
 function LogoutIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
@@ -61,7 +70,7 @@ function LogoutIcon() {
   )
 }
 
-export function Sidebar({ watchlistCount = 0 }) {
+export function Sidebar({ watchlistCount = 0, onNavigate }) {
   const pathname = usePathname()
   const router = useRouter()
 
@@ -72,7 +81,7 @@ export function Sidebar({ watchlistCount = 0 }) {
   }
 
   return (
-    <div className="bg-surface-container-lowest border-r border-outline-variant flex flex-col p-4 py-8 shrink-0 w-[252px] self-stretch">
+    <div className="bg-surface-container-lowest border-r border-outline-variant flex flex-col h-full p-4 py-8 shrink-0 w-63 overflow-y-auto">
       <div className="flex flex-col gap-1 w-full">
         <div className="flex items-center gap-2.5 pb-6 pt-1 px-1">
           <div className="bg-primary flex items-center justify-center rounded-sm size-8 shrink-0">
@@ -84,12 +93,12 @@ export function Sidebar({ watchlistCount = 0 }) {
           <p className="text-title-medium tracking-[0.15px] text-on-surface">Childmap</p>
         </div>
 
-        <Link href="/" className={pathname === '/' ? activeItemClass : itemClass}>
+        <Link href="/" onClick={onNavigate} className={pathname === '/' ? activeItemClass : itemClass}>
           <TodayIcon />
           <span className="flex-1">Today</span>
         </Link>
 
-        <Link href="/gate" className={itemClass}>
+        <Link href="/gate" onClick={onNavigate} className={itemClass}>
           <GateIcon />
           <span className="flex-1">Gate scanner</span>
         </Link>
@@ -105,7 +114,7 @@ export function Sidebar({ watchlistCount = 0 }) {
           )}
         </div>
 
-        <Link href="/students" className={pathname === '/students' ? activeItemClass : itemClass}>
+        <Link href="/students" onClick={onNavigate} className={pathname === '/students' ? activeItemClass : itemClass}>
           <StudentsIcon />
           <span className="flex-1">Students</span>
         </Link>
@@ -115,6 +124,13 @@ export function Sidebar({ watchlistCount = 0 }) {
           <MessagesIcon />
           <span className="flex-1">Messages</span>
         </div>
+      </div>
+
+      <div className="flex flex-col gap-1 w-full mt-auto pt-4">
+        <Link href="/settings" onClick={onNavigate} className={pathname === '/settings' ? activeItemClass : itemClass}>
+          <SettingsIcon />
+          <span className="flex-1">Settings</span>
+        </Link>
 
         <button onClick={handleLogout} className={`${itemClass} cursor-pointer`}>
           <LogoutIcon />

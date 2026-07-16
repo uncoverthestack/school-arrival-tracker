@@ -23,12 +23,13 @@ function currentLagosClock() {
 }
 
 // Drives the whole kiosk: which screen is showing, the arrival/departure
-// pill (derived from time, not a manual toggle), the QR camera lifecycle,
-// and the code-entry confirm step. QR scans call scanCard directly (no
-// confirm); manual codes go through lookupStudent -> confirm -> scanCard.
+// pill (derived from time by default, but staff can tap it to override —
+// useful for early pickups, late arrivals, or demos outside normal hours),
+// the QR camera lifecycle, and the code-entry confirm step. QR scans call
+// scanCard directly (no confirm); manual codes go through lookupStudent ->
+// confirm -> scanCard.
 export function useScanFlow(schoolKey) {
-  // Code entry is the default screen; the camera scanner is the fallback.
-  const [view, setView] = useState('code') // 'scan' | 'code' | 'confirm' | 'result'
+  const [view, setView] = useState('pick') // 'pick' | 'scan' | 'code' | 'face' | 'confirm' | 'result'
   const [scanType, setScanType] = useState(deriveScanType)
   const [confirmTarget, setConfirmTarget] = useState(null) // { student, code }
   const [result, setResult] = useState(null)
@@ -42,18 +43,27 @@ export function useScanFlow(schoolKey) {
   const resultTimerRef = useRef(null)
   const qrScannerRef = useRef(null)
   const priorViewRef = useRef('code')
+  // Once staff manually flips the pill, stop the clock-based tick from
+  // silently reverting it back — the override holds for the rest of the
+  // browser session (a fresh page load resumes automatic mode).
+  const manualOverrideRef = useRef(false)
 
   useEffect(() => { scanTypeRef.current = scanType }, [scanType])
 
   // Recompute arrival/departure and the header clock from the school's local time.
   useEffect(() => {
     const tick = () => {
-      setScanType(deriveScanType())
+      if (!manualOverrideRef.current) setScanType(deriveScanType())
       setClock(currentLagosClock())
     }
     tick()
     const id = setInterval(tick, 30000)
     return () => clearInterval(id)
+  }, [])
+
+  const toggleScanType = useCallback(() => {
+    manualOverrideRef.current = true
+    setScanType(t => t === 'arrival' ? 'departure' : 'arrival')
   }, [])
 
   // Real connectivity check — the "offline" screen isn't just decorative.
@@ -116,10 +126,6 @@ export function useScanFlow(schoolKey) {
     }
   }, [schoolKey, showResult])
 
-  // QR scanner — same start/stop lifecycle as the original page.js, just keyed
-  // off `view === 'scan'` instead of a `mode` toggle. Skipped while offline
-  // since GateScanner renders the "No connection" screen instead of the
-  // camera in that case (no #qr-reader element to attach to).
   useEffect(() => {
     if (view !== 'scan' || !online) return
     let scanner
@@ -142,7 +148,9 @@ export function useScanFlow(schoolKey) {
     }
   }, [view, online, handleScan])
 
+  const enterPickView = useCallback(() => setView('pick'), [])
   const enterCodeView = useCallback(() => setView('code'), [])
+  const enterFaceView = useCallback(() => setView('face'), [])
   const backToScanner = useCallback(() => setView('scan'), [])
 
   const submitCode = useCallback(async (code) => {
@@ -186,6 +194,7 @@ export function useScanFlow(schoolKey) {
 
   return {
     view, scanType, confirmTarget, result, arrivals, scanning, clock, online,
-    enterCodeView, backToScanner, submitCode, confirmCheckIn, cancelConfirm
+    enterPickView, enterCodeView, enterFaceView, backToScanner, submitCode, confirmCheckIn, cancelConfirm,
+    directScan: handleScan, toggleScanType
   }
 }
