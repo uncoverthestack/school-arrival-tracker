@@ -20,7 +20,7 @@ export function DashboardShell({ watchlistCount, children }) {
         <button onClick={() => setOpen(true)} aria-label="Open menu" className="p-1 -ml-1 text-on-surface">
           <MenuIcon />
         </button>
-        <p className="text-title-medium tracking-[0.15px] text-on-surface">Attendance Guard</p>
+        <p className="text-title-medium tracking-[0.15px] text-on-surface">Childmap</p>
       </div>
 
       {open && (

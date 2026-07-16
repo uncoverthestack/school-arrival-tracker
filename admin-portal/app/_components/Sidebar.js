@@ -86,11 +86,11 @@ export function Sidebar({ watchlistCount = 0, onNavigate }) {
         <div className="flex items-center gap-2.5 pb-6 pt-1 px-1">
           <div className="bg-primary flex items-center justify-center rounded-sm size-8 shrink-0">
             <svg width="19" height="19" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M12 2l8 3v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V5l8-3Z" fill="var(--color-on-primary)" />
-              <path d="M8.5 12.5l2.5 2.5 4.5-5" stroke="var(--color-primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M12 2C7.58 2 4 5.58 4 10c0 5.25 6.72 11.19 7.02 11.44a1.5 1.5 0 0 0 1.96 0C13.28 21.19 20 15.25 20 10c0-4.42-3.58-8-8-8Z" fill="var(--color-on-primary)" />
+              <circle cx="12" cy="10" r="3" fill="var(--color-primary)" />
             </svg>
           </div>
-          <p className="text-title-medium tracking-[0.15px] text-on-surface">Attendance Guard</p>
+          <p className="text-title-medium tracking-[0.15px] text-on-surface">Childmap</p>
         </div>
 
         <Link href="/" onClick={onNavigate} className={pathname === '/' ? activeItemClass : itemClass}>

@@ -4,7 +4,7 @@ import { SiteNav } from './_components/SiteNav'
 import { themeInitScript } from '@/lib/theme'
 
 export const metadata = {
-  title: 'SchoolPass — School Arrival Tracker',
+  title: 'Childmap — School Arrival Tracker',
   description: 'Real-time school gate arrival dashboard with parent notifications',
 }
 

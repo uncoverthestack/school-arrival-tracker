@@ -111,7 +111,7 @@ export default function SignupPage() {
       <div>
         <p className="text-headline-small text-on-surface">Create your school account</p>
         <p className="text-body-medium tracking-[0.25px] text-on-surface-variant mt-1">
-          Set up Attendance Guard for your school
+          Set up Childmap for your school
         </p>
       </div>
 

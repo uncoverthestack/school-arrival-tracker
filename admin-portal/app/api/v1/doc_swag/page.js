@@ -33,7 +33,7 @@ export default function SwaggerDocsPage() {
           defaultModelsExpandDepth: 1,
           syntaxHighlight: { activated: true, theme: 'monokai' },
           // Replace the default Swagger logo link text
-          customSiteTitle: 'SchoolPass API Docs'
+          customSiteTitle: 'Childmap API Docs'
         })
       }
       document.head.appendChild(preset)

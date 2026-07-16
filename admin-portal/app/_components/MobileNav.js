@@ -5,7 +5,7 @@ import Link from 'next/link'
 
 const LINKS = [
   { href: '#features', label: 'Features' },
-  { href: '#why-us', label: 'Why SchoolPass' },
+  { href: '#why-us', label: 'Why Childmap' },
   { href: '#pricing', label: 'Pricing' },
 ]
 
