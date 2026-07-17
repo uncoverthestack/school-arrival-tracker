@@ -20,6 +20,12 @@ export async function getSchoolById(id) {
   return row ?? null
 }
 
+export async function getSchoolBySubdomain(subdomain) {
+  if (!subdomain) return null
+  const [row] = await db.select().from(schools).where(eq(schools.subdomain, subdomain)).limit(1)
+  return row ?? null
+}
+
 export async function getAllSchools() {
   return db.select().from(schools).orderBy(schools.createdAt)
 }

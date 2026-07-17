@@ -1,7 +1,12 @@
 import bcrypt from 'bcryptjs'
 import { getAdminSession } from '@/lib/session'
 import { checkLimit, loginLimiter } from '@/lib/ratelimit'
-import { getSchoolByApiKeyFull } from '@/lib/repo/schools'
+import { getSchoolByApiKeyFull, getSchoolBySubdomain } from '@/lib/repo/schools'
+
+// Local dev only — lets any teammate log into a fixed seeded test school
+// without needing a subdomain or a `?key=` URL param. Never active in a
+// real deployment: Vercel always sets NODE_ENV=production, including previews.
+const DEV_TEST_SUBDOMAIN = 'devtest'
 
 export async function POST(request) {
   const { allowed } = await checkLimit(loginLimiter, null, request)
@@ -25,11 +30,16 @@ export async function POST(request) {
   const keyFromMiddleware = headers.get('x-school-key')
   const resolvedKey = keyFromMiddleware || schoolKey
 
-  if (!resolvedKey) {
-    return Response.json({ error: 'Could not identify school. Access via your school URL.' }, { status: 400 })
+  let school = null
+  if (resolvedKey) {
+    school = await getSchoolByApiKeyFull(resolvedKey)
+  } else if (process.env.NODE_ENV !== 'production') {
+    school = await getSchoolBySubdomain(DEV_TEST_SUBDOMAIN)
   }
 
-  const school = await getSchoolByApiKeyFull(resolvedKey)
+  if (!resolvedKey && !school) {
+    return Response.json({ error: 'Could not identify school. Access via your school URL.' }, { status: 400 })
+  }
 
   if (!school || school.adminEmail !== email.trim().toLowerCase()) {
     return Response.json({ error: 'Invalid email or password' }, { status: 401 })
