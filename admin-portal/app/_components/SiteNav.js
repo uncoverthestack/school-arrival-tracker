@@ -16,7 +16,10 @@ export function SiteNav({ schoolId, schoolName }) {
 
   return (
     <nav className="bg-gray-900 border-b border-gray-800 px-6 py-3 flex items-center gap-6">
-      <span className="text-white font-bold text-sm tracking-wide">Childmap</span>
+      <span className="flex items-center gap-2">
+        <img src="/brand/childmap-icon-256.png" alt="" width={22} height={22} className="size-5.5 shrink-0" />
+        <span className="text-white font-bold text-sm tracking-wide">Childmap</span>
+      </span>
       {schoolId ? (
         <>
           <Link href="/" className="text-sm text-gray-400 hover:text-white transition-colors">

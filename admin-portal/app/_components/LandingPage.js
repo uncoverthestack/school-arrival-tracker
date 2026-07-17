@@ -90,7 +90,10 @@ export function LandingPage() {
     <div data-theme="light" className="min-h-screen bg-surface text-on-surface font-kiosk">
       <header className="sticky top-0 z-40 bg-surface/95 backdrop-blur border-b border-outline-variant">
         <div className="max-w-6xl mx-auto flex items-center justify-between px-4 sm:px-8 py-4">
-          <p className="text-xl font-extrabold text-on-surface">Childmap</p>
+          <div className="flex items-center gap-2">
+            <img src="/brand/childmap-icon-256.png" alt="" width={30} height={30} className="size-7.5 shrink-0" />
+            <p className="text-xl font-extrabold text-on-surface">Childmap</p>
+          </div>
           <nav className="hidden sm:flex items-center gap-8 text-sm font-medium text-on-surface-variant">
             <a href="#features" className="hover:text-on-surface transition-colors">Features</a>
             <a href="#why-us" className="hover:text-on-surface transition-colors">Why Childmap</a>
@@ -282,6 +285,7 @@ export function LandingPage() {
 
       <footer className="border-t border-outline-variant">
         <div className="max-w-6xl mx-auto px-4 sm:px-8 py-8 flex flex-col items-center gap-1 text-center">
+          <img src="/brand/childmap-icon-256.png" alt="" width={28} height={28} className="size-7 shrink-0 mb-1" />
           <p className="font-extrabold text-on-surface">Childmap</p>
           <p className="text-sm text-on-surface-variant">Real-time school arrival &amp; departure tracking.</p>
           <p className="text-sm text-on-surface-variant mt-3">© {new Date().getFullYear()} Childmap. All rights reserved.</p>

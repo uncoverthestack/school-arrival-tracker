@@ -20,6 +20,7 @@ export function DashboardShell({ watchlistCount, children }) {
         <button onClick={() => setOpen(true)} aria-label="Open menu" className="p-1 -ml-1 text-on-surface">
           <MenuIcon />
         </button>
+        <img src="/brand/childmap-icon-256.png" alt="" width={26} height={26} className="size-6.5 shrink-0" />
         <p className="text-title-medium tracking-[0.15px] text-on-surface">Childmap</p>
       </div>
 
