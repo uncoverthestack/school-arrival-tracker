@@ -1,9 +1,11 @@
 'use client'
 
+import { useRef } from 'react'
 import Link from 'next/link'
-import { motion } from 'framer-motion'
+import { motion, useScroll, useTransform } from 'framer-motion'
 import { RequestDemoButton } from './RequestDemoButton'
 import { MobileNav } from './MobileNav'
+import { TiltCard } from './TiltCard'
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -102,6 +104,13 @@ const WHY_US = [
 ]
 
 export function LandingPage() {
+  const heroRef = useRef(null)
+  const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] })
+  const heroTextY = useTransform(scrollYProgress, [0, 1], [0, -60])
+  const heroTextOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0])
+  const mockupY = useTransform(scrollYProgress, [0, 1], [0, 40])
+  const mockupRotate = useTransform(scrollYProgress, [0, 1], [-8, -2])
+
   return (
     <div data-theme="light" className="min-h-screen bg-surface text-on-surface font-kiosk">
       <header className="sticky top-0 z-40 bg-surface/95 backdrop-blur border-b border-outline-variant">
@@ -131,9 +140,26 @@ export function LandingPage() {
         </div>
       </header>
 
-      <section className="bg-linear-to-b from-primary-container/70 via-primary-container/25 to-surface">
-        <div className="max-w-7xl mx-auto px-4 sm:px-8 py-20 sm:py-32 grid lg:grid-cols-12 gap-16 items-center">
-          <motion.div initial="hidden" animate="show" variants={staggerContainer} className="lg:col-span-5">
+      <section ref={heroRef} className="relative overflow-hidden bg-linear-to-b from-primary-container/70 via-primary-container/25 to-surface">
+        {/* Ambient floating glow — pure atmosphere, no interaction */}
+        <motion.div
+          aria-hidden="true"
+          animate={{ x: [0, 40, 0], y: [0, -30, 0] }}
+          transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}
+          className="pointer-events-none absolute -top-32 -left-32 w-96 h-96 rounded-full bg-primary/30 blur-3xl"
+        />
+        <motion.div
+          aria-hidden="true"
+          animate={{ x: [0, -50, 0], y: [0, 40, 0] }}
+          transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut' }}
+          className="pointer-events-none absolute top-1/3 -right-40 w-[28rem] h-[28rem] rounded-full bg-tertiary/20 blur-3xl"
+        />
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-8 py-20 sm:py-32 grid lg:grid-cols-12 gap-16 items-center">
+          <motion.div
+            style={{ y: heroTextY, opacity: heroTextOpacity }}
+            initial="hidden" animate="show" variants={staggerContainer} className="lg:col-span-5"
+          >
             <motion.span
               variants={fadeUp}
               className="inline-block px-3 py-1.5 rounded-full bg-surface-container-lowest border border-outline-variant text-xs font-semibold text-on-surface-variant mb-6"
@@ -158,53 +184,58 @@ export function LandingPage() {
             </motion.div>
           </motion.div>
 
-          {/* Dashboard mockup — a stylized preview of the real Today dashboard, always dark to match the app screenshot */}
+          {/* Dashboard mockup — a stylized preview of the real Today dashboard, always dark to match the app screenshot.
+              Rests at a 3D tilt (perspective + rotateY) and tilts further toward the cursor via TiltCard. */}
           <motion.div
-            initial={{ opacity: 0, x: 40 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.25, ease: 'easeOut' }}
-            data-theme="dark" className="lg:col-span-7">
-            <div className="rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-2xl overflow-hidden">
-              <div className="flex items-center gap-1.5 px-4 py-3 border-b border-outline-variant bg-surface-container">
-                <span className="w-2.5 h-2.5 rounded-full bg-error" />
-                <span className="w-2.5 h-2.5 rounded-full bg-warning" />
-                <span className="w-2.5 h-2.5 rounded-full bg-success" />
-                <span className="ml-3 text-xs text-on-surface-variant font-mono truncate">http://localhost:3000</span>
-                <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true" className="ml-auto text-on-surface-variant md:hidden shrink-0">
-                  <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-                </svg>
-              </div>
-              <div className="flex">
-                <div className="hidden md:flex flex-col gap-1 w-40 shrink-0 border-r border-outline-variant p-3">
-                  <p className="text-xs font-bold text-on-surface px-2 pb-2">Childmap</p>
-                  <span className="text-xs font-medium rounded-md px-2 py-1.5 bg-primary-container text-on-primary-container">Today</span>
-                  <span className="text-xs font-medium rounded-md px-2 py-1.5 text-on-surface-variant">Gate scanner</span>
-                  <span className="text-xs font-medium rounded-md px-2 py-1.5 text-on-surface-variant">Watchlist</span>
-                  <span className="text-xs font-medium rounded-md px-2 py-1.5 text-on-surface-variant">Students</span>
-                  <span className="text-xs font-medium rounded-md px-2 py-1.5 text-on-surface-variant">Messages</span>
+            initial={{ opacity: 0, x: 60, rotateY: -22 }}
+            animate={{ opacity: 1, x: 0, rotateY: -8 }}
+            style={{ y: mockupY, rotate: mockupRotate, perspective: 1200 }}
+            transition={{ duration: 0.7, delay: 0.25, ease: 'easeOut' }}
+            data-theme="dark" className="lg:col-span-7"
+          >
+            <TiltCard tiltStrength={6} className="rounded-2xl shadow-2xl">
+              <div className="rounded-2xl bg-surface-container-lowest border border-outline-variant overflow-hidden">
+                <div className="flex items-center gap-1.5 px-4 py-3 border-b border-outline-variant bg-surface-container">
+                  <span className="w-2.5 h-2.5 rounded-full bg-error" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-warning" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-success" />
+                  <span className="ml-3 text-xs text-on-surface-variant font-mono truncate">http://localhost:3000</span>
+                  <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true" className="ml-auto text-on-surface-variant md:hidden shrink-0">
+                    <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                  </svg>
                 </div>
-                <div className="p-4 sm:p-5 flex-1 min-w-0">
-                  <p className="text-sm font-bold text-on-surface mb-3">Welcome, Admin</p>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 mb-4">
-                    <MockMetric label="Checked in" value="128" bg="bg-success-container" text="text-on-success-container" />
-                    <MockMetric label="Checked out" value="94" bg="bg-secondary-container" text="text-on-secondary-container" />
-                    <MockMetric label="Expected" value="150" bg="bg-primary-container" text="text-on-primary-container" />
-                    <MockMetric label="Unaccounted" value="22" bg="bg-warning-container" text="text-on-warning-container" />
-                    <MockMetric label="Alerts sent" value="340" bg="bg-tertiary-container" text="text-on-tertiary-container" />
-                    <MockMetric label="Classes" value="18" bg="bg-surface-container" text="text-on-surface" />
+                <div className="flex">
+                  <div className="hidden md:flex flex-col gap-1 w-40 shrink-0 border-r border-outline-variant p-3">
+                    <p className="text-xs font-bold text-on-surface px-2 pb-2">Childmap</p>
+                    <span className="text-xs font-medium rounded-md px-2 py-1.5 bg-primary-container text-on-primary-container">Today</span>
+                    <span className="text-xs font-medium rounded-md px-2 py-1.5 text-on-surface-variant">Gate scanner</span>
+                    <span className="text-xs font-medium rounded-md px-2 py-1.5 text-on-surface-variant">Watchlist</span>
+                    <span className="text-xs font-medium rounded-md px-2 py-1.5 text-on-surface-variant">Students</span>
+                    <span className="text-xs font-medium rounded-md px-2 py-1.5 text-on-surface-variant">Messages</span>
                   </div>
-                  <div className="rounded-xl bg-surface-container p-3">
-                    <p className="text-xs text-on-surface-variant mb-2">Arrival flow</p>
-                    <svg viewBox="0 0 200 50" className="w-full h-10 text-primary" preserveAspectRatio="none">
-                      <polyline
-                        points="0,45 20,40 40,30 60,15 80,10 100,8 120,12 140,20 160,28 180,35 200,42"
-                        fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-                      />
-                    </svg>
+                  <div className="p-4 sm:p-5 flex-1 min-w-0">
+                    <p className="text-sm font-bold text-on-surface mb-3">Welcome, Admin</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 mb-4">
+                      <MockMetric label="Checked in" value="128" bg="bg-success-container" text="text-on-success-container" />
+                      <MockMetric label="Checked out" value="94" bg="bg-secondary-container" text="text-on-secondary-container" />
+                      <MockMetric label="Expected" value="150" bg="bg-primary-container" text="text-on-primary-container" />
+                      <MockMetric label="Unaccounted" value="22" bg="bg-warning-container" text="text-on-warning-container" />
+                      <MockMetric label="Alerts sent" value="340" bg="bg-tertiary-container" text="text-on-tertiary-container" />
+                      <MockMetric label="Classes" value="18" bg="bg-surface-container" text="text-on-surface" />
+                    </div>
+                    <div className="rounded-xl bg-surface-container p-3">
+                      <p className="text-xs text-on-surface-variant mb-2">Arrival flow</p>
+                      <svg viewBox="0 0 200 50" className="w-full h-10 text-primary" preserveAspectRatio="none">
+                        <polyline
+                          points="0,45 20,40 40,30 60,15 80,10 100,8 120,12 140,20 160,28 180,35 200,42"
+                          fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                        />
+                      </svg>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            </TiltCard>
           </motion.div>
         </div>
       </section>
@@ -222,12 +253,14 @@ export function LandingPage() {
           className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5"
         >
           {FEATURES.map(f => (
-            <motion.div key={f.title} variants={fadeUp} className="p-6 rounded-2xl bg-surface-container border border-outline-variant">
-              <div className="w-11 h-11 rounded-xl bg-primary-container text-primary flex items-center justify-center mb-4">
-                <svg width="22" height="22" viewBox="0 0 20 20" fill="none" aria-hidden="true">{f.icon}</svg>
-              </div>
-              <p className="text-lg font-bold text-on-surface">{f.title}</p>
-              <p className="mt-1.5 text-sm text-on-surface-variant">{f.desc}</p>
+            <motion.div key={f.title} variants={fadeUp} style={{ perspective: 800 }}>
+              <TiltCard tiltStrength={8} className="h-full p-6 rounded-2xl bg-surface-container border border-outline-variant">
+                <div className="w-11 h-11 rounded-xl bg-primary-container text-primary flex items-center justify-center mb-4">
+                  <svg width="22" height="22" viewBox="0 0 20 20" fill="none" aria-hidden="true">{f.icon}</svg>
+                </div>
+                <p className="text-lg font-bold text-on-surface">{f.title}</p>
+                <p className="mt-1.5 text-sm text-on-surface-variant">{f.desc}</p>
+              </TiltCard>
             </motion.div>
           ))}
         </motion.div>
@@ -239,9 +272,8 @@ export function LandingPage() {
             initial="hidden" whileInView="show" viewport={scrollReveal} variants={fadeUp}
             className="text-3xl font-extrabold text-center mb-12 text-on-surface"
           >
-            Why Schools Choose SchoolPass
+            Why Schools Choose Childmap
           </motion.h2>
-          <h2 className="text-3xl font-extrabold text-center mb-12 text-on-surface">Why Schools Choose Childmap</h2>
           <div className="grid lg:grid-cols-2 gap-10 items-center">
             <motion.div
               initial="hidden" whileInView="show" viewport={scrollReveal} variants={staggerContainer}
@@ -289,10 +321,10 @@ export function LandingPage() {
           className="grid sm:grid-cols-2 gap-6 max-w-3xl mx-auto"
         >
           {PRICING.map(plan => (
-            <motion.div
-              key={plan.name}
-              variants={fadeUp}
-              className={`relative rounded-2xl p-8 border ${
+            <motion.div key={plan.name} variants={fadeUp} style={{ perspective: 800 }}>
+            <TiltCard
+              tiltStrength={5}
+              className={`rounded-2xl p-8 border ${
                 plan.highlighted ? 'border-primary bg-surface-container-lowest shadow-lg' : 'border-outline-variant bg-surface-container-lowest'
               }`}
             >
@@ -317,6 +349,7 @@ export function LandingPage() {
                   </li>
                 ))}
               </ul>
+            </TiltCard>
             </motion.div>
           ))}
         </motion.div>
@@ -342,6 +375,7 @@ export function LandingPage() {
           <img src="/brand/childmap-icon-256.png" alt="" width={28} height={28} className="size-7 shrink-0 mb-1" />
           <p className="font-extrabold text-on-surface">Childmap</p>
           <p className="text-sm text-on-surface-variant">Real-time school arrival &amp; departure tracking.</p>
+          <Link href="/privacy" className="text-sm text-primary hover:opacity-80 transition-opacity mt-1">Privacy Policy</Link>
           <p className="text-sm text-on-surface-variant mt-3">© {new Date().getFullYear()} Childmap. All rights reserved.</p>
         </div>
       </footer>
