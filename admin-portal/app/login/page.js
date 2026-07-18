@@ -90,10 +90,9 @@ export default function LoginPage() {
         </div>
 
         <div className="flex justify-end -mt-3">
-          {/* Not wired to a real flow yet — no password-reset route exists. */}
-          <button type="button" className="text-body-medium tracking-[0.25px] text-primary hover:opacity-80 transition-opacity">
+          <Link href="/forgot-password" className="text-body-medium tracking-[0.25px] text-primary hover:opacity-80 transition-opacity">
             Forgot password?
-          </button>
+          </Link>
         </div>
 
         {error && <p className="text-error text-body-medium tracking-[0.25px] text-center">{error}</p>}

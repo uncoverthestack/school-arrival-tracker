@@ -62,6 +62,15 @@ export const demoRequests = pgTable('demo_requests', {
   createdAt:     timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 })
 
+export const passwordResets = pgTable('password_resets', {
+  id:         uuid('id').defaultRandom().primaryKey(),
+  schoolId:   uuid('school_id').references(() => schools.id).notNull(),
+  token:      text('token').notNull().unique(),
+  expiresAt:  timestamp('expires_at', { withTimezone: true }).notNull(),
+  used:       boolean('used').default(false).notNull(),
+  createdAt:  timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+})
+
 export const verifications = pgTable('verifications', {
   id:         uuid('id').defaultRandom().primaryKey(),
   studentId:  uuid('student_id').references(() => students.id),

@@ -82,6 +82,18 @@ export async function sendDemoRequestNotification({ firstName, lastName, phone, 
   await sendEmail({ to: toEmail, subject, html, text })
 }
 
+export async function sendPasswordResetEmail({ toEmail, schoolName, subdomain, token }) {
+  const url = `https://${subdomain}.dataocelotschools.com/reset-password?token=${token}`
+  const subject = 'SchoolPass — Reset your password'
+  const text = `A password reset was requested for ${schoolName}'s SchoolPass account. Reset it here (expires in 1 hour): ${url}\n\nIf you didn't request this, you can ignore this email.`
+  const html = layout('Reset your password', `
+    <p>A password reset was requested for <strong>${schoolName}</strong>'s SchoolPass account.</p>
+    <p><a href="${url}" style="background:#124f8f;color:#fff;padding:10px 20px;border-radius:6px;text-decoration:none;display:inline-block">Reset password</a></p>
+    <p style="font-size:12px;color:#888">This link expires in 1 hour. If you didn't request this, you can ignore this email.</p>
+  `)
+  await sendEmail({ to: toEmail, subject, html, text })
+}
+
 export async function sendPaymentConfirmedEmail({ toEmail, schoolName, subdomain, isRenewal }) {
   const url = `https://${subdomain}.dataocelotschools.com`
   const subject = isRenewal ? 'SchoolPass — Payment confirmed, access renewed' : 'SchoolPass — You\'re approved!'
