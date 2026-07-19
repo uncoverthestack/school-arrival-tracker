@@ -24,6 +24,7 @@ const FEATURES = [
   {
     title: 'Gate Scanner',
     desc: 'Three check-in modes at the gate: ID card tap, 6-digit code entry, or Face ID — whatever fits your school.',
+    iconBg: 'bg-primary-container', iconText: 'text-primary',
     icon: (
       <path d="M2 5V3a1 1 0 0 1 1-1h3M18 5V3a1 1 0 0 0-1-1h-3M2 15v2a1 1 0 0 0 1 1h3M18 15v2a1 1 0 0 1-1 1h-3M2 10h16" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
     ),
@@ -31,6 +32,7 @@ const FEATURES = [
   {
     title: 'Instant Parent Alerts',
     desc: 'Parents get an SMS/WhatsApp message the moment their child arrives — and again when they leave.',
+    iconBg: 'bg-success-container', iconText: 'text-on-success-container',
     icon: (
       <path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7Z" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
     ),
@@ -38,6 +40,7 @@ const FEATURES = [
   {
     title: 'Class Management',
     desc: 'Set up JSS1A, JSS1B, JSS1C and beyond — add as many arms as your school needs, any time.',
+    iconBg: 'bg-secondary-container', iconText: 'text-on-secondary-container',
     icon: (
       <><rect x="2" y="2" width="7" height="7" rx="1.5" /><rect x="11" y="2" width="7" height="7" rx="1.5" opacity="0.4" /><rect x="2" y="11" width="7" height="7" rx="1.5" opacity="0.4" /><rect x="11" y="11" width="7" height="7" rx="1.5" opacity="0.4" /></>
     ),
@@ -45,6 +48,7 @@ const FEATURES = [
   {
     title: 'Bulk Student Import',
     desc: 'Already have a student list from the school? Import it in one go via CSV instead of entering each one by hand.',
+    iconBg: 'bg-tertiary-container', iconText: 'text-on-tertiary-container',
     icon: (
       <path d="M10 3v10m0 0-4-4m4 4 4-4M3 15v1a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-1" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
     ),
@@ -52,6 +56,7 @@ const FEATURES = [
   {
     title: 'Live Dashboard',
     desc: 'See checked-in, checked-out, and unaccounted counts update in real time as the gate scans come in.',
+    iconBg: 'bg-warning-container', iconText: 'text-on-warning-container',
     icon: (
       <><circle cx="10" cy="10" r="7.5" stroke="currentColor" strokeWidth="1.6" /><path d="M10 6v4l3 2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></>
     ),
@@ -59,6 +64,7 @@ const FEATURES = [
   {
     title: 'Multi-School Ready',
     desc: 'Each school gets its own portal and gate codes — built to scale from one campus to a whole network.',
+    iconBg: 'bg-primary-container', iconText: 'text-primary',
     icon: (
       <path d="M3 17V8l7-4 7 4v9M3 17h14M3 17v0M7 17v-5h6v5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
     ),
@@ -160,11 +166,6 @@ export function LandingPage() {
             style={{ y: heroTextY, opacity: heroTextOpacity }}
             initial="hidden" animate="show" variants={staggerContainer} className="lg:col-span-5"
           >
-            <motion.span
-              variants={fadeUp}
-              className="inline-block px-3 py-1.5 rounded-full bg-surface-container-lowest border border-outline-variant text-xs font-semibold text-on-surface-variant mb-6"
-            >
-            </motion.span>
             <motion.h1 variants={fadeUp} className="text-4xl sm:text-6xl font-extrabold leading-tight text-on-surface">
               Track Every Arrival, <span className="text-primary">Departure.</span>
             </motion.h1>
@@ -255,7 +256,7 @@ export function LandingPage() {
           {FEATURES.map(f => (
             <motion.div key={f.title} variants={fadeUp} style={{ perspective: 800 }}>
               <TiltCard tiltStrength={8} className="h-full p-6 rounded-2xl bg-surface-container border border-outline-variant">
-                <div className="w-11 h-11 rounded-xl bg-primary-container text-primary flex items-center justify-center mb-4">
+                <div className={`w-11 h-11 rounded-xl ${f.iconBg} ${f.iconText} flex items-center justify-center mb-4`}>
                   <svg width="22" height="22" viewBox="0 0 20 20" fill="none" aria-hidden="true">{f.icon}</svg>
                 </div>
                 <p className="text-lg font-bold text-on-surface">{f.title}</p>
