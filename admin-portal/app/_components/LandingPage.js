@@ -2,7 +2,7 @@
 
 import { useRef } from 'react'
 import Link from 'next/link'
-import { motion, useScroll, useTransform } from 'framer-motion'
+import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion'
 import { RequestDemoButton } from './RequestDemoButton'
 import { MobileNav } from './MobileNav'
 import { TiltCard } from './TiltCard'
@@ -101,7 +101,7 @@ const WHY_US = [
   },
   {
     title: 'Unique Gate Codes',
-    desc: 'Every student gets a private 6-digit code. Codes automatically rotate when they’re promoted a class.',
+    desc: 'Every student gets a private 6-digit code. Codes automatically rotate when they’re promoted to the next class.',
   },
   {
     title: 'Multiple Check-In Modes',
@@ -111,11 +111,12 @@ const WHY_US = [
 
 export function LandingPage() {
   const heroRef = useRef(null)
+  const reduceMotion = useReducedMotion()
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] })
-  const heroTextY = useTransform(scrollYProgress, [0, 1], [0, -60])
-  const heroTextOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0])
-  const mockupY = useTransform(scrollYProgress, [0, 1], [0, 40])
-  const mockupRotate = useTransform(scrollYProgress, [0, 1], [-8, -2])
+  const heroTextY = useTransform(scrollYProgress, [0, 1], [0, reduceMotion ? 0 : -60])
+  const heroTextOpacity = useTransform(scrollYProgress, [0, 0.8], [1, reduceMotion ? 1 : 0])
+  const mockupY = useTransform(scrollYProgress, [0, 1], [0, reduceMotion ? 0 : 40])
+  const mockupRotate = useTransform(scrollYProgress, [0, 1], [-8, reduceMotion ? -8 : -2])
 
   return (
     <div data-theme="light" className="min-h-screen bg-surface text-on-surface font-kiosk">
@@ -126,14 +127,14 @@ export function LandingPage() {
             <p className="text-xl font-extrabold text-on-surface">Childmap</p>
           </div>
           <nav className="hidden sm:flex items-center gap-8 text-sm font-medium text-on-surface-variant">
-            <a href="#features" className="hover:text-on-surface transition-colors">Features</a>
-            <a href="#why-us" className="hover:text-on-surface transition-colors">Why Childmap</a>
-            <a href="#pricing" className="hover:text-on-surface transition-colors">Pricing</a>
+            <a href="#features" className="rounded-sm hover:text-on-surface focus-visible:ring-2 focus-visible:ring-primary transition-colors">Features</a>
+            <a href="#why-us" className="rounded-sm hover:text-on-surface focus-visible:ring-2 focus-visible:ring-primary transition-colors">Why Childmap</a>
+            <a href="#pricing" className="rounded-sm hover:text-on-surface focus-visible:ring-2 focus-visible:ring-primary transition-colors">Pricing</a>
           </nav>
           <div className="flex items-center gap-2">
             <Link
               href="/login"
-              className="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-on-primary text-sm font-bold transition-opacity hover:opacity-90"
+              className="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-on-primary text-sm font-bold transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
             >
               <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true">
                 <rect x="4" y="9" width="9" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.6" />
@@ -147,16 +148,16 @@ export function LandingPage() {
       </header>
 
       <section ref={heroRef} className="relative overflow-hidden bg-linear-to-b from-primary-container/70 via-primary-container/25 to-surface">
-        {/* Ambient floating glow — pure atmosphere, no interaction */}
+        {/* Ambient floating glow — pure atmosphere, no interaction. Static (no loop) under reduced motion. */}
         <motion.div
           aria-hidden="true"
-          animate={{ x: [0, 40, 0], y: [0, -30, 0] }}
+          animate={reduceMotion ? {} : { x: [0, 40, 0], y: [0, -30, 0] }}
           transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}
           className="pointer-events-none absolute -top-32 -left-32 w-96 h-96 rounded-full bg-primary/30 blur-3xl"
         />
         <motion.div
           aria-hidden="true"
-          animate={{ x: [0, -50, 0], y: [0, 40, 0] }}
+          animate={reduceMotion ? {} : { x: [0, -50, 0], y: [0, 40, 0] }}
           transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut' }}
           className="pointer-events-none absolute top-1/3 -right-40 w-[28rem] h-[28rem] rounded-full bg-tertiary/20 blur-3xl"
         />
@@ -167,7 +168,7 @@ export function LandingPage() {
             initial="hidden" animate="show" variants={staggerContainer} className="lg:col-span-5"
           >
             <motion.h1 variants={fadeUp} className="text-4xl sm:text-6xl font-extrabold leading-tight text-on-surface">
-              Track Every Arrival, <span className="text-primary">Departure.</span>
+              Track Every Arrival <span className="text-primary">and Departure.</span>
             </motion.h1>
             <motion.p variants={fadeUp} className="mt-5 text-lg text-on-surface-variant max-w-md">
               Replace the paper logbook with instant gate check-ins, live dashboards, and SMS alerts parents actually see.
@@ -178,7 +179,7 @@ export function LandingPage() {
               </RequestDemoButton>
               <a
                 href="#features"
-                className="px-6 py-3 rounded-xl bg-surface-container-lowest border border-outline-variant text-on-surface font-semibold transition-colors hover:bg-surface-container"
+                className="px-6 py-3 rounded-xl bg-surface-container-lowest border border-outline-variant text-on-surface font-semibold transition-colors hover:bg-surface-container focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
               >
                 Learn More ↓
               </a>
@@ -188,6 +189,7 @@ export function LandingPage() {
           {/* Dashboard mockup — a stylized preview of the real Today dashboard, always dark to match the app screenshot.
               Rests at a 3D tilt (perspective + rotateY) and tilts further toward the cursor via TiltCard. */}
           <motion.div
+            aria-hidden="true"
             initial={{ opacity: 0, x: 60, rotateY: -22 }}
             animate={{ opacity: 1, x: 0, rotateY: -8 }}
             style={{ y: mockupY, rotate: mockupRotate, perspective: 1200 }}
@@ -200,7 +202,7 @@ export function LandingPage() {
                   <span className="w-2.5 h-2.5 rounded-full bg-error" />
                   <span className="w-2.5 h-2.5 rounded-full bg-warning" />
                   <span className="w-2.5 h-2.5 rounded-full bg-success" />
-                  <span className="ml-3 text-xs text-on-surface-variant font-mono truncate">http://localhost:3000</span>
+                  <span className="ml-3 text-xs text-on-surface-variant font-mono truncate">app.childmap.ng</span>
                   <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true" className="ml-auto text-on-surface-variant md:hidden shrink-0">
                     <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
                   </svg>
@@ -241,7 +243,7 @@ export function LandingPage() {
         </div>
       </section>
 
-      <section id="features" className="max-w-6xl mx-auto px-4 sm:px-8 py-20">
+      <section id="features" className="scroll-mt-20 max-w-6xl mx-auto px-4 sm:px-8 py-20">
         <motion.div
           initial="hidden" whileInView="show" viewport={scrollReveal} variants={fadeUp}
           className="text-center max-w-xl mx-auto mb-12"
@@ -267,7 +269,7 @@ export function LandingPage() {
         </motion.div>
       </section>
 
-      <section id="why-us" className="bg-secondary-container/40">
+      <section id="why-us" className="scroll-mt-20 bg-secondary-container/40">
         <div className="max-w-6xl mx-auto px-4 sm:px-8 py-20">
           <motion.h2
             initial="hidden" whileInView="show" viewport={scrollReveal} variants={fadeUp}
@@ -309,7 +311,7 @@ export function LandingPage() {
         </div>
       </section>
 
-      <section id="pricing" className="max-w-6xl mx-auto px-4 sm:px-8 py-20">
+      <section id="pricing" className="scroll-mt-20 max-w-6xl mx-auto px-4 sm:px-8 py-20">
         <motion.div
           initial="hidden" whileInView="show" viewport={scrollReveal} variants={fadeUp}
           className="text-center max-w-xl mx-auto mb-12"
@@ -322,10 +324,10 @@ export function LandingPage() {
           className="grid sm:grid-cols-2 gap-6 max-w-3xl mx-auto"
         >
           {PRICING.map(plan => (
-            <motion.div key={plan.name} variants={fadeUp} style={{ perspective: 800 }}>
+            <motion.div key={plan.name} variants={fadeUp} style={{ perspective: 800 }} className="h-full">
             <TiltCard
               tiltStrength={5}
-              className={`rounded-2xl p-8 border ${
+              className={`h-full flex flex-col rounded-2xl p-8 border ${
                 plan.highlighted ? 'border-primary bg-surface-container-lowest shadow-lg' : 'border-outline-variant bg-surface-container-lowest'
               }`}
             >
@@ -350,6 +352,21 @@ export function LandingPage() {
                   </li>
                 ))}
               </ul>
+              {plan.highlighted ? (
+                <RequestDemoButton
+                  className="mt-auto w-full py-3 rounded-xl font-bold bg-primary text-on-primary hover:opacity-90 transition-colors"
+                >
+                  Get Started
+                </RequestDemoButton>
+              ) : (
+                // Not wired yet — destination TBD, don't open the demo modal for this plan.
+                <button
+                  type="button"
+                  className="mt-auto w-full py-3 rounded-xl font-bold bg-surface-container-lowest text-on-surface border border-outline hover:bg-surface-container transition-colors"
+                >
+                  Get Started
+                </button>
+              )}
             </TiltCard>
             </motion.div>
           ))}
@@ -376,7 +393,7 @@ export function LandingPage() {
           <img src="/brand/childmap-icon-256.png" alt="" width={28} height={28} className="size-7 shrink-0 mb-1" />
           <p className="font-extrabold text-on-surface">Childmap</p>
           <p className="text-sm text-on-surface-variant">Real-time school arrival &amp; departure tracking.</p>
-          <Link href="/privacy" className="text-sm text-primary hover:opacity-80 transition-opacity mt-1">Privacy Policy</Link>
+          <Link href="/privacy" className="rounded-sm text-sm text-primary hover:opacity-80 focus-visible:ring-2 focus-visible:ring-primary transition-opacity mt-1">Privacy Policy</Link>
           <p className="text-sm text-on-surface-variant mt-3">© {new Date().getFullYear()} Childmap. All rights reserved.</p>
         </div>
       </footer>

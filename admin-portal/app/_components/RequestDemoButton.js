@@ -1,13 +1,15 @@
 'use client'
 
-import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useState, useEffect, useRef, useId } from 'react'
+import { motion, useReducedMotion } from 'framer-motion'
 
 const inputClass =
-  'w-full bg-surface-container border border-outline-variant rounded-xl px-4 py-3 text-sm outline-none focus:border-primary'
+  'w-full bg-surface-container border border-outline-variant rounded-xl px-4 py-3 text-sm outline-none ' +
+  'focus:border-primary focus-visible:ring-2 focus-visible:ring-primary'
 const labelClass = 'block text-sm text-on-surface-variant mb-1'
+const focusRing = 'focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2'
 
-function RequestDemoModal({ onClose }) {
+function RequestDemoModal({ onClose, triggerRef }) {
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [phone, setPhone] = useState('')
@@ -17,6 +19,45 @@ function RequestDemoModal({ onClose }) {
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [done, setDone] = useState(false)
+
+  const reduceMotion = useReducedMotion()
+  const dialogRef = useRef(null)
+  const firstFieldRef = useRef(null)
+  const headingId = useId()
+
+  // Move focus into the dialog on open, and back to the trigger button on close —
+  // otherwise keyboard/screen-reader users lose their place in the page.
+  useEffect(() => {
+    firstFieldRef.current?.focus()
+    const trigger = triggerRef.current
+    return () => trigger?.focus()
+  }, [triggerRef])
+
+  // Escape closes the modal; Tab is trapped so focus can't leak into the page behind it.
+  useEffect(() => {
+    function onKeyDown(e) {
+      if (e.key === 'Escape') {
+        onClose()
+        return
+      }
+      if (e.key !== 'Tab' || !dialogRef.current) return
+      const focusable = dialogRef.current.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      )
+      if (focusable.length === 0) return
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault()
+        last.focus()
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault()
+        first.focus()
+      }
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [onClose])
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -39,15 +80,18 @@ function RequestDemoModal({ onClose }) {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
+      transition={{ duration: reduceMotion ? 0 : 0.2 }}
       className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
       onClick={onClose}
     >
       <motion.div
-        initial={{ opacity: 0, scale: 0.92, y: 16 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.92, y: 16 }}
-        transition={{ duration: 0.2, ease: 'easeOut' }}
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={headingId}
+        initial={reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.92, y: 16 }}
+        animate={reduceMotion ? { opacity: 1 } : { opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: reduceMotion ? 0 : 0.2, ease: 'easeOut' }}
         className="bg-surface-container-lowest rounded-2xl p-6 w-full max-w-sm max-h-[90vh] overflow-y-auto"
         onClick={e => e.stopPropagation()}
       >
@@ -58,21 +102,21 @@ function RequestDemoModal({ onClose }) {
                 <path d="M4 12l5 5L20 6" stroke="var(--color-on-success-container)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
-            <p className="text-title-medium text-on-surface font-semibold mb-1">Request received</p>
+            <p id={headingId} className="text-title-medium text-on-surface font-semibold mb-1">Request received</p>
             <p className="text-body-medium text-on-surface-variant mb-6">
               We will contact you as soon as possible.
             </p>
             <button
               type="button"
               onClick={onClose}
-              className="w-full py-3 rounded-xl bg-primary text-on-primary font-bold transition-opacity hover:opacity-90"
+              className={`w-full py-3 rounded-xl bg-primary text-on-primary font-bold transition-opacity hover:opacity-90 ${focusRing}`}
             >
               Close
             </button>
           </div>
         ) : (
           <>
-            <h2 className="text-lg font-bold text-on-surface mb-1">Request a demo</h2>
+            <h2 id={headingId} className="text-lg font-bold text-on-surface mb-1">Request a demo</h2>
             <p className="text-sm text-on-surface-variant mb-5">
               Tell us about your school and we&apos;ll reach out to set up a walkthrough.
             </p>
@@ -80,45 +124,69 @@ function RequestDemoModal({ onClose }) {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className={labelClass}>First name</label>
-                  <input value={firstName} onChange={e => setFirstName(e.target.value)} required className={inputClass} />
+                  <label htmlFor="demo-first-name" className={labelClass}>First name</label>
+                  <input
+                    id="demo-first-name" ref={firstFieldRef}
+                    value={firstName} onChange={e => setFirstName(e.target.value)}
+                    required className={inputClass}
+                  />
                 </div>
                 <div>
-                  <label className={labelClass}>Surname</label>
-                  <input value={lastName} onChange={e => setLastName(e.target.value)} required className={inputClass} />
+                  <label htmlFor="demo-last-name" className={labelClass}>Surname</label>
+                  <input
+                    id="demo-last-name"
+                    value={lastName} onChange={e => setLastName(e.target.value)}
+                    required className={inputClass}
+                  />
                 </div>
               </div>
               <div>
-                <label className={labelClass}>Phone number</label>
-                <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} required className={inputClass} />
+                <label htmlFor="demo-phone" className={labelClass}>Phone number</label>
+                <input
+                  id="demo-phone" type="tel"
+                  value={phone} onChange={e => setPhone(e.target.value)}
+                  required className={inputClass}
+                />
               </div>
               <div>
-                <label className={labelClass}>School name</label>
-                <input value={schoolName} onChange={e => setSchoolName(e.target.value)} required className={inputClass} />
+                <label htmlFor="demo-school-name" className={labelClass}>School name</label>
+                <input
+                  id="demo-school-name"
+                  value={schoolName} onChange={e => setSchoolName(e.target.value)}
+                  required className={inputClass}
+                />
               </div>
               <div>
-                <label className={labelClass}>School email address</label>
-                <input type="email" value={schoolEmail} onChange={e => setSchoolEmail(e.target.value)} required className={inputClass} />
+                <label htmlFor="demo-school-email" className={labelClass}>School email address</label>
+                <input
+                  id="demo-school-email" type="email"
+                  value={schoolEmail} onChange={e => setSchoolEmail(e.target.value)}
+                  required className={inputClass}
+                />
               </div>
               <div>
-                <label className={labelClass}>School address</label>
-                <input value={schoolAddress} onChange={e => setSchoolAddress(e.target.value)} required className={inputClass} />
+                <label htmlFor="demo-school-address" className={labelClass}>School address</label>
+                <input
+                  id="demo-school-address"
+                  value={schoolAddress} onChange={e => setSchoolAddress(e.target.value)}
+                  required className={inputClass}
+                />
               </div>
 
-              {error && <p className="text-error text-sm">{error}</p>}
+              {error && <p role="alert" className="text-error text-sm">{error}</p>}
 
               <div className="flex gap-3 pt-1">
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="flex-1 py-3 rounded-xl bg-primary text-on-primary disabled:opacity-50 font-bold transition-opacity hover:opacity-90"
+                  className={`flex-1 py-3 rounded-xl bg-primary text-on-primary disabled:opacity-50 font-bold transition-opacity hover:opacity-90 ${focusRing}`}
                 >
                   {submitting ? 'Sending…' : 'Send request'}
                 </button>
                 <button
                   type="button"
                   onClick={onClose}
-                  className="flex-1 py-3 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-semibold transition-colors"
+                  className={`flex-1 py-3 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-semibold transition-colors ${focusRing}`}
                 >
                   Cancel
                 </button>
@@ -133,21 +201,21 @@ function RequestDemoModal({ onClose }) {
 
 export function RequestDemoButton({ className, children }) {
   const [open, setOpen] = useState(false)
+  const triggerRef = useRef(null)
 
   return (
     <>
       <motion.button
+        ref={triggerRef}
         type="button"
         onClick={() => setOpen(true)}
         whileHover={{ scale: 1.03 }}
         whileTap={{ scale: 0.97 }}
-        className={className}
+        className={`${className} ${focusRing}`}
       >
         {children}
       </motion.button>
-      <AnimatePresence>
-        {open && <RequestDemoModal onClose={() => setOpen(false)} />}
-      </AnimatePresence>
+      {open && <RequestDemoModal onClose={() => setOpen(false)} triggerRef={triggerRef} />}
     </>
   )
 }

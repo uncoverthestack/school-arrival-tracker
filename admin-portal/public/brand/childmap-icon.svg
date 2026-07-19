@@ -1,0 +1,95 @@
+<svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+  <!-- Ring: three colored arcs with small dots at each break -->
+  <g fill="none" stroke-linecap="round">
+    <!-- Blue: lower-left up to top -->
+    <path d="M 79.2 316.7 A 168 168 0 0 1 188.3 32.4" stroke="#1f7ae0" stroke-width="13"/>
+    <!-- Pink: top down to right -->
+    <path d="M 211.7 32.4 A 168 168 0 0 1 346.9 281.4" stroke="#e0356e" stroke-width="13"/>
+    <!-- Green: right down through bottom to lower-left -->
+    <path d="M 334.2 301.1 A 168 168 0 0 1 96.6 332.4" stroke="#5fa632" stroke-width="13"/>
+  </g>
+  <circle cx="200" cy="32" r="9" fill="#1f7ae0"/>
+  <circle cx="340.9" cy="291.5" r="9" fill="#e0356e"/>
+  <circle cx="87.6" cy="324.8" r="9" fill="#5fa632"/>
+
+  <!-- Dashed path from gate to child -->
+  <path d="M 95 268 Q 70 292 90 312 Q 115 328 168 332" fill="none" stroke="#1f7ae0" stroke-width="4" stroke-linecap="round" stroke-dasharray="2 12"/>
+  <!-- Dashed path from child to door -->
+  <path d="M 224 332 Q 258 324 256 300 Q 255 282 238 272" fill="none" stroke="#1f7ae0" stroke-width="4" stroke-linecap="round" stroke-dasharray="2 12"/>
+
+  <!-- Gate (blue) -->
+  <g fill="none" stroke="#1f7ae0" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <!-- posts -->
+    <rect x="66" y="150" width="16" height="112" rx="1"/>
+    <rect x="196" y="150" width="16" height="112" rx="1"/>
+    <circle cx="74" cy="138" r="11"/>
+    <circle cx="204" cy="138" r="11"/>
+    <rect x="60" y="255" width="28" height="9" rx="1.5"/>
+    <rect x="190" y="255" width="28" height="9" rx="1.5"/>
+    <!-- arch -->
+    <path d="M 82 178 Q 139 148 139 178" stroke-width="3.5"/>
+    <path d="M 139 178 Q 139 148 196 178" stroke-width="3.5"/>
+    <!-- vertical bars -->
+    <path d="M 92 178 L 92 258" stroke-width="3"/>
+    <path d="M 103 172 L 103 258" stroke-width="3"/>
+    <path d="M 114 168 L 114 258" stroke-width="3"/>
+    <path d="M 125 165 L 125 258" stroke-width="3"/>
+    <path d="M 139 163 L 139 258" stroke-width="3"/>
+    <path d="M 153 165 L 153 258" stroke-width="3"/>
+    <path d="M 164 168 L 164 258" stroke-width="3"/>
+    <path d="M 175 172 L 175 258" stroke-width="3"/>
+    <path d="M 186 178 L 186 258" stroke-width="3"/>
+    <path d="M 88 258 L 190 258" stroke-width="3"/>
+  </g>
+
+  <!-- Gate pin (blue) -->
+  <g fill="#1f7ae0">
+    <path d="M 139 78 C 121 78 107 92 107 110 C 107 133 139 158 139 158 C 139 158 171 133 171 110 C 171 92 157 78 139 78 Z"/>
+    <ellipse cx="139" cy="160" rx="18" ry="4" fill="none" stroke="#1f7ae0" stroke-width="3"/>
+  </g>
+  <circle cx="139" cy="110" r="11" fill="#ffffff"/>
+
+  <!-- Walking child -->
+  <g fill="none" stroke="#0e1e42" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+    <!-- head -->
+    <circle cx="196" cy="222" r="24"/>
+    <path d="M 194 198 Q 190 186 184 182" />
+    <path d="M 202 198 Q 210 190 210 184" />
+    <!-- closed eye / smile -->
+    <path d="M 184 224 Q 190 228 196 224" stroke-width="3.5"/>
+    <!-- body -->
+    <path d="M 196 246 L 194 288"/>
+    <!-- front arm reaching down-left -->
+    <path d="M 194 258 Q 172 268 158 282"/>
+    <!-- back arm reaching back-up -->
+    <path d="M 196 252 Q 216 246 224 254"/>
+    <!-- legs walking -->
+    <path d="M 194 288 Q 176 300 168 330"/>
+    <path d="M 194 288 Q 212 306 224 328"/>
+    <path d="M 162 328 L 168 334"/>
+    <path d="M 220 326 L 226 334"/>
+  </g>
+
+  <!-- Backpack (yellow) -->
+  <g>
+    <rect x="200" y="248" width="42" height="52" rx="10" fill="#f2b705" stroke="#0e1e42" stroke-width="4"/>
+    <rect x="211" y="264" width="20" height="16" rx="3" fill="none" stroke="#0e1e42" stroke-width="3.5"/>
+  </g>
+
+  <!-- Door (green) -->
+  <g fill="none" stroke="#5fa632" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M 246 258 L 246 335 L 298 335 L 298 258" />
+    <path d="M 298 258 L 276 262 L 276 331 L 298 335" />
+    <circle cx="282" cy="298" r="2.5" fill="#5fa632"/>
+    <circle cx="304" cy="326" r="9" fill="#5fa632" opacity="0.85"/>
+    <circle cx="312" cy="318" r="7" fill="#5fa632" opacity="0.85"/>
+    <circle cx="298" cy="316" r="6" fill="#5fa632" opacity="0.85"/>
+  </g>
+
+  <!-- Door pin (green) -->
+  <g>
+    <path d="M 276 178 C 258 178 244 192 244 210 C 244 233 276 258 276 258 C 276 258 308 233 308 210 C 308 192 294 178 276 178 Z" fill="#5fa632"/>
+    <ellipse cx="276" cy="260" rx="18" ry="4" fill="none" stroke="#5fa632" stroke-width="3"/>
+  </g>
+  <circle cx="276" cy="210" r="11" fill="#ffffff"/>
+</svg>
