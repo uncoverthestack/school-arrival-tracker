@@ -388,7 +388,7 @@ export function LandingPage() {
           {PRICING.map(plan => (
             <motion.div key={plan.name} variants={fadeUp} className="h-full">
             <div
-              className={`relative h-full flex flex-col rounded-lg p-8 sm:p-10 border transition-all duration-200 hover:-translate-y-0.5 ${
+              className={`relative h-full flex flex-col rounded-lg px-8 py-8 sm:py-10 border transition-all duration-200 hover:-translate-y-0.5 ${
                 plan.highlighted
                   ? 'border-primary bg-surface-container-lowest shadow-md hover:shadow-xl'
                   : 'border-outline-variant bg-surface-container-lowest shadow-sm hover:border-primary hover:shadow-lg'
