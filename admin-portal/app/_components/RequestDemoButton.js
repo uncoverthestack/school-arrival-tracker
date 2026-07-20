@@ -4,9 +4,9 @@ import { useState, useEffect, useRef, useId } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 
 const inputClass =
-  'w-full bg-surface-container border border-outline-variant rounded-xl px-4 py-3 text-sm outline-none ' +
+  'w-full bg-surface-container border border-outline-variant rounded-lg px-4 py-3 text-body-large tracking-[0.5px] outline-none ' +
   'focus:border-primary focus-visible:ring-2 focus-visible:ring-primary'
-const labelClass = 'block text-sm text-on-surface-variant mb-1'
+const labelClass = 'block text-body-medium tracking-[0.25px] text-on-surface-variant mb-1'
 const focusRing = 'focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2'
 
 function RequestDemoModal({ onClose, triggerRef }) {
@@ -92,7 +92,7 @@ function RequestDemoModal({ onClose, triggerRef }) {
         initial={reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.92, y: 16 }}
         animate={reduceMotion ? { opacity: 1 } : { opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: reduceMotion ? 0 : 0.2, ease: 'easeOut' }}
-        className="bg-surface-container-lowest rounded-2xl p-6 w-full max-w-sm max-h-[90vh] overflow-y-auto"
+        className="bg-surface-container-lowest rounded-lg p-6 w-full max-w-sm max-h-[90vh] overflow-y-auto"
         onClick={e => e.stopPropagation()}
       >
         {done ? (
@@ -102,22 +102,22 @@ function RequestDemoModal({ onClose, triggerRef }) {
                 <path d="M4 12l5 5L20 6" stroke="var(--color-on-success-container)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
-            <p id={headingId} className="text-title-medium text-on-surface font-semibold mb-1">Request received</p>
-            <p className="text-body-medium text-on-surface-variant mb-6">
+            <p id={headingId} className="text-title-medium font-bold text-on-surface mb-1">Request received</p>
+            <p className="text-body-medium tracking-[0.25px] text-on-surface-variant mb-6">
               We will contact you as soon as possible.
             </p>
             <button
               type="button"
               onClick={onClose}
-              className={`w-full py-3 rounded-xl bg-primary text-on-primary font-bold transition-opacity hover:opacity-90 ${focusRing}`}
+              className={`w-full py-3 rounded-lg text-label-large tracking-[0.1px] bg-primary text-on-primary font-bold shadow-sm transition-all hover:opacity-90 hover:shadow-md ${focusRing}`}
             >
               Close
             </button>
           </div>
         ) : (
           <>
-            <h2 id={headingId} className="text-lg font-bold text-on-surface mb-1">Request a demo</h2>
-            <p className="text-sm text-on-surface-variant mb-5">
+            <h2 id={headingId} className="text-title-medium font-bold text-on-surface mb-1">Request a demo</h2>
+            <p className="text-body-medium tracking-[0.25px] text-on-surface-variant mb-5">
               Tell us about your school and we&apos;ll reach out to set up a walkthrough.
             </p>
 
@@ -173,20 +173,20 @@ function RequestDemoModal({ onClose, triggerRef }) {
                 />
               </div>
 
-              {error && <p role="alert" className="text-error text-sm">{error}</p>}
+              {error && <p role="alert" className="text-error text-body-medium tracking-[0.25px]">{error}</p>}
 
               <div className="flex gap-3 pt-1">
                 <button
                   type="submit"
                   disabled={submitting}
-                  className={`flex-1 py-3 rounded-xl bg-primary text-on-primary disabled:opacity-50 font-bold transition-opacity hover:opacity-90 ${focusRing}`}
+                  className={`flex-1 py-3 rounded-lg text-label-large tracking-[0.1px] bg-primary text-on-primary disabled:opacity-50 font-bold shadow-sm transition-all hover:opacity-90 hover:shadow-md ${focusRing}`}
                 >
                   {submitting ? 'Sending…' : 'Send request'}
                 </button>
                 <button
                   type="button"
                   onClick={onClose}
-                  className={`flex-1 py-3 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-semibold transition-colors ${focusRing}`}
+                  className={`flex-1 py-3 rounded-lg text-label-large tracking-[0.1px] bg-surface-container hover:bg-surface-container-high text-on-surface font-semibold shadow-sm hover:shadow-md transition-all ${focusRing}`}
                 >
                   Cancel
                 </button>
