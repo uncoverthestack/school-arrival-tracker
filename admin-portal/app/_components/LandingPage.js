@@ -417,7 +417,7 @@ export function LandingPage() {
               </ul>
               {plan.highlighted ? (
                 <RequestDemoButton
-                  className="mt-auto w-full py-3 rounded-lg text-label-large tracking-[0.1px] font-bold bg-primary text-on-primary shadow-sm hover:opacity-90 hover:shadow-md transition-all"
+                  className="mt-8 w-full py-3 rounded-lg text-label-large tracking-[0.1px] font-bold bg-primary text-on-primary shadow-sm hover:opacity-90 hover:shadow-md transition-all"
                 >
                   Get Started
                 </RequestDemoButton>
@@ -425,7 +425,7 @@ export function LandingPage() {
                 // Not wired yet — destination TBD, don't open the demo modal for this plan.
                 <button
                   type="button"
-                  className="mt-auto w-full py-3 rounded-lg text-label-large tracking-[0.1px] font-bold bg-surface-container-lowest text-on-surface border border-outline shadow-sm hover:bg-surface-container hover:shadow-md transition-all"
+                  className="mt-8 w-full py-3 rounded-lg text-label-large tracking-[0.1px] font-bold bg-surface-container-lowest text-on-surface border border-outline shadow-sm hover:bg-surface-container hover:shadow-md transition-all"
                 >
                   Get Started
                 </button>
