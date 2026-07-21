@@ -225,7 +225,7 @@ export function LandingPage() {
             style={{ y: heroTextY, opacity: heroTextOpacity }}
             initial="hidden" animate="show" variants={staggerContainer} className="lg:col-span-5"
           >
-            <motion.h1 variants={fadeUp} className="text-display-small sm:text-display-large font-bold leading-tight text-on-surface">
+            <motion.h1 variants={fadeUp} className="text-display-small sm:text-display-large font-bold text-on-surface">
               Track Every Arrival <span className="text-primary">and Departure.</span>
             </motion.h1>
             <motion.p variants={fadeUp} className="mt-5 text-body-large tracking-[0.5px] text-on-surface-variant max-w-md">
