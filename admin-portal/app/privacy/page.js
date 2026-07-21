@@ -6,7 +6,7 @@ export const metadata = {
 
 const sectionClass = 'mt-8'
 const headingClass = 'text-title-medium font-bold text-on-surface'
-const bodyClass = 'mt-2 text-body-medium tracking-[0.25px] text-on-surface-variant leading-relaxed'
+const bodyClass = 'mt-2 text-body-medium tracking-[0.1px] text-on-surface-variant leading-relaxed'
 
 export default function PrivacyPolicyPage() {
   return (
@@ -14,19 +14,19 @@ export default function PrivacyPolicyPage() {
       <header className="border-b border-outline-variant">
         <div className="max-w-3xl mx-auto px-4 sm:px-8 py-4 flex items-center justify-between">
           <Link href="/" className="rounded-sm text-title-medium font-bold text-on-surface focus-visible:ring-2 focus-visible:ring-primary">Childmap</Link>
-          <Link href="/" className="rounded-sm text-body-medium tracking-[0.25px] text-on-surface-variant hover:text-on-surface focus-visible:ring-2 focus-visible:ring-primary transition-colors">← Back home</Link>
+          <Link href="/" className="rounded-sm text-body-medium tracking-[0.1px] text-on-surface-variant hover:text-on-surface focus-visible:ring-2 focus-visible:ring-primary transition-colors">← Back home</Link>
         </div>
       </header>
 
       <main className="max-w-3xl mx-auto px-4 sm:px-8 py-12">
-        <div className="rounded-xl bg-warning-container text-on-warning-container text-body-medium tracking-[0.25px] px-4 py-3 mb-8">
+        <div className="rounded-xl bg-warning-container text-on-warning-container text-body-medium tracking-[0.1px] px-4 py-3 mb-8">
           <strong>Draft — pending legal review.</strong> This page describes what Childmap actually collects and how it's
           used today. It has not been reviewed by a lawyer and should not be relied on as a compliance guarantee
           (e.g. under Nigeria's NDPR) before real public launch.
         </div>
 
         <h1 className="text-headline-large font-bold text-on-surface">Privacy Policy</h1>
-        <p className="mt-2 text-body-medium tracking-[0.25px] text-on-surface-variant">Last updated: 18 July 2026</p>
+        <p className="mt-2 text-body-medium tracking-[0.1px] text-on-surface-variant">Last updated: 18 July 2026</p>
 
         <div className={sectionClass}>
           <p className={bodyClass}>

@@ -4,9 +4,9 @@ import { useState, useEffect, useRef, useId } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 
 const inputClass =
-  'w-full bg-surface-container border border-outline-variant rounded-lg px-4 py-3 text-body-large tracking-[0.5px] outline-none ' +
+  'w-full bg-surface-container border border-outline-variant rounded-lg px-4 py-3 text-body-large tracking-[0.2px] outline-none ' +
   'focus:border-primary focus-visible:ring-2 focus-visible:ring-primary'
-const labelClass = 'block text-body-medium tracking-[0.25px] text-on-surface-variant mb-1'
+const labelClass = 'block text-body-medium tracking-[0.1px] text-on-surface-variant mb-1'
 const focusRing = 'focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2'
 
 function RequestDemoModal({ onClose, triggerRef }) {
@@ -103,13 +103,13 @@ function RequestDemoModal({ onClose, triggerRef }) {
               </svg>
             </div>
             <p id={headingId} className="text-title-medium font-bold text-on-surface mb-1">Request received</p>
-            <p className="text-body-medium tracking-[0.25px] text-on-surface-variant mb-6">
+            <p className="text-body-medium tracking-[0.1px] text-on-surface-variant mb-6">
               We will contact you as soon as possible.
             </p>
             <button
               type="button"
               onClick={onClose}
-              className={`w-full py-3 rounded-lg text-label-large tracking-[0.1px] bg-primary text-on-primary font-bold shadow-sm transition-all hover:opacity-90 hover:shadow-md ${focusRing}`}
+              className={`w-full py-3 rounded-lg text-label-large bg-primary text-on-primary font-bold shadow-sm transition-all hover:opacity-90 hover:shadow-md ${focusRing}`}
             >
               Close
             </button>
@@ -117,7 +117,7 @@ function RequestDemoModal({ onClose, triggerRef }) {
         ) : (
           <>
             <h2 id={headingId} className="text-title-medium font-bold text-on-surface mb-1">Request a demo</h2>
-            <p className="text-body-medium tracking-[0.25px] text-on-surface-variant mb-5">
+            <p className="text-body-medium tracking-[0.1px] text-on-surface-variant mb-5">
               Tell us about your school and we&apos;ll reach out to set up a walkthrough.
             </p>
 
@@ -173,20 +173,20 @@ function RequestDemoModal({ onClose, triggerRef }) {
                 />
               </div>
 
-              {error && <p role="alert" className="text-error text-body-medium tracking-[0.25px]">{error}</p>}
+              {error && <p role="alert" className="text-error text-body-medium tracking-[0.1px]">{error}</p>}
 
               <div className="flex gap-3 pt-1">
                 <button
                   type="submit"
                   disabled={submitting}
-                  className={`flex-1 py-3 rounded-lg text-label-large tracking-[0.1px] bg-primary text-on-primary disabled:opacity-50 font-bold shadow-sm transition-all hover:opacity-90 hover:shadow-md ${focusRing}`}
+                  className={`flex-1 py-3 rounded-lg text-label-large bg-primary text-on-primary disabled:opacity-50 font-bold shadow-sm transition-all hover:opacity-90 hover:shadow-md ${focusRing}`}
                 >
                   {submitting ? 'Sending…' : 'Send request'}
                 </button>
                 <button
                   type="button"
                   onClick={onClose}
-                  className={`flex-1 py-3 rounded-lg text-label-large tracking-[0.1px] bg-surface-container hover:bg-surface-container-high text-on-surface font-semibold shadow-sm hover:shadow-md transition-all ${focusRing}`}
+                  className={`flex-1 py-3 rounded-lg text-label-large bg-surface-container hover:bg-surface-container-high text-on-surface font-semibold shadow-sm hover:shadow-md transition-all ${focusRing}`}
                 >
                   Cancel
                 </button>

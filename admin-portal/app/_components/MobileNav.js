@@ -51,7 +51,7 @@ export function MobileNav() {
                 key={link.href}
                 href={link.href}
                 onClick={() => setOpen(false)}
-                className="px-3 py-2.5 rounded-lg text-label-large tracking-[0.1px] font-medium text-on-surface-variant hover:bg-surface-container hover:text-on-surface focus-visible:ring-2 focus-visible:ring-primary transition-colors"
+                className="px-3 py-2.5 rounded-lg text-label-large font-medium text-on-surface-variant hover:bg-surface-container hover:text-on-surface focus-visible:ring-2 focus-visible:ring-primary transition-colors"
               >
                 {link.label}
               </a>
@@ -59,7 +59,7 @@ export function MobileNav() {
             <Link
               href="/login"
               onClick={() => setOpen(false)}
-              className="mt-1 px-3 py-2.5 rounded-lg text-label-large tracking-[0.1px] font-bold bg-primary text-on-primary text-center focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+              className="mt-1 px-3 py-2.5 rounded-lg text-label-large font-bold bg-primary text-on-primary text-center focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
             >
               Login
             </Link>

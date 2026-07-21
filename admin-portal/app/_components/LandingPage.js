@@ -29,15 +29,15 @@ const FEATURES = [
       <path d="M2 5V3a1 1 0 0 1 1-1h3M18 5V3a1 1 0 0 0-1-1h-3M2 15v2a1 1 0 0 0 1 1h3M18 15v2a1 1 0 0 1-1 1h-3M2 10h16" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
     ),
     panel: (
-      <div className="rounded-lg bg-surface-container-lowest border border-outline-variant p-4 flex items-center gap-3">
+      <div className="w-full rounded-lg bg-surface-container-lowest border border-outline-variant p-4 flex items-center gap-3">
         <div className="w-10 h-10 rounded-full bg-success-container text-on-success-container flex items-center justify-center shrink-0">
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
             <path d="M4 10l4 4 8-8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </div>
         <div className="min-w-0">
-          <p className="text-label-large tracking-[0.1px] font-bold text-on-surface truncate">Ada Bello checked in</p>
-          <p className="text-label-medium tracking-[0.4px] text-on-surface-variant">Gate scanner · 7:42 AM</p>
+          <p className="text-label-large font-bold text-on-surface truncate">Ada Bello checked in</p>
+          <p className="text-label-medium tracking-[0.15px] text-on-surface-variant">Gate scanner · 7:42 AM</p>
         </div>
       </div>
     ),
@@ -47,13 +47,13 @@ const FEATURES = [
     desc: 'Parents get an SMS/WhatsApp message the moment their child arrives — and again when they leave.',
     iconBg: 'bg-primary-container', iconText: 'text-primary',
     icon: (
-      <path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7Z" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M18.3 1.7L9.2 10.8M18.3 1.7L12.5 18.3L9.2 10.8L1.7 7.5Z" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
     ),
     panel: (
-      <div className="rounded-lg bg-surface-container-lowest border border-outline-variant p-4">
-        <p className="text-label-medium tracking-[0.4px] text-on-surface-variant mb-2">SMS to parent</p>
+      <div className="w-full rounded-lg bg-surface-container-lowest border border-outline-variant p-4">
+        <p className="text-label-medium tracking-[0.15px] text-on-surface-variant mb-2">SMS to parent</p>
         <div className="inline-block rounded-lg rounded-tl-none bg-success-container text-on-success-container px-3 py-2">
-          <p className="text-body-medium tracking-[0.25px]">Ada arrived safely at 7:42am.</p>
+          <p className="text-body-medium tracking-[0.1px]">Ada arrived safely at 7:42am.</p>
         </div>
       </div>
     ),
@@ -66,9 +66,9 @@ const FEATURES = [
       <><rect x="2.5" y="2.5" width="6" height="6" rx="1.5" stroke="currentColor" strokeWidth="1.6" /><rect x="11.5" y="2.5" width="6" height="6" rx="1.5" stroke="currentColor" strokeWidth="1.6" /><rect x="2.5" y="11.5" width="6" height="6" rx="1.5" stroke="currentColor" strokeWidth="1.6" /><rect x="11.5" y="11.5" width="6" height="6" rx="1.5" stroke="currentColor" strokeWidth="1.6" /></>
     ),
     panel: (
-      <div className="rounded-lg bg-surface-container-lowest border border-outline-variant p-4 flex flex-wrap gap-2">
+      <div className="w-full rounded-lg bg-surface-container-lowest border border-outline-variant p-4 flex flex-wrap gap-2">
         {['JSS1A', 'JSS1B', 'JSS1C', 'JSS2A'].map(c => (
-          <span key={c} className="rounded-full bg-secondary-container text-on-secondary-container text-label-medium tracking-[0.4px] px-3 py-1">{c}</span>
+          <span key={c} className="rounded-full bg-secondary-container text-on-secondary-container text-label-medium tracking-[0.15px] px-3 py-1">{c}</span>
         ))}
       </div>
     ),
@@ -81,12 +81,12 @@ const FEATURES = [
       <path d="M10 3v10m0 0-4-4m4 4 4-4M3 15v1a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-1" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
     ),
     panel: (
-      <div className="rounded-lg bg-surface-container-lowest border border-outline-variant p-4">
+      <div className="w-full rounded-lg bg-surface-container-lowest border border-outline-variant p-4">
         <div className="flex items-center justify-between mb-2">
-          <p className="text-label-large tracking-[0.1px] font-bold text-on-surface">students.csv</p>
-          <p className="text-label-medium tracking-[0.4px] text-on-surface-variant">247 rows</p>
+          <p className="text-label-large font-bold text-on-surface">students.csv</p>
+          <p className="text-label-medium tracking-[0.15px] text-on-surface-variant">247 rows</p>
         </div>
-        <div className="h-2 rounded-full bg-surface-container overflow-hidden">
+        <div className="h-2 rounded-full bg-outline-variant/40 overflow-hidden">
           <div className="h-full bg-tertiary rounded-full" style={{ width: '70%' }} />
         </div>
       </div>
@@ -100,7 +100,7 @@ const FEATURES = [
       <><circle cx="10" cy="10" r="7.5" stroke="currentColor" strokeWidth="1.6" /><path d="M10 6v4l3 2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></>
     ),
     panel: (
-      <div className="grid grid-cols-2 gap-2.5">
+      <div className="w-full rounded-lg bg-surface-container-lowest border border-outline-variant p-4 grid grid-cols-2 gap-2.5">
         <MockMetric label="Checked in" value="128" bg="bg-success-container" text="text-on-success-container" />
         <MockMetric label="Unaccounted" value="4" bg="bg-warning-container" text="text-on-warning-container" />
       </div>
@@ -114,15 +114,15 @@ const FEATURES = [
       <path d="M3 17V8l7-4 7 4v9M3 17h14M3 17v0M7 17v-5h6v5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
     ),
     panel: (
-      <div className="rounded-lg bg-surface-container-lowest border border-outline-variant p-2 flex flex-col gap-1">
+      <div className="w-full rounded-lg bg-surface-container-lowest border border-outline-variant p-2 flex flex-col gap-1">
         <div className="flex items-center justify-between px-3 py-2 rounded-md bg-primary-container text-on-primary-container">
-          <p className="text-label-large tracking-[0.1px] font-medium">Greenfield Academy</p>
+          <p className="text-label-large font-medium">Greenfield Academy</p>
           <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true">
             <path d="M4 10l4 4 8-8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </div>
         <div className="px-3 py-2 rounded-md text-on-surface-variant">
-          <p className="text-label-large tracking-[0.1px] font-medium">Sunrise College</p>
+          <p className="text-label-large font-medium">Sunrise College</p>
         </div>
       </div>
     ),
@@ -174,25 +174,24 @@ export function LandingPage() {
   const heroTextY = useTransform(scrollYProgress, [0, 1], [0, reduceMotion ? 0 : -60])
   const heroTextOpacity = useTransform(scrollYProgress, [0, 0.8], [1, reduceMotion ? 1 : 0])
   const mockupY = useTransform(scrollYProgress, [0, 1], [0, reduceMotion ? 0 : 40])
-  const mockupRotate = useTransform(scrollYProgress, [0, 1], [-8, reduceMotion ? -8 : -2])
 
   return (
     <div data-theme="light" className="min-h-screen bg-surface text-on-surface font-kiosk">
-      <header className="sticky top-0 z-40 bg-surface/95 backdrop-blur border-b border-outline-variant">
-        <div className="max-w-7xl mx-auto flex items-center justify-between px-4 sm:px-8 py-4">
-          <div className="flex items-center gap-2">
+      <header className="sticky top-0 z-40 bg-surface-container-low/80 backdrop-blur">
+        <div className="max-w-7xl mx-auto grid grid-cols-[1fr_auto_1fr] items-center px-4 sm:px-8 py-4">
+          <div className="flex items-center gap-2 justify-self-start">
             <img src="/brand/childmap-icon-256.png" alt="" width={30} height={30} className="size-7.5 shrink-0" />
-            <p className="text-title-large font-bold text-on-surface">Childmap</p>
+            <p className="text-title-medium font-medium text-on-surface">Childmap</p>
           </div>
-          <nav className="hidden sm:flex items-center gap-8 text-label-large tracking-[0.1px] font-medium text-on-surface-variant">
+          <nav className="hidden sm:flex items-center gap-8 text-label-large font-medium text-on-surface-variant justify-self-center">
             <a href="#features" className="rounded-sm hover:text-on-surface focus-visible:ring-2 focus-visible:ring-primary transition-colors">Features</a>
             <a href="#why-us" className="rounded-sm hover:text-on-surface focus-visible:ring-2 focus-visible:ring-primary transition-colors">Why Childmap</a>
             <a href="#pricing" className="rounded-sm hover:text-on-surface focus-visible:ring-2 focus-visible:ring-primary transition-colors">Pricing</a>
           </nav>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 justify-self-end">
             <Link
               href="/login"
-              className="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-on-primary text-label-large tracking-[0.1px] font-bold shadow-sm transition-all hover:opacity-90 hover:shadow-md focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+              className="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-on-primary text-label-large font-bold shadow-sm transition-all hover:opacity-90 hover:shadow-md focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
             >
               <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true">
                 <rect x="4" y="9" width="9" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.6" />
@@ -205,22 +204,8 @@ export function LandingPage() {
         </div>
       </header>
 
-      <section ref={heroRef} className="relative overflow-hidden bg-linear-to-b from-primary-container/70 via-primary-container/25 to-surface">
-        {/* Ambient floating glow — pure atmosphere, no interaction. Static (no loop) under reduced motion. */}
-        <motion.div
-          aria-hidden="true"
-          animate={reduceMotion ? {} : { x: [0, 40, 0], y: [0, -30, 0] }}
-          transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}
-          className="pointer-events-none absolute -top-32 -left-32 w-96 h-96 rounded-full bg-primary/30 blur-3xl"
-        />
-        <motion.div
-          aria-hidden="true"
-          animate={reduceMotion ? {} : { x: [0, -50, 0], y: [0, 40, 0] }}
-          transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut' }}
-          className="pointer-events-none absolute top-1/3 -right-40 w-[28rem] h-[28rem] rounded-full bg-tertiary/20 blur-3xl"
-        />
-
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-8 py-20 sm:py-32 grid lg:grid-cols-12 gap-16 items-center">
+      <section ref={heroRef} className="relative overflow-hidden bg-surface-container-low">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-8 py-24 sm:py-40 grid lg:grid-cols-12 gap-16 items-center">
           <motion.div
             style={{ y: heroTextY, opacity: heroTextOpacity }}
             initial="hidden" animate="show" variants={staggerContainer} className="lg:col-span-5"
@@ -228,51 +213,57 @@ export function LandingPage() {
             <motion.h1 variants={fadeUp} className="text-display-small sm:text-display-large font-bold text-on-surface">
               Track Every Arrival <span className="text-primary">and Departure.</span>
             </motion.h1>
-            <motion.p variants={fadeUp} className="mt-5 text-body-large tracking-[0.5px] text-on-surface-variant max-w-md">
+            <motion.p variants={fadeUp} className="mt-6 text-body-large tracking-[0.2px] text-on-surface-variant max-w-md">
               Replace the paper logbook with instant gate check-ins, live dashboards, and SMS alerts parents actually see.
             </motion.p>
             <motion.div variants={fadeUp} className="mt-8 flex flex-wrap gap-3">
-              <RequestDemoButton className="px-6 py-3 rounded-lg bg-primary text-on-primary text-label-large tracking-[0.1px] font-bold shadow-sm transition-all hover:opacity-90 hover:shadow-md">
+              <RequestDemoButton className="px-6 py-3 rounded-lg bg-primary text-on-primary text-label-large font-bold shadow-sm transition-all hover:opacity-90 hover:shadow-md">
                 Request Demo
               </RequestDemoButton>
               <a
                 href="#features"
-                className="px-6 py-3 rounded-lg bg-surface-container-lowest border border-outline-variant text-on-surface text-label-large tracking-[0.1px] font-semibold shadow-sm transition-all hover:bg-surface-container hover:shadow-md focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                className="px-6 py-3 rounded-lg bg-surface-container-lowest border border-outline-variant text-on-surface text-label-large font-semibold shadow-sm transition-all hover:bg-surface-container hover:shadow-md focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
               >
                 Learn More ↓
               </a>
             </motion.div>
           </motion.div>
 
-          {/* Dashboard mockup — a stylized preview of the real Today dashboard, always dark to match the app screenshot.
-              Rests at a 3D tilt (perspective + rotateY) and tilts further toward the cursor via TiltCard. */}
+          {/* Dashboard mockup — a stylized preview of the real Today dashboard, always dark to match the app
+              screenshot. Sits flat at rest (a contained glow gives it depth instead of a 3D tilt); TiltCard
+              still tilts it toward the cursor on hover. */}
           <motion.div
             aria-hidden="true"
-            initial={{ opacity: 0, x: 60, rotateY: -22 }}
-            animate={{ opacity: 1, x: 0, rotateY: -8 }}
-            style={{ y: mockupY, rotate: mockupRotate, perspective: 1200 }}
+            initial={{ opacity: 0, x: 60 }}
+            animate={{ opacity: 1, x: 0 }}
+            style={{ y: mockupY }}
             transition={{ duration: 0.7, delay: 0.25, ease: 'easeOut' }}
-            data-theme="dark" className="lg:col-span-7"
+            className="relative lg:col-span-7"
           >
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute -inset-8 rounded-[28px] bg-gradient-to-br from-primary/35 via-tertiary/20 to-transparent blur-2xl"
+            />
+            <div data-theme="dark" className="relative">
             <TiltCard tiltStrength={6} className="rounded-lg shadow-2xl">
               <div className="rounded-lg bg-surface-container-lowest border border-outline-variant overflow-hidden">
                 <div className="flex items-center gap-1.5 px-4 py-3 border-b border-outline-variant bg-surface-container">
                   <span className="w-2.5 h-2.5 rounded-full bg-error" />
                   <span className="w-2.5 h-2.5 rounded-full bg-warning" />
                   <span className="w-2.5 h-2.5 rounded-full bg-success" />
-                  <span className="ml-3 text-label-medium tracking-[0.4px] text-on-surface-variant font-mono truncate">app.childmap.ng</span>
+                  <span className="ml-3 text-label-medium tracking-[0.15px] text-on-surface-variant font-mono truncate">app.childmap.ng</span>
                   <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true" className="ml-auto text-on-surface-variant md:hidden shrink-0">
                     <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
                   </svg>
                 </div>
                 <div className="flex">
                   <div className="hidden md:flex flex-col gap-1 w-40 shrink-0 border-r border-outline-variant p-3">
-                    <p className="text-label-medium tracking-[0.4px] font-bold text-on-surface px-2 pb-2">Childmap</p>
-                    <span className="text-label-medium tracking-[0.4px] font-medium rounded-md px-2 py-1.5 bg-primary-container text-on-primary-container">Today</span>
-                    <span className="text-label-medium tracking-[0.4px] font-medium rounded-md px-2 py-1.5 text-on-surface-variant">Gate scanner</span>
-                    <span className="text-label-medium tracking-[0.4px] font-medium rounded-md px-2 py-1.5 text-on-surface-variant">Watchlist</span>
-                    <span className="text-label-medium tracking-[0.4px] font-medium rounded-md px-2 py-1.5 text-on-surface-variant">Students</span>
-                    <span className="text-label-medium tracking-[0.4px] font-medium rounded-md px-2 py-1.5 text-on-surface-variant">Messages</span>
+                    <p className="text-label-medium tracking-[0.15px] font-bold text-on-surface px-2 pb-2">Childmap</p>
+                    <span className="text-label-medium tracking-[0.15px] font-medium rounded-md px-2 py-1.5 bg-primary-container text-on-primary-container">Today</span>
+                    <span className="text-label-medium tracking-[0.15px] font-medium rounded-md px-2 py-1.5 text-on-surface-variant">Gate scanner</span>
+                    <span className="text-label-medium tracking-[0.15px] font-medium rounded-md px-2 py-1.5 text-on-surface-variant">Watchlist</span>
+                    <span className="text-label-medium tracking-[0.15px] font-medium rounded-md px-2 py-1.5 text-on-surface-variant">Students</span>
+                    <span className="text-label-medium tracking-[0.15px] font-medium rounded-md px-2 py-1.5 text-on-surface-variant">Messages</span>
                   </div>
                   <div className="p-4 sm:p-5 flex-1 min-w-0">
                     <p className="text-title-small font-bold text-on-surface mb-3">Welcome, Admin</p>
@@ -285,7 +276,7 @@ export function LandingPage() {
                       <MockMetric label="Classes" value="18" bg="bg-surface-container" text="text-on-surface" />
                     </div>
                     <div className="rounded-xl bg-surface-container p-3">
-                      <p className="text-label-medium tracking-[0.4px] text-on-surface-variant mb-2">Arrival flow</p>
+                      <p className="text-label-medium tracking-[0.15px] text-on-surface-variant mb-2">Arrival flow</p>
                       <svg viewBox="0 0 200 50" className="w-full h-10 text-primary" preserveAspectRatio="none">
                         <polyline
                           points="0,45 20,40 40,30 60,15 80,10 100,8 120,12 140,20 160,28 180,35 200,42"
@@ -297,6 +288,7 @@ export function LandingPage() {
                 </div>
               </div>
             </TiltCard>
+            </div>
           </motion.div>
         </div>
       </section>
@@ -304,11 +296,11 @@ export function LandingPage() {
       <section id="features" className="scroll-mt-20 max-w-6xl mx-auto px-4 sm:px-8 py-20">
         <motion.div
           initial="hidden" whileInView="show" viewport={scrollReveal} variants={fadeUp}
-          className="text-center max-w-xl mx-auto mb-16"
+          className="text-center max-w-xl mx-auto mb-14"
         >
-          <p className="text-label-medium tracking-[0.4px] uppercase font-bold text-primary mb-2">Features</p>
+          <p className="text-label-medium tracking-[1px] uppercase font-bold text-primary mb-1">Features</p>
           <h2 className="text-headline-medium font-bold text-on-surface">Everything your gate needs</h2>
-          <p className="mt-3 text-body-large tracking-[0.5px] text-on-surface-variant">One system connecting the gate, the office, and every parent.</p>
+          <p className="mt-3 text-body-large tracking-[0.2px] text-on-surface-variant">One system connecting the gate, the office, and every parent.</p>
         </motion.div>
         <div className="flex flex-col gap-16 sm:gap-20">
           {FEATURES.map((f, i) => {
@@ -324,9 +316,9 @@ export function LandingPage() {
                     <svg width="22" height="22" viewBox="0 0 20 20" fill="none" aria-hidden="true">{f.icon}</svg>
                   </div>
                   <p className="text-title-large font-bold text-on-surface">{f.title}</p>
-                  <p className="mt-2 text-body-medium tracking-[0.25px] text-on-surface-variant max-w-md">{f.desc}</p>
+                  <p className="mt-2 text-body-medium tracking-[0.1px] text-on-surface-variant max-w-md">{f.desc}</p>
                 </div>
-                <div className={`rounded-lg bg-surface-container border border-outline-variant p-6 sm:p-8 ${reversed ? 'sm:order-1' : ''}`}>
+                <div className={`rounded-lg bg-surface-container-high border border-outline-variant p-6 sm:p-8 min-h-[160px] flex items-center ${reversed ? 'sm:order-1' : ''}`}>
                   {f.panel}
                 </div>
               </motion.div>
@@ -341,7 +333,7 @@ export function LandingPage() {
             initial="hidden" whileInView="show" viewport={scrollReveal} variants={fadeUp}
             className="text-center max-w-xl mx-auto mb-14"
           >
-            <p className="text-label-medium tracking-[0.4px] uppercase font-bold text-primary mb-2">Why Childmap</p>
+            <p className="text-label-medium tracking-[1px] uppercase font-bold text-primary mb-1">Why Childmap</p>
             <h2 className="text-headline-medium font-bold text-on-surface">Why Schools Choose Childmap</h2>
           </motion.div>
           <motion.div
@@ -350,36 +342,27 @@ export function LandingPage() {
           >
             {WHY_US.map((item, i) => (
               <motion.div key={item.title} variants={fadeUp} className="flex gap-4">
-                <span className="shrink-0 w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold text-label-large tracking-[0.1px]">
+                <span className="shrink-0 w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold text-label-large">
                   {i + 1}
                 </span>
                 <div>
                   <p className="text-title-medium font-bold text-on-surface">{item.title}</p>
-                  <p className="mt-1 text-body-medium tracking-[0.25px] text-on-surface-variant">{item.desc}</p>
+                  <p className="mt-1 text-body-medium tracking-[0.1px] text-on-surface-variant">{item.desc}</p>
                 </div>
               </motion.div>
             ))}
           </motion.div>
-          <motion.p
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={scrollReveal}
-            transition={{ duration: 0.5, ease: 'easeOut' }}
-            className="mt-16 text-center text-headline-small text-on-surface max-w-2xl mx-auto italic"
-          >
-            &ldquo;Safety isn&apos;t expensive, it&apos;s priceless.&rdquo;
-          </motion.p>
         </div>
       </section>
 
       <section id="pricing" className="scroll-mt-20 max-w-6xl mx-auto px-4 sm:px-8 py-20">
         <motion.div
           initial="hidden" whileInView="show" viewport={scrollReveal} variants={fadeUp}
-          className="text-center max-w-xl mx-auto mb-12"
+          className="text-center max-w-xl mx-auto mb-14"
         >
-          <p className="text-label-medium tracking-[0.4px] uppercase font-bold text-primary mb-2">Pricing</p>
+          <p className="text-label-medium tracking-[1px] uppercase font-bold text-primary mb-1">Pricing</p>
           <h2 className="text-headline-medium font-bold text-on-surface">Simple, Fair Pricing</h2>
-          <p className="mt-3 text-body-large tracking-[0.5px] text-on-surface-variant">Choose the plan that fits your school&apos;s size. Start small, grow big.</p>
+          <p className="mt-3 text-body-large tracking-[0.2px] text-on-surface-variant">Choose the plan that fits your school&apos;s size. Start small, grow big.</p>
         </motion.div>
         <motion.div
           initial="hidden" whileInView="show" viewport={scrollReveal} variants={staggerContainer}
@@ -395,19 +378,19 @@ export function LandingPage() {
               }`}
             >
               {plan.highlighted && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-primary text-on-primary text-label-small tracking-[0.5px] font-bold">
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-primary text-on-primary text-label-small tracking-[0.2px] font-bold">
                   Best value for growth
                 </span>
               )}
               <p className="text-title-large font-bold text-on-surface text-center">{plan.name}</p>
               <p className="mt-3 text-center">
                 <span className="text-headline-medium font-bold text-primary">{plan.price}</span>{' '}
-                <span className="text-body-medium tracking-[0.25px] text-on-surface-variant">{plan.per}</span>
+                <span className="text-body-medium tracking-[0.1px] text-on-surface-variant">{plan.per}</span>
               </p>
-              <p className="mt-3 text-label-medium tracking-[0.4px] text-center text-on-surface-variant bg-surface-container rounded-lg px-4 py-2.5">{plan.note}</p>
+              <p className="mt-3 text-label-medium tracking-[0.15px] text-center text-on-surface-variant bg-surface-container rounded-lg px-4 py-2.5">{plan.note}</p>
               <ul className="mt-8 flex flex-col gap-3.5">
                 {plan.features.map(f => (
-                  <li key={f} className="flex items-start gap-2 text-body-medium tracking-[0.25px] text-on-surface">
+                  <li key={f} className="flex items-start gap-2 text-body-medium tracking-[0.1px] text-on-surface">
                     <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true" className="text-success shrink-0 mt-0.5">
                       <path d="M4 10l4 4 8-8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
@@ -417,7 +400,7 @@ export function LandingPage() {
               </ul>
               {plan.highlighted ? (
                 <RequestDemoButton
-                  className="mt-8 w-full py-3 rounded-lg text-label-large tracking-[0.1px] font-bold bg-primary text-on-primary shadow-sm hover:opacity-90 hover:shadow-md transition-all"
+                  className="mt-8 w-full py-3 rounded-lg text-label-large font-bold bg-primary text-on-primary shadow-sm hover:opacity-90 hover:shadow-md transition-all"
                 >
                   Get Started
                 </RequestDemoButton>
@@ -425,7 +408,7 @@ export function LandingPage() {
                 // Not wired yet — destination TBD, don't open the demo modal for this plan.
                 <button
                   type="button"
-                  className="mt-8 w-full py-3 rounded-lg text-label-large tracking-[0.1px] font-bold bg-surface-container-lowest text-on-surface border border-outline shadow-sm hover:bg-surface-container hover:shadow-md transition-all"
+                  className="mt-8 w-full py-3 rounded-lg text-label-large font-bold bg-surface-container-lowest text-on-surface border border-outline shadow-sm hover:bg-surface-container hover:shadow-md transition-all"
                 >
                   Get Started
                 </button>
@@ -442,9 +425,9 @@ export function LandingPage() {
           className="max-w-3xl mx-auto px-4 sm:px-8 py-16 text-center"
         >
           <motion.h2 variants={fadeUp} className="text-headline-medium font-bold">Ready to get started?</motion.h2>
-          <motion.p variants={fadeUp} className="mt-3 text-body-large tracking-[0.5px] opacity-90">Tell us about your school and we&apos;ll set up a walkthrough.</motion.p>
+          <motion.p variants={fadeUp} className="mt-3 text-body-large tracking-[0.2px] opacity-90">Tell us about your school and we&apos;ll set up a walkthrough.</motion.p>
           <motion.div variants={fadeUp} className="mt-8">
-            <RequestDemoButton className="px-8 py-3.5 rounded-lg bg-surface-container-lowest text-primary text-label-large tracking-[0.1px] font-bold shadow-sm transition-all hover:opacity-90 hover:shadow-md">
+            <RequestDemoButton className="px-8 py-3.5 rounded-lg bg-surface-container-lowest text-primary text-label-large font-bold shadow-sm transition-all hover:opacity-90 hover:shadow-md">
               Request Demo
             </RequestDemoButton>
           </motion.div>
@@ -458,12 +441,12 @@ export function LandingPage() {
               <img src="/brand/childmap-icon-256.png" alt="" width={28} height={28} className="size-7 shrink-0" />
               <div>
                 <p className="text-title-medium font-bold text-on-surface">Childmap</p>
-                <p className="text-body-medium tracking-[0.25px] text-on-surface-variant">Real-time school arrival &amp; departure tracking.</p>
+                <p className="text-body-medium tracking-[0.1px] text-on-surface-variant">Real-time school arrival &amp; departure tracking.</p>
               </div>
             </div>
             <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-6">
-              <Link href="/privacy" className="rounded-sm text-body-medium tracking-[0.25px] text-primary hover:opacity-80 focus-visible:ring-2 focus-visible:ring-primary transition-opacity">Privacy Policy</Link>
-              <p className="text-body-medium tracking-[0.25px] text-on-surface-variant">© {new Date().getFullYear()} Childmap. All rights reserved.</p>
+              <Link href="/privacy" className="rounded-sm text-body-medium tracking-[0.1px] text-primary hover:opacity-80 focus-visible:ring-2 focus-visible:ring-primary transition-opacity">Privacy Policy</Link>
+              <p className="text-body-medium tracking-[0.1px] text-on-surface-variant">© {new Date().getFullYear()} Childmap. All rights reserved.</p>
             </div>
           </div>
         </div>
@@ -475,7 +458,7 @@ export function LandingPage() {
 function MockMetric({ label, value, bg, text }) {
   return (
     <div className={`${bg} ${text} rounded-lg px-2.5 py-2`}>
-      <p className="text-label-small tracking-[0.5px] font-medium opacity-80 truncate">{label}</p>
+      <p className="text-label-small tracking-[0.2px] font-medium opacity-80 truncate">{label}</p>
       <p className="text-title-large font-bold leading-tight">{value}</p>
     </div>
   )
