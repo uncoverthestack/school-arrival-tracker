@@ -6,12 +6,6 @@ import { DashboardShell } from './_components/DashboardShell'
 import { ArrivalFlowChart } from './_components/ArrivalFlowChart'
 import { LandingPage } from './_components/LandingPage'
 
-// Before this time (Africa/Lagos) nobody is "unaccounted" yet — they just
-// haven't arrived. Matches the ARRIVAL_CUTOFF_HOUR-style pattern used for
-// the gate scanner's arrival/departure split.
-const CUTOFF_HOUR = 8
-const CUTOFF_MINUTE = 15
-
 const CHART_START_MINUTE = 7 * 60 + 30 // 7:30
 const CHART_END_MINUTE = 8 * 60 + 45 // 8:45
 
@@ -28,8 +22,8 @@ function nowInLagos() {
   return { hour, minute, totalMinutes: hour * 60 + minute }
 }
 
-function isPastCutoff() {
-  return nowInLagos().totalMinutes >= CUTOFF_HOUR * 60 + CUTOFF_MINUTE
+function isPastCutoff(cutoffHour, cutoffMinute) {
+  return nowInLagos().totalMinutes >= cutoffHour * 60 + cutoffMinute
 }
 
 function getGreeting() {
@@ -69,10 +63,14 @@ function buildArrivalFlow(arrivalTimestamps) {
 async function getDashboardData(schoolId) {
   const today = new Date().toISOString().split('T')[0]
 
-  const [{ data: students }, { data: arrivals }] = await Promise.all([
-    supabase.from('students').select('id, name, student_class, parent_phone').eq('school_id', schoolId),
+  const [{ data: school }, { data: students }, { data: arrivals }] = await Promise.all([
+    supabase.from('schools').select('arrival_cutoff_hour, arrival_cutoff_minute').eq('id', schoolId).maybeSingle(),
+    supabase.from('students').select('id, name, student_class, parent_phone, uses_bus').eq('school_id', schoolId),
     supabase.from('arrivals').select('student_id, type, scanned_at, alerted_at').eq('school_id', schoolId).eq('date', today)
   ])
+
+  const cutoffHour = school?.arrival_cutoff_hour ?? 8
+  const cutoffMinute = school?.arrival_cutoff_minute ?? 15
 
   const allStudents = students ?? []
   const todaysArrivals = arrivals ?? []
@@ -83,20 +81,21 @@ async function getDashboardData(schoolId) {
   const arrivedToday = arrivalRows.length
   const departedToday = departureRows.length
   const alertsSentToday = todaysArrivals.filter(a => a.alerted_at).length
-  const pastCutoff = isPastCutoff()
+  const pastCutoff = isPastCutoff(cutoffHour, cutoffMinute)
   const unaccounted = pastCutoff ? Math.max(0, totalStudents - arrivedToday) : 0
   const percentArrived = totalStudents > 0 ? Math.round((arrivedToday / totalStudents) * 100) : 0
   const percentDeparted = totalStudents > 0 ? Math.round((departedToday / totalStudents) * 100) : 0
 
   const arrivedStudentIds = new Set(arrivalRows.map(a => a.student_id))
 
-  // Needs attention: not-yet-arrived (only once past cutoff) + invalid phone
-  // format. A student in both gets the invalid-phone flag, since that's a
-  // data-quality issue independent of today's attendance.
+  // Needs attention: not-yet-arrived (only once past cutoff, and never for bus
+  // riders — their arrival depends on the route, not a fixed gate time) +
+  // invalid phone format. A student in both gets the invalid-phone flag,
+  // since that's a data-quality issue independent of today's attendance.
   const attention = new Map()
   if (pastCutoff) {
     for (const s of allStudents) {
-      if (!arrivedStudentIds.has(s.id)) attention.set(s.id, { student: s, reason: 'not_arrived' })
+      if (!s.uses_bus && !arrivedStudentIds.has(s.id)) attention.set(s.id, { student: s, reason: 'not_arrived' })
     }
   }
   for (const s of allStudents) {
@@ -108,7 +107,7 @@ async function getDashboardData(schoolId) {
 
   return {
     totalStudents, arrivedToday, departedToday, unaccounted, alertsSentToday, percentArrived, percentDeparted,
-    needsAttention, arrivalFlow
+    needsAttention, arrivalFlow, cutoffHour, cutoffMinute
   }
 }
 
@@ -166,7 +165,7 @@ export default async function Home() {
             icon={<><circle cx="9" cy="8" r="3" stroke="currentColor" strokeWidth="2" fill="none"/><path d="M3 20c0-3 2.5-5 6-5s6 2 6 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none"/><circle cx="17" cy="8.5" r="2.5" stroke="currentColor" strokeWidth="2" fill="none"/><path d="M15.5 15.3c2.3.3 4 1.8 4 4.7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none"/></>}
           />
           <MetricCard
-            label="Unaccounted" value={data.unaccounted} sublabel={`cutoff ${CUTOFF_HOUR}:${String(CUTOFF_MINUTE).padStart(2, '0')} am`}
+            label="Unaccounted" value={data.unaccounted} sublabel={`cutoff ${data.cutoffHour}:${String(data.cutoffMinute).padStart(2, '0')}`}
             bg="bg-warning-container" text="text-on-warning-container" iconBg="bg-warning" iconText="text-on-warning"
             icon={<path d="M12 9v4m0 4h.01M10.29 3.86l-8.18 14.18A2 2 0 0 0 3.82 21h16.36a2 2 0 0 0 1.71-2.96L13.71 3.86a2 2 0 0 0-3.42 0Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />}
           />

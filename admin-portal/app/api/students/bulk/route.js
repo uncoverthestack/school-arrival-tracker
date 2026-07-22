@@ -79,6 +79,7 @@ export async function POST(request) {
       code,
       codeYear,
       photoUrl: null,
+      usesBus: !!row.usesBus,
     })
 
     created.push(student)

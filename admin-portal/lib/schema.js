@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, boolean, timestamp } from 'drizzle-orm/pg-core'
+import { pgTable, uuid, text, boolean, integer, timestamp } from 'drizzle-orm/pg-core'
 
 export const schools = pgTable('schools', {
   id:                  uuid('id').defaultRandom().primaryKey(),
@@ -9,6 +9,14 @@ export const schools = pgTable('schools', {
   adminPasswordHash:   text('admin_password_hash').notNull(),
   status:              text('status').default('pending').notNull(),
   schoolType:          text('school_type').default('primary').notNull(),
+  // Time (school's local/Africa-Lagos clock) after which a not-yet-arrived,
+  // non-bus student triggers a "not in school" alert to their parent.
+  arrivalCutoffHour:     integer('arrival_cutoff_hour').default(8).notNull(),
+  arrivalCutoffMinute:   integer('arrival_cutoff_minute').default(15).notNull(),
+  // Time after which a student who arrived but hasn't been scanned out yet
+  // (and isn't a bus rider) triggers a "hasn't checked out" alert.
+  departureCutoffHour:   integer('departure_cutoff_hour').default(15).notNull(),
+  departureCutoffMinute: integer('departure_cutoff_minute').default(0).notNull(),
   archivedAt:          timestamp('archived_at', { withTimezone: true }),
   paymentApprovedAt:   timestamp('payment_approved_at', { withTimezone: true }),
   paymentDueAt:        timestamp('payment_due_at', { withTimezone: true }),
@@ -17,20 +25,25 @@ export const schools = pgTable('schools', {
 })
 
 export const students = pgTable('students', {
-  id:             uuid('id').defaultRandom().primaryKey(),
-  schoolId:       uuid('school_id').references(() => schools.id),
-  studentId:      text('student_id'),
-  name:           text('name').notNull(),
-  studentClass:   text('student_class'),
-  parentName:     text('parent_name'),
-  parentPhone:    text('parent_phone'),
-  parentEmail:    text('parent_email'),
-  cardId:         text('card_id'),
-  code:           text('code').unique(),
-  codeYear:       text('code_year'),
-  photoUrl:       text('photo_url'),
-  faceDescriptor: text('face_descriptor'),
-  createdAt:      timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  id:                uuid('id').defaultRandom().primaryKey(),
+  schoolId:          uuid('school_id').references(() => schools.id),
+  studentId:         text('student_id'),
+  name:              text('name').notNull(),
+  studentClass:      text('student_class'),
+  parentName:        text('parent_name'),
+  parentPhone:       text('parent_phone'),
+  parentEmail:       text('parent_email'),
+  cardId:            text('card_id'),
+  code:              text('code').unique(),
+  codeYear:          text('code_year'),
+  photoUrl:          text('photo_url'),
+  faceDescriptor:    text('face_descriptor'),
+  // Bus riders are exempt from the cutoff-time "not in school" alert — their
+  // arrival time depends on the route, not a fixed gate time.
+  usesBus:                  boolean('uses_bus').default(false).notNull(),
+  lastLateAlertDate:        text('last_late_alert_date'), // YYYY-MM-DD — arrival-alert dedup guard
+  lastLateDepartureAlertDate: text('last_late_departure_alert_date'), // YYYY-MM-DD — departure-alert dedup guard
+  createdAt:         timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 })
 
 export const classes = pgTable('classes', {

@@ -32,7 +32,7 @@ export async function PATCH(request, { params }) {
     return Response.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
-  const { studentClass, name, photoUrl, faceDescriptor } = body
+  const { studentClass, name, photoUrl, faceDescriptor, usesBus } = body
 
   const student = await getStudentById(id, session.schoolId)
   if (!student) {
@@ -43,6 +43,7 @@ export async function PATCH(request, { params }) {
 
   if (name) updates.name = String(name).trim().slice(0, 100)
   if (photoUrl !== undefined) updates.photoUrl = photoUrl || null
+  if (usesBus !== undefined) updates.usesBus = !!usesBus
   if (faceDescriptor !== undefined) {
     updates.faceDescriptor = faceDescriptor ? JSON.stringify(Array.from(faceDescriptor)) : null
   }

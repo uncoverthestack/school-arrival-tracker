@@ -38,7 +38,7 @@ export async function POST(request) {
     return Response.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
-  const { name, studentClass, parentPhone, parentName, parentEmail, cardId, photoUrl } = body
+  const { name, studentClass, parentPhone, parentName, parentEmail, cardId, photoUrl, usesBus } = body
 
   if (!name || !studentClass || !parentPhone) {
     return Response.json(
@@ -73,6 +73,7 @@ export async function POST(request) {
     code,
     codeYear: currentSchoolYear(),
     photoUrl: photoUrl ?? null,
+    usesBus: !!usesBus,
   })
 
   return Response.json({ student }, { status: 201 })
