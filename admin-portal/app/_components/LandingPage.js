@@ -6,6 +6,7 @@ import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion
 import { RequestDemoButton } from './RequestDemoButton'
 import { MobileNav } from './MobileNav'
 import { TiltCard } from './TiltCard'
+import { RollingText } from './RollingText'
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -191,13 +192,13 @@ export function LandingPage() {
           <div className="flex items-center gap-2 justify-self-end">
             <Link
               href="/login"
-              className="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-on-primary text-label-large font-bold shadow-sm transition-all hover:opacity-90 hover:shadow-md focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+              className="group hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-on-primary text-label-large font-bold shadow-sm transition-all hover:opacity-90 hover:shadow-md focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
             >
               <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true">
                 <rect x="4" y="9" width="9" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.6" />
                 <path d="M6.5 9V6a3.5 3.5 0 0 1 7 0v3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
               </svg>
-              Login
+              <RollingText>Login</RollingText>
             </Link>
             <MobileNav />
           </div>
@@ -217,14 +218,14 @@ export function LandingPage() {
               Replace the paper logbook with instant gate check-ins, live dashboards, and SMS alerts parents actually see.
             </motion.p>
             <motion.div variants={fadeUp} className="mt-8 flex flex-wrap gap-3">
-              <RequestDemoButton className="px-6 py-3 rounded-lg bg-primary text-on-primary text-label-large font-bold shadow-sm transition-all hover:opacity-90 hover:shadow-md">
-                Request Demo
+              <RequestDemoButton className="group px-6 py-3 rounded-lg bg-primary text-on-primary text-label-large font-bold shadow-sm transition-all hover:opacity-90 hover:shadow-md">
+                <RollingText>Request Demo</RollingText>
               </RequestDemoButton>
               <a
                 href="#features"
-                className="px-6 py-3 rounded-lg bg-surface-container-lowest border border-outline-variant text-on-surface text-label-large font-semibold shadow-sm transition-all hover:bg-surface-container hover:shadow-md focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                className="group px-6 py-3 rounded-lg bg-surface-container-lowest border border-outline-variant text-on-surface text-label-large font-semibold shadow-sm transition-all hover:bg-surface-container hover:shadow-md focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
               >
-                Learn More ↓
+                <RollingText>Learn More ↓</RollingText>
               </a>
             </motion.div>
           </motion.div>
@@ -371,15 +372,13 @@ export function LandingPage() {
           {PRICING.map(plan => (
             <motion.div key={plan.name} variants={fadeUp} className="h-full">
             <div
-              className={`relative h-full flex flex-col rounded-lg px-8 py-8 sm:py-10 border transition-all duration-200 hover:-translate-y-0.5 ${
-                plan.highlighted
-                  ? 'border-primary bg-surface-container-lowest shadow-md hover:shadow-xl'
-                  : 'border-outline-variant bg-surface-container-lowest shadow-sm hover:border-primary hover:shadow-lg'
+              className={`relative h-full flex flex-col overflow-hidden rounded-lg px-8 py-8 sm:py-10 bg-surface-container-lowest border transition-all duration-200 hover:shadow-md ${
+                plan.highlighted ? 'border-2 border-primary' : 'border-outline-variant'
               }`}
             >
               {plan.highlighted && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-primary text-on-primary text-label-small tracking-[0.2px] font-bold">
-                  Best value for growth
+                <span className="absolute top-0 right-0 rounded-bl-lg bg-primary text-on-primary text-label-small tracking-[0.2px] uppercase font-bold px-4 py-2">
+                  Best Value
                 </span>
               )}
               <p className="text-title-large font-bold text-on-surface text-center">{plan.name}</p>
@@ -399,18 +398,16 @@ export function LandingPage() {
                 ))}
               </ul>
               {plan.highlighted ? (
-                <RequestDemoButton
-                  className="mt-8 w-full py-3 rounded-lg text-label-large font-bold bg-primary text-on-primary shadow-sm hover:opacity-90 hover:shadow-md transition-all"
-                >
-                  Get Started
+                <RequestDemoButton className="group mt-8 w-full py-3 rounded-lg text-label-large font-bold bg-primary text-on-primary shadow-sm transition-all hover:opacity-90 hover:shadow-md">
+                  <RollingText>Get Started</RollingText>
                 </RequestDemoButton>
               ) : (
                 // Not wired yet — destination TBD, don't open the demo modal for this plan.
                 <button
                   type="button"
-                  className="mt-8 w-full py-3 rounded-lg text-label-large font-bold bg-surface-container-lowest text-on-surface border border-outline shadow-sm hover:bg-surface-container hover:shadow-md transition-all"
+                  className="group mt-8 w-full py-3 rounded-lg text-label-large font-bold bg-surface-container-lowest text-on-surface border border-outline shadow-sm hover:bg-surface-container hover:shadow-md transition-all"
                 >
-                  Get Started
+                  <RollingText>Get Started</RollingText>
                 </button>
               )}
             </div>
@@ -427,8 +424,8 @@ export function LandingPage() {
           <motion.h2 variants={fadeUp} className="text-headline-medium font-bold">Ready to get started?</motion.h2>
           <motion.p variants={fadeUp} className="mt-3 text-body-large tracking-[0.2px] opacity-90">Tell us about your school and we&apos;ll set up a walkthrough.</motion.p>
           <motion.div variants={fadeUp} className="mt-8">
-            <RequestDemoButton className="px-8 py-3.5 rounded-lg bg-surface-container-lowest text-primary text-label-large font-bold shadow-sm transition-all hover:opacity-90 hover:shadow-md">
-              Request Demo
+            <RequestDemoButton className="group px-8 py-3.5 rounded-lg bg-surface-container-lowest text-primary text-label-large font-bold shadow-sm transition-all hover:opacity-90 hover:shadow-md">
+              <RollingText>Request Demo</RollingText>
             </RequestDemoButton>
           </motion.div>
         </motion.div>

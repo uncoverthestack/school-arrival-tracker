@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useId } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
+import { RollingText } from './RollingText'
 
 const inputClass =
   'w-full bg-surface-container border border-outline-variant rounded-lg px-4 py-3 text-body-large tracking-[0.2px] outline-none ' +
@@ -109,9 +110,9 @@ function RequestDemoModal({ onClose, triggerRef }) {
             <button
               type="button"
               onClick={onClose}
-              className={`w-full py-3 rounded-lg text-label-large bg-primary text-on-primary font-bold shadow-sm transition-all hover:opacity-90 hover:shadow-md ${focusRing}`}
+              className={`group w-full py-3 rounded-lg text-label-large bg-primary text-on-primary font-bold shadow-sm transition-all hover:opacity-90 hover:shadow-md ${focusRing}`}
             >
-              Close
+              <RollingText>Close</RollingText>
             </button>
           </div>
         ) : (
@@ -179,16 +180,16 @@ function RequestDemoModal({ onClose, triggerRef }) {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className={`flex-1 py-3 rounded-lg text-label-large bg-primary text-on-primary disabled:opacity-50 font-bold shadow-sm transition-all hover:opacity-90 hover:shadow-md ${focusRing}`}
+                  className={`group flex-1 py-3 rounded-lg text-label-large bg-primary text-on-primary disabled:opacity-50 font-bold shadow-sm transition-all hover:opacity-90 hover:shadow-md ${focusRing}`}
                 >
-                  {submitting ? 'Sending…' : 'Send request'}
+                  <RollingText>{submitting ? 'Sending…' : 'Send request'}</RollingText>
                 </button>
                 <button
                   type="button"
                   onClick={onClose}
-                  className={`flex-1 py-3 rounded-lg text-label-large bg-surface-container hover:bg-surface-container-high text-on-surface font-semibold shadow-sm hover:shadow-md transition-all ${focusRing}`}
+                  className={`group flex-1 py-3 rounded-lg text-label-large bg-surface-container hover:bg-surface-container-high text-on-surface font-semibold shadow-sm hover:shadow-md transition-all ${focusRing}`}
                 >
-                  Cancel
+                  <RollingText>Cancel</RollingText>
                 </button>
               </div>
             </form>
