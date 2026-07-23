@@ -24,15 +24,26 @@ export const schools = pgTable('schools', {
   createdAt:           timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 })
 
+// A parent/guardian contact — one per distinct phone number per school, so
+// siblings sharing a parent share one record instead of duplicating (and
+// drifting out of sync with) their contact info across student rows.
+export const parents = pgTable('parents', {
+  id:            uuid('id').defaultRandom().primaryKey(),
+  schoolId:      uuid('school_id').references(() => schools.id).notNull(),
+  name:          text('name'),
+  phone:         text('phone').notNull(), // E.164
+  email:         text('email'),
+  phoneVerified: boolean('phone_verified').default(false).notNull(),
+  createdAt:     timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+})
+
 export const students = pgTable('students', {
   id:                uuid('id').defaultRandom().primaryKey(),
   schoolId:          uuid('school_id').references(() => schools.id),
   studentId:         text('student_id'),
   name:              text('name').notNull(),
   studentClass:      text('student_class'),
-  parentName:        text('parent_name'),
-  parentPhone:       text('parent_phone'),
-  parentEmail:       text('parent_email'),
+  parentId:          uuid('parent_id').references(() => parents.id),
   cardId:            text('card_id'),
   code:              text('code').unique(),
   codeYear:          text('code_year'),

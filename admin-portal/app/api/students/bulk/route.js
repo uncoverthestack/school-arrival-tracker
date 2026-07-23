@@ -1,5 +1,6 @@
 import { getAdminSession } from '@/lib/session'
 import { countStudentsBySchool, isCodeUnique, createStudent } from '@/lib/repo/students'
+import { findOrCreateParent } from '@/lib/repo/parents'
 
 const MAX_ROWS = 1000
 
@@ -67,14 +68,23 @@ export async function POST(request) {
       continue
     }
 
+    const parent = await findOrCreateParent({
+      schoolId: session.schoolId,
+      name: row.parentName ? String(row.parentName).trim() : null,
+      phone: parentPhone,
+      email: row.parentEmail ? String(row.parentEmail).trim() : null,
+    })
+    if (!parent) {
+      errors.push({ row: i + 1, name, error: 'Invalid parent phone number' })
+      continue
+    }
+
     const student = await createStudent({
       schoolId: session.schoolId,
       studentId,
       name,
       studentClass,
-      parentName: row.parentName ? String(row.parentName).trim() : null,
-      parentPhone,
-      parentEmail: row.parentEmail ? String(row.parentEmail).trim() : null,
+      parentId: parent.id,
       cardId: row.cardId ? String(row.cardId).trim() : studentId,
       code,
       codeYear,
@@ -82,7 +92,7 @@ export async function POST(request) {
       usesBus: !!row.usesBus,
     })
 
-    created.push(student)
+    created.push({ ...student, parent })
   }
 
   return Response.json({ created: created.length, errors }, { status: 201 })

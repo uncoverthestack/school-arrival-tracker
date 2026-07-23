@@ -23,6 +23,8 @@ export const scanLimiter      = makeRatelimit('scan', 60, '1 m', 60)   // 60 per
 export const loginLimiter     = makeRatelimit('login', 10, '15 m', 10)  // 10 per 15 min, no burst
 export const demoRequestLimiter = makeRatelimit('demo-request', 3, '15 m', 3)  // 3 per 15 min, no burst
 export const forgotPasswordLimiter = makeRatelimit('forgot-password', 3, '15 m', 3) // 3 per 15 min, no burst
+export const superAdminLoginLimiter = makeRatelimit('superadmin-login', 10, '15 m', 10) // 10 per 15 min, no burst
+export const verifyOtpLimiter = makeRatelimit('verify-otp', 5, '15 m', 5) // 5 per 15 min, no burst — 6-digit OTP is brute-forceable otherwise
 
 export async function checkLimit(limiter, key, request) {
   if (!limiter) return { allowed: true }

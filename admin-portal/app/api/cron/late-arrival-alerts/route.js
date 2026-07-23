@@ -36,7 +36,7 @@ export async function GET(request) {
 
     const [{ data: students }, { data: arrivalsToday }] = await Promise.all([
       supabase.from('students')
-        .select('id, name, parent_phone, uses_bus, last_late_alert_date')
+        .select('id, name, uses_bus, last_late_alert_date, parents(phone)')
         .eq('school_id', school.id)
         .eq('uses_bus', false),
       supabase.from('arrivals')
@@ -51,10 +51,10 @@ export async function GET(request) {
     for (const s of students ?? []) {
       if (arrivedIds.has(s.id)) continue
       if (s.last_late_alert_date === today) continue
-      if (!s.parent_phone) continue
+      if (!s.parents?.phone) continue
 
       try {
-        await notifyParentAbsent(s.parent_phone, s.name, cutoffLabel)
+        await notifyParentAbsent(s.parents.phone, s.name, cutoffLabel)
         await supabase.from('students').update({ last_late_alert_date: today }).eq('id', s.id)
         alerted.push({ school: school.name, student: s.name })
       } catch (err) {

@@ -55,6 +55,18 @@ Production: \`https://{subdomain}.dataocelotschools.com\`
       }
     },
     schemas: {
+      Parent: {
+        type: 'object',
+        description: 'A parent/guardian contact — shared across siblings with the same phone number within a school.',
+        properties: {
+          id: { type: 'string', format: 'uuid' },
+          name: { type: 'string', nullable: true },
+          phone: { type: 'string', example: '+2348012345678', description: 'E.164 format' },
+          email: { type: 'string', nullable: true },
+          phone_verified: { type: 'boolean', description: 'True once the parent has completed OTP verification via /api/register + /api/verify' },
+          created_at: { type: 'string', format: 'date-time' }
+        }
+      },
       Student: {
         type: 'object',
         properties: {
@@ -62,9 +74,8 @@ Production: \`https://{subdomain}.dataocelotschools.com\`
           student_id: { type: 'string', example: 'SCH-2025-0001' },
           name: { type: 'string', example: 'Adaeze Okafor' },
           student_class: { type: 'string', example: 'JSS 2B' },
-          parent_name: { type: 'string', nullable: true },
-          parent_phone: { type: 'string', example: '+2348012345678' },
-          parent_email: { type: 'string', nullable: true },
+          parent: { allOf: [{ $ref: '#/components/schemas/Parent' }], nullable: true, description: 'Null if no parent contact is on file yet' },
+          uses_bus: { type: 'boolean', description: 'Bus riders are exempt from cutoff-time "not in school" / "not checked out" alerts' },
           card_id: { type: 'string', nullable: true },
           code: { type: 'string', example: '482917', description: '6-digit gate code' },
           code_year: { type: 'string', example: '2025-2026' },
@@ -728,7 +739,7 @@ Production: \`https://{subdomain}.dataocelotschools.com\`
                 properties: {
                   code: { type: 'string', example: '482917', description: "Student's 6-digit gate code" },
                   parentName: { type: 'string', example: 'Mrs Okafor' },
-                  parentPhone: { type: 'string', example: '+2348012345678', description: 'Must match school records exactly' }
+                  parentPhone: { type: 'string', example: '+2348012345678', description: 'Compared to school records after E.164 normalization — "08012345678" and "+2348012345678" are treated as the same number' }
                 }
               }
             }

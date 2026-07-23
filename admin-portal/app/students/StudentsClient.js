@@ -103,10 +103,14 @@ function EditModal({ student, classes, onClose }) {
   const [studentClass, setStudentClass] = useState(student.studentClass ?? '')
   const [photoUrl, setPhotoUrl] = useState(student.photoUrl ?? '')
   const [usesBus, setUsesBus] = useState(student.usesBus ?? false)
+  const [parentName, setParentName] = useState(student.parent?.name ?? '')
+  const [parentPhone, setParentPhone] = useState(student.parent?.phone ?? '')
+  const [parentEmail, setParentEmail] = useState(student.parent?.email ?? '')
   const [error, setError] = useState('')
   const [result, setResult] = useState(null)
 
   const classChanged = studentClass.trim() !== (student.studentClass ?? '')
+  const phoneChanged = parentPhone.trim() !== (student.parent?.phone ?? '')
 
   async function handleSave(e) {
     e.preventDefault()
@@ -116,7 +120,15 @@ function EditModal({ student, classes, onClose }) {
     const res = await fetch(`/api/students/${student.id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: name.trim(), studentClass: studentClass.trim(), photoUrl: photoUrl || null, usesBus })
+      body: JSON.stringify({
+        name: name.trim(),
+        studentClass: studentClass.trim(),
+        photoUrl: photoUrl || null,
+        usesBus,
+        parentName: parentName.trim() || null,
+        parentPhone: parentPhone.trim() || null,
+        parentEmail: parentEmail.trim() || null,
+      })
     })
     const data = await res.json()
 
@@ -156,6 +168,39 @@ function EditModal({ student, classes, onClose }) {
             )}
           </div>
 
+          <div>
+            <label className="block text-sm text-on-surface-variant mb-1">Parent Name</label>
+            <input
+              value={parentName}
+              onChange={e => setParentName(e.target.value)}
+              className="w-full bg-surface-container border border-outline-variant rounded-xl px-4 py-3 outline-none focus:border-primary"
+            />
+          </div>
+          <div>
+            <label className="block text-sm text-on-surface-variant mb-1">Parent Phone</label>
+            <input
+              value={parentPhone}
+              onChange={e => setParentPhone(e.target.value)}
+              required
+              className="w-full bg-surface-container border border-outline-variant rounded-xl px-4 py-3 outline-none focus:border-primary"
+            />
+            {phoneChanged && (
+              <p className="text-xs text-warning mt-1">
+                Different number → this student will be linked to a different (or new) parent record.
+                Other students sharing the old number are unaffected.
+              </p>
+            )}
+          </div>
+          <div>
+            <label className="block text-sm text-on-surface-variant mb-1">Parent Email</label>
+            <input
+              type="email"
+              value={parentEmail}
+              onChange={e => setParentEmail(e.target.value)}
+              className="w-full bg-surface-container border border-outline-variant rounded-xl px-4 py-3 outline-none focus:border-primary"
+            />
+          </div>
+
           <PhotoField photoUrl={photoUrl} onChange={setPhotoUrl} />
 
           <label className="flex items-center gap-2.5 cursor-pointer">
@@ -163,7 +208,7 @@ function EditModal({ student, classes, onClose }) {
             <span className="text-sm text-on-surface">Uses school bus</span>
           </label>
           <p className="text-xs text-on-surface-variant -mt-3">
-            Bus riders are exempt from the "not in school" cutoff-time alert — their arrival depends on the route.
+            Bus riders are exempt from the &quot;not in school&quot; cutoff-time alert — their arrival depends on the route.
           </p>
 
           {error && <p className="text-error text-sm">{error}</p>}
@@ -824,7 +869,10 @@ export default function StudentsClient({ students, classes }) {
                   {s.codeYear ?? '—'}
                 </td>
                 <td className="px-6 py-4 text-on-surface-variant hidden lg:table-cell">
-                  {s.parentPhone ?? <span className="text-on-surface-variant italic">not registered</span>}
+                  {s.parent?.phone ?? <span className="text-on-surface-variant italic">not registered</span>}
+                  {s.parent?.phoneVerified && (
+                    <span className="ml-1.5 text-success" title="Parent phone verified via OTP">✓</span>
+                  )}
                 </td>
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3 justify-end">

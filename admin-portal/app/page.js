@@ -65,7 +65,7 @@ async function getDashboardData(schoolId) {
 
   const [{ data: school }, { data: students }, { data: arrivals }] = await Promise.all([
     supabase.from('schools').select('arrival_cutoff_hour, arrival_cutoff_minute').eq('id', schoolId).maybeSingle(),
-    supabase.from('students').select('id, name, student_class, parent_phone, uses_bus').eq('school_id', schoolId),
+    supabase.from('students').select('id, name, student_class, uses_bus, parents(phone)').eq('school_id', schoolId),
     supabase.from('arrivals').select('student_id, type, scanned_at, alerted_at').eq('school_id', schoolId).eq('date', today)
   ])
 
@@ -99,7 +99,7 @@ async function getDashboardData(schoolId) {
     }
   }
   for (const s of allStudents) {
-    if (!isValidPhone(s.parent_phone)) attention.set(s.id, { student: s, reason: 'invalid_phone' })
+    if (!isValidPhone(s.parents?.phone)) attention.set(s.id, { student: s, reason: 'invalid_phone' })
   }
   const needsAttention = [...attention.values()].sort((a, b) => a.student.name.localeCompare(b.student.name))
 

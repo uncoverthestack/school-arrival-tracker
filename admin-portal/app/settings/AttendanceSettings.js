@@ -44,7 +44,7 @@ export function AttendanceSettings({ arrivalCutoffHour, arrivalCutoffMinute, dep
     <form onSubmit={handleSave} className="flex flex-col gap-4">
       <div>
         <label className="block text-sm text-on-surface-variant mb-1">Arrival cutoff time</label>
-        <p className="text-xs text-on-surface-variant mb-1.5">Alerts a parent if their child hasn't checked in by this time.</p>
+        <p className="text-xs text-on-surface-variant mb-1.5">Alerts a parent if their child hasn&apos;t checked in by this time.</p>
         <input
           type="time"
           value={arrivalTime}
@@ -56,7 +56,7 @@ export function AttendanceSettings({ arrivalCutoffHour, arrivalCutoffMinute, dep
 
       <div>
         <label className="block text-sm text-on-surface-variant mb-1">Departure cutoff time</label>
-        <p className="text-xs text-on-surface-variant mb-1.5">Alerts a parent if their child checked in but hasn't checked out by this time.</p>
+        <p className="text-xs text-on-surface-variant mb-1.5">Alerts a parent if their child checked in but hasn&apos;t checked out by this time.</p>
         <input
           type="time"
           value={departureTime}

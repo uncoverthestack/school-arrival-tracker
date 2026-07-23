@@ -20,9 +20,9 @@ export default function PrivacyPolicyPage() {
 
       <main className="max-w-3xl mx-auto px-4 sm:px-8 py-12">
         <div className="rounded-xl bg-warning-container text-on-warning-container text-sm px-4 py-3 mb-8">
-          <strong>Draft — pending legal review.</strong> This page describes what SchoolPass actually collects and how it's
+          <strong>Draft — pending legal review.</strong> This page describes what SchoolPass actually collects and how it&apos;s
           used today. It has not been reviewed by a lawyer and should not be relied on as a compliance guarantee
-          (e.g. under Nigeria's NDPR) before real public launch.
+          (e.g. under Nigeria&apos;s NDPR) before real public launch.
         </div>
 
         <h1 className="text-3xl font-extrabold text-on-surface">Privacy Policy</h1>
@@ -30,15 +30,15 @@ export default function PrivacyPolicyPage() {
 
         <div className={sectionClass}>
           <p className={bodyClass}>
-            SchoolPass ("we", "our") provides a school gate attendance and parent-notification system. This policy
-            explains what information we collect from schools, students, and parents, and how it's used.
+            SchoolPass (&quot;we&quot;, &quot;our&quot;) provides a school gate attendance and parent-notification system. This policy
+            explains what information we collect from schools, students, and parents, and how it&apos;s used.
           </p>
         </div>
 
         <div className={sectionClass}>
           <h2 className={headingClass}>Information we collect</h2>
           <p className={bodyClass}>
-            <strong>School accounts:</strong> the registering admin's name, email address, and a password (stored as a
+            <strong>School accounts:</strong> the registering admin&apos;s name, email address, and a password (stored as a
             salted hash, never in plain text).
           </p>
           <p className={bodyClass}>
@@ -55,8 +55,8 @@ export default function PrivacyPolicyPage() {
             <strong>Attendance records:</strong> a timestamped log of each gate check-in and check-out, per student.
           </p>
           <p className={bodyClass}>
-            <strong>Demo requests:</strong> if you fill out the "Request a Demo" form, we store your name, phone
-            number, and your school's name, email, and address so we can follow up.
+            <strong>Demo requests:</strong> if you fill out the &quot;Request a Demo&quot; form, we store your name, phone
+            number, and your school&apos;s name, email, and address so we can follow up.
           </p>
         </div>
 
@@ -83,8 +83,8 @@ export default function PrivacyPolicyPage() {
           <h2 className={headingClass}>Biometric data (Face ID)</h2>
           <p className={bodyClass}>
             Face ID enrollment is optional. If a school enables it for a student, we store a face descriptor derived
-            from the student's photo — not the raw image data used for matching. A school admin can remove a
-            student's face descriptor at any time from the Students page, which deletes it permanently.
+            from the student&apos;s photo — not the raw image data used for matching. A school admin can remove a
+            student&apos;s face descriptor at any time from the Students page, which deletes it permanently.
           </p>
         </div>
 
@@ -100,8 +100,8 @@ export default function PrivacyPolicyPage() {
         <div className={sectionClass}>
           <h2 className={headingClass}>Your rights</h2>
           <p className={bodyClass}>
-            Parents or guardians who want their phone number, or a student's face data, removed should contact their
-            school's administrator directly — schools control this data and can act on the request through their
+            Parents or guardians who want their phone number, or a student&apos;s face data, removed should contact their
+            school&apos;s administrator directly — schools control this data and can act on the request through their
             dashboard.
           </p>
         </div>
@@ -109,7 +109,7 @@ export default function PrivacyPolicyPage() {
         <div className={sectionClass}>
           <h2 className={headingClass}>Contact</h2>
           <p className={bodyClass}>
-            Questions about this policy can be sent to the platform administrator's registered contact email.
+            Questions about this policy can be sent to the platform administrator&apos;s registered contact email.
           </p>
         </div>
       </main>

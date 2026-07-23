@@ -20,8 +20,11 @@ export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false)
   const [done, setDone] = useState(false)
 
+  // window only exists client-side, so the token can't be part of the
+  // initial state — it has to be read after mount.
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setToken(params.get('token') ?? '')
   }, [])
 

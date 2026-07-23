@@ -1,5 +1,6 @@
 import { getAdminSession } from '@/lib/session'
 import { getStudentById, updateStudent, deleteStudent, isCodeUnique } from '@/lib/repo/students'
+import { findOrCreateParent } from '@/lib/repo/parents'
 import { deleteVerificationsByStudent } from '@/lib/repo/verifications'
 import { deleteArrivalsByStudent } from '@/lib/repo/arrivals'
 
@@ -32,7 +33,7 @@ export async function PATCH(request, { params }) {
     return Response.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
-  const { studentClass, name, photoUrl, faceDescriptor, usesBus } = body
+  const { studentClass, name, photoUrl, faceDescriptor, usesBus, parentName, parentPhone, parentEmail } = body
 
   const student = await getStudentById(id, session.schoolId)
   if (!student) {
@@ -48,6 +49,17 @@ export async function PATCH(request, { params }) {
     updates.faceDescriptor = faceDescriptor ? JSON.stringify(Array.from(faceDescriptor)) : null
   }
 
+  if (parentPhone) {
+    // Same phone → same parent identity (name/email edits apply to the shared
+    // record). Different phone → resolves to a different parent, so siblings
+    // still pointing at the old one are unaffected.
+    const parent = await findOrCreateParent({ schoolId: session.schoolId, name: parentName, phone: parentPhone, email: parentEmail })
+    if (!parent) {
+      return Response.json({ error: 'Invalid parent phone number' }, { status: 400 })
+    }
+    updates.parentId = parent.id
+  }
+
   if (studentClass && studentClass !== student.studentClass) {
     updates.studentClass = studentClass
     updates.code = await generateUniqueCode()
@@ -57,8 +69,9 @@ export async function PATCH(request, { params }) {
     updates.codeYear = currentSchoolYear()
   }
 
-  const updated = await updateStudent(id, session.schoolId, updates)
+  await updateStudent(id, session.schoolId, updates)
   const rotated = 'code' in updates
+  const updated = await getStudentById(id, session.schoolId)
 
   return Response.json({ student: updated, codeRotated: rotated })
 }

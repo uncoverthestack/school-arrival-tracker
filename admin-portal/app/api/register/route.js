@@ -1,17 +1,10 @@
 import { checkLimit, registerLimiter } from '@/lib/ratelimit'
 import { getStudentByCode } from '@/lib/repo/students'
 import { createVerification } from '@/lib/repo/verifications'
+import { toE164 } from '@/lib/validation'
 
 const LAMBDA_URL = process.env.NOTIFY_LAMBDA_URL
 const LAMBDA_API_KEY = process.env.NOTIFY_LAMBDA_API_KEY
-
-function isValidPhone(phone) {
-  return /^[0-9+\-\s()]{7,15}$/.test(String(phone).trim())
-}
-
-function normalizePhone(phone) {
-  return String(phone).replace(/[\s\-\(\)]/g, '')
-}
 
 function generateOtp() {
   return String(Math.floor(100000 + Math.random() * 900000))
@@ -56,8 +49,8 @@ export async function POST(request) {
     return Response.json({ error: 'Name is too short' }, { status: 400 })
   }
 
-  const safePhone = String(parentPhone).trim().slice(0, 20)
-  if (!isValidPhone(safePhone)) {
+  const inputPhone = toE164(parentPhone)
+  if (!inputPhone) {
     return Response.json({ error: 'Invalid phone number' }, { status: 400 })
   }
 
@@ -66,14 +59,14 @@ export async function POST(request) {
     return Response.json({ error: 'Invalid code — check with your school' }, { status: 404 })
   }
 
-  if (!student.parentPhone) {
+  if (!student.parent?.phone) {
     return Response.json(
       { error: 'No parent contact on file for this student. Ask the school office to register your number first.' },
       { status: 403 }
     )
   }
 
-  if (normalizePhone(student.parentPhone) !== normalizePhone(safePhone)) {
+  if (toE164(student.parent.phone) !== inputPhone) {
     return Response.json(
       { error: 'Phone number does not match school records for this student. Contact the school office.' },
       { status: 403 }
@@ -81,16 +74,16 @@ export async function POST(request) {
   }
 
   const otp = generateOtp()
-  const expiresAt = new Date(Date.now() + 10 * 60 * 1000)
+  const expiresAt = new Date(Date.now() + 5 * 60 * 1000)
 
   const verification = await createVerification({
     studentId: student.id,
-    phone: safePhone,
+    phone: inputPhone,
     otp,
     expiresAt,
   })
 
-  const { sent } = await sendOtp(safePhone, otp)
+  const { sent } = await sendOtp(inputPhone, otp)
 
   return Response.json({
     pending: true,
@@ -98,7 +91,7 @@ export async function POST(request) {
     studentName: student.name,
     ...(process.env.NODE_ENV !== 'production' && { devOtp: otp }),
     message: sent
-      ? `A verification code has been sent to ${safePhone}`
+      ? `A verification code has been sent to ${inputPhone}`
       : `SMS not configured — use devOtp: ${otp} to verify`,
   })
 }
