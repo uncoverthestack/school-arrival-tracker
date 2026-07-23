@@ -102,10 +102,15 @@ function EditModal({ student, classes, onClose }) {
   const [name, setName] = useState(student.name)
   const [studentClass, setStudentClass] = useState(student.studentClass ?? '')
   const [photoUrl, setPhotoUrl] = useState(student.photoUrl ?? '')
+  const [usesBus, setUsesBus] = useState(student.usesBus ?? false)
+  const [parentName, setParentName] = useState(student.parent?.name ?? '')
+  const [parentPhone, setParentPhone] = useState(student.parent?.phone ?? '')
+  const [parentEmail, setParentEmail] = useState(student.parent?.email ?? '')
   const [error, setError] = useState('')
   const [result, setResult] = useState(null)
 
   const classChanged = studentClass.trim() !== (student.studentClass ?? '')
+  const phoneChanged = parentPhone.trim() !== (student.parent?.phone ?? '')
 
   async function handleSave(e) {
     e.preventDefault()
@@ -115,7 +120,15 @@ function EditModal({ student, classes, onClose }) {
     const res = await fetch(`/api/students/${student.id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: name.trim(), studentClass: studentClass.trim(), photoUrl: photoUrl || null })
+      body: JSON.stringify({
+        name: name.trim(),
+        studentClass: studentClass.trim(),
+        photoUrl: photoUrl || null,
+        usesBus,
+        parentName: parentName.trim() || null,
+        parentPhone: parentPhone.trim() || null,
+        parentEmail: parentEmail.trim() || null,
+      })
     })
     const data = await res.json()
 
@@ -155,7 +168,48 @@ function EditModal({ student, classes, onClose }) {
             )}
           </div>
 
+          <div>
+            <label className="block text-sm text-on-surface-variant mb-1">Parent Name</label>
+            <input
+              value={parentName}
+              onChange={e => setParentName(e.target.value)}
+              className="w-full bg-surface-container border border-outline-variant rounded-xl px-4 py-3 outline-none focus:border-primary"
+            />
+          </div>
+          <div>
+            <label className="block text-sm text-on-surface-variant mb-1">Parent Phone</label>
+            <input
+              value={parentPhone}
+              onChange={e => setParentPhone(e.target.value)}
+              required
+              className="w-full bg-surface-container border border-outline-variant rounded-xl px-4 py-3 outline-none focus:border-primary"
+            />
+            {phoneChanged && (
+              <p className="text-xs text-warning mt-1">
+                Different number → this student will be linked to a different (or new) parent record.
+                Other students sharing the old number are unaffected.
+              </p>
+            )}
+          </div>
+          <div>
+            <label className="block text-sm text-on-surface-variant mb-1">Parent Email</label>
+            <input
+              type="email"
+              value={parentEmail}
+              onChange={e => setParentEmail(e.target.value)}
+              className="w-full bg-surface-container border border-outline-variant rounded-xl px-4 py-3 outline-none focus:border-primary"
+            />
+          </div>
+
           <PhotoField photoUrl={photoUrl} onChange={setPhotoUrl} />
+
+          <label className="flex items-center gap-2.5 cursor-pointer">
+            <input type="checkbox" checked={usesBus} onChange={e => setUsesBus(e.target.checked)} className="w-4 h-4" />
+            <span className="text-sm text-on-surface">Uses school bus</span>
+          </label>
+          <p className="text-xs text-on-surface-variant -mt-3">
+            Bus riders are exempt from the &quot;not in school&quot; cutoff-time alert — their arrival depends on the route.
+          </p>
 
           {error && <p className="text-error text-sm">{error}</p>}
           {result && <p className="text-success text-sm font-mono">{result}</p>}
@@ -342,6 +396,7 @@ function AddStudentModal({ classes, onClose }) {
   const [parentPhone, setParentPhone] = useState('')
   const [parentEmail, setParentEmail] = useState('')
   const [photoUrl, setPhotoUrl] = useState('')
+  const [usesBus, setUsesBus] = useState(false)
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
 
@@ -360,6 +415,7 @@ function AddStudentModal({ classes, onClose }) {
         parentPhone: parentPhone.trim(),
         parentEmail: parentEmail.trim() || null,
         photoUrl: photoUrl || null,
+        usesBus,
       })
     })
     const data = await res.json()
@@ -424,6 +480,11 @@ function AddStudentModal({ classes, onClose }) {
           </div>
 
           <PhotoField photoUrl={photoUrl} onChange={setPhotoUrl} />
+
+          <label className="flex items-center gap-2.5 cursor-pointer">
+            <input type="checkbox" checked={usesBus} onChange={e => setUsesBus(e.target.checked)} className="w-4 h-4" />
+            <span className="text-sm text-on-surface">Uses school bus</span>
+          </label>
 
           {error && <p className="text-error text-sm">{error}</p>}
 
@@ -509,6 +570,7 @@ function BulkImportModal({ onClose }) {
       parentPhone: r.parentphone,
       parentEmail: r.parentemail,
       cardId: r.cardid,
+      usesBus: ['true', 'yes', '1'].includes((r.usesbus ?? '').toLowerCase()),
     }))
     setRows(parsed)
   }
@@ -538,8 +600,8 @@ function BulkImportModal({ onClose }) {
       <div className="bg-surface-container-lowest rounded-2xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
         <h2 className="text-lg font-bold mb-1">Bulk Import Students</h2>
         <p className="text-xs text-on-surface-variant mb-5">
-          CSV with columns: name, studentClass, parentName, parentPhone, parentEmail, cardId
-          (name, studentClass, and parentPhone are required).
+          CSV with columns: name, studentClass, parentName, parentPhone, parentEmail, cardId, usesBus
+          (name, studentClass, and parentPhone are required — usesBus accepts true/yes/1).
         </p>
 
         <label className="block w-full text-center py-3 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface text-sm font-semibold cursor-pointer transition-colors mb-4">
@@ -788,6 +850,9 @@ export default function StudentsClient({ students, classes }) {
                   {s.faceDescriptor && (
                     <span className="ml-2 text-xs text-primary" title="Face ID enrolled">⬡</span>
                   )}
+                  {s.usesBus && (
+                    <span className="ml-2 text-xs text-on-surface-variant" title="Uses school bus — exempt from the cutoff-time alert">🚌</span>
+                  )}
                 </td>
                 <td className="px-6 py-4 text-on-surface-variant font-mono text-xs hidden md:table-cell">
                   {s.studentId ?? '—'}
@@ -804,7 +869,10 @@ export default function StudentsClient({ students, classes }) {
                   {s.codeYear ?? '—'}
                 </td>
                 <td className="px-6 py-4 text-on-surface-variant hidden lg:table-cell">
-                  {s.parentPhone ?? <span className="text-on-surface-variant italic">not registered</span>}
+                  {s.parent?.phone ?? <span className="text-on-surface-variant italic">not registered</span>}
+                  {s.parent?.phoneVerified && (
+                    <span className="ml-1.5 text-success" title="Parent phone verified via OTP">✓</span>
+                  )}
                 </td>
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3 justify-end">

@@ -1,6 +1,7 @@
 import { getSchool } from '@/lib/schools'
 import { getAdminSession } from '@/lib/session'
 import { getStudentsBySchool, countStudentsBySchool, isCodeUnique, createStudent } from '@/lib/repo/students'
+import { findOrCreateParent } from '@/lib/repo/parents'
 
 async function resolveSchool(request) {
   const session = await getAdminSession()
@@ -38,7 +39,7 @@ export async function POST(request) {
     return Response.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
-  const { name, studentClass, parentPhone, parentName, parentEmail, cardId, photoUrl } = body
+  const { name, studentClass, parentPhone, parentName, parentEmail, cardId, photoUrl, usesBus } = body
 
   if (!name || !studentClass || !parentPhone) {
     return Response.json(
@@ -61,19 +62,23 @@ export async function POST(request) {
     return Response.json({ error: 'Could not generate unique code, try again' }, { status: 500 })
   }
 
+  const parent = await findOrCreateParent({ schoolId: school.id, name: parentName, phone: parentPhone, email: parentEmail })
+  if (!parent) {
+    return Response.json({ error: 'Invalid parent phone number' }, { status: 400 })
+  }
+
   const student = await createStudent({
     schoolId: school.id,
     studentId,
     name,
     studentClass,
-    parentName: parentName ?? null,
-    parentPhone,
-    parentEmail: parentEmail ?? null,
+    parentId: parent.id,
     cardId: cardId ?? studentId,
     code,
     codeYear: currentSchoolYear(),
     photoUrl: photoUrl ?? null,
+    usesBus: !!usesBus,
   })
 
-  return Response.json({ student }, { status: 201 })
+  return Response.json({ student: { ...student, parent } }, { status: 201 })
 }

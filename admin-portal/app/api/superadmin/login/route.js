@@ -1,18 +1,13 @@
-import { timingSafeEqual } from 'crypto'
 import { getSuperSession } from '@/lib/superSession'
-
-function safeCompare(a, b) {
-  const bufA = Buffer.from(String(a))
-  const bufB = Buffer.from(String(b))
-  if (bufA.length !== bufB.length) {
-    // Still run a comparison to avoid leaking length via timing
-    timingSafeEqual(bufA, bufA)
-    return false
-  }
-  return timingSafeEqual(bufA, bufB)
-}
+import { safeCompare } from '@/lib/safeCompare'
+import { checkLimit, superAdminLoginLimiter } from '@/lib/ratelimit'
 
 export async function POST(request) {
+  const { allowed } = await checkLimit(superAdminLoginLimiter, null, request)
+  if (!allowed) {
+    return Response.json({ error: 'Too many attempts. Try again in 15 minutes.' }, { status: 429 })
+  }
+
   let body
   try { body = await request.json() } catch {
     return Response.json({ error: 'Invalid request' }, { status: 400 })

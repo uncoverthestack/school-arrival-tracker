@@ -26,6 +26,12 @@ export async function getSchoolBySubdomain(subdomain) {
   return row ?? null
 }
 
+export async function getSchoolByAdminEmail(email) {
+  if (!email) return null
+  const [row] = await db.select().from(schools).where(eq(schools.adminEmail, email)).limit(1)
+  return row ?? null
+}
+
 export async function getAllSchools() {
   return db.select().from(schools).orderBy(schools.createdAt)
 }

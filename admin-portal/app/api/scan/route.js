@@ -66,8 +66,8 @@ export async function POST(request) {
     hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Lagos',
   })
 
-  if (student.parentPhone) {
-    notifyParent(student.parentPhone, student.name, type, time).catch(console.error)
+  if (student.parent?.phone) {
+    notifyParent(student.parent.phone, student.name, type, time).catch(console.error)
   }
 
   return Response.json({
