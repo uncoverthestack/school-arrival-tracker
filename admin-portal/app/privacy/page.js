@@ -1,37 +1,37 @@
 import Link from 'next/link'
 
 export const metadata = {
-  title: 'Privacy Policy — SchoolPass',
+  title: 'Privacy Policy — Childmap',
 }
 
 const sectionClass = 'mt-8'
-const headingClass = 'text-lg font-bold text-on-surface'
-const bodyClass = 'mt-2 text-on-surface-variant leading-relaxed'
+const headingClass = 'text-title-medium font-bold text-on-surface'
+const bodyClass = 'mt-2 text-body-medium tracking-[0.1px] text-on-surface-variant leading-relaxed'
 
 export default function PrivacyPolicyPage() {
   return (
     <div data-theme="light" className="min-h-screen bg-surface text-on-surface font-kiosk">
       <header className="border-b border-outline-variant">
         <div className="max-w-3xl mx-auto px-4 sm:px-8 py-4 flex items-center justify-between">
-          <Link href="/" className="text-lg font-extrabold text-on-surface">SchoolPass</Link>
-          <Link href="/" className="text-sm text-on-surface-variant hover:text-on-surface transition-colors">← Back home</Link>
+          <Link href="/" className="rounded-sm text-title-medium font-bold text-on-surface focus-visible:ring-2 focus-visible:ring-primary">Childmap</Link>
+          <Link href="/" className="rounded-sm text-body-medium tracking-[0.1px] text-on-surface-variant hover:text-on-surface focus-visible:ring-2 focus-visible:ring-primary transition-colors">← Back home</Link>
         </div>
       </header>
 
       <main className="max-w-3xl mx-auto px-4 sm:px-8 py-12">
         <div className="rounded-xl bg-warning-container text-on-warning-container text-sm px-4 py-3 mb-8">
-          <strong>Draft — pending legal review.</strong> This page describes what SchoolPass actually collects and how it&apos;s
+          <strong>Draft — pending legal review.</strong> This page describes what SchoolPass actually collects and how it's
           used today. It has not been reviewed by a lawyer and should not be relied on as a compliance guarantee
           (e.g. under Nigeria&apos;s NDPR) before real public launch.
         </div>
 
-        <h1 className="text-3xl font-extrabold text-on-surface">Privacy Policy</h1>
-        <p className="mt-2 text-sm text-on-surface-variant">Last updated: 18 July 2026</p>
+        <h1 className="text-headline-large font-bold text-on-surface">Privacy Policy</h1>
+        <p className="mt-2 text-body-medium tracking-[0.1px] text-on-surface-variant">Last updated: 18 July 2026</p>
 
         <div className={sectionClass}>
           <p className={bodyClass}>
-            SchoolPass (&quot;we&quot;, &quot;our&quot;) provides a school gate attendance and parent-notification system. This policy
-            explains what information we collect from schools, students, and parents, and how it&apos;s used.
+            SchoolPass ("we", "our") provides a school gate attendance and parent-notification system. This policy
+            explains what information we collect from schools, students, and parents, and how it's used.
           </p>
         </div>
 

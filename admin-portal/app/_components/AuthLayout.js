@@ -15,12 +15,7 @@ export function AuthLayout({ children }) {
 
         {/* Logo */}
         <div className="relative flex items-center gap-3">
-          <div className="bg-primary flex items-center justify-center rounded-sm size-10 shrink-0">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M12 2C7.58 2 4 5.58 4 10c0 5.25 6.72 11.19 7.02 11.44a1.5 1.5 0 0 0 1.96 0C13.28 21.19 20 15.25 20 10c0-4.42-3.58-8-8-8Z" fill="white"/>
-              <circle cx="12" cy="10" r="3" fill="#124f8f"/>
-            </svg>
-          </div>
+          <img src="/brand/childmap-icon-256.png" alt="" width={40} height={40} className="size-10 shrink-0" />
           <p className="text-title-large text-white">Childmap</p>
         </div>
 

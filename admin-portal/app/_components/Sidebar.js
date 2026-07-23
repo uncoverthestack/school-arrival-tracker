@@ -84,12 +84,7 @@ export function Sidebar({ watchlistCount = 0, onNavigate }) {
     <div className="bg-surface-container-lowest border-r border-outline-variant flex flex-col h-full p-4 py-8 shrink-0 w-63 overflow-y-auto">
       <div className="flex flex-col gap-1 w-full">
         <div className="flex items-center gap-2.5 pb-6 pt-1 px-1">
-          <div className="bg-primary flex items-center justify-center rounded-sm size-8 shrink-0">
-            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M12 2C7.58 2 4 5.58 4 10c0 5.25 6.72 11.19 7.02 11.44a1.5 1.5 0 0 0 1.96 0C13.28 21.19 20 15.25 20 10c0-4.42-3.58-8-8-8Z" fill="var(--color-on-primary)" />
-              <circle cx="12" cy="10" r="3" fill="var(--color-primary)" />
-            </svg>
-          </div>
+          <img src="/brand/childmap-icon-256.png" alt="" width={32} height={32} className="size-8 shrink-0" />
           <p className="text-title-medium tracking-[0.15px] text-on-surface">Childmap</p>
         </div>
 

@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef } from 'react'
-import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
+import { motion, useMotionValue, useSpring, useTransform, useReducedMotion } from 'framer-motion'
 
 // Cursor-following 3D tilt — classic "cinematic" card effect. Rotation is
 // driven by pointer position relative to the card's own center, smoothed
@@ -10,6 +10,7 @@ export function TiltCard({ children, className, tiltStrength = 10 }) {
   const ref = useRef(null)
   const x = useMotionValue(0)
   const y = useMotionValue(0)
+  const reduceMotion = useReducedMotion()
 
   const springConfig = { stiffness: 200, damping: 20, mass: 0.5 }
   const rotateX = useSpring(useTransform(y, [-0.5, 0.5], [tiltStrength, -tiltStrength]), springConfig)
@@ -18,6 +19,7 @@ export function TiltCard({ children, className, tiltStrength = 10 }) {
   const glowY = useSpring(useTransform(y, [-0.5, 0.5], [0, 100]), springConfig)
 
   function handleMouseMove(e) {
+    if (reduceMotion) return
     const rect = ref.current.getBoundingClientRect()
     x.set((e.clientX - rect.left) / rect.width - 0.5)
     y.set((e.clientY - rect.top) / rect.height - 0.5)
