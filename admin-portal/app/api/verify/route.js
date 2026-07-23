@@ -1,7 +1,15 @@
 import { getVerificationById, markVerificationUsed } from '@/lib/repo/verifications'
-import { updateStudent, getStudentById } from '@/lib/repo/students'
+import { getStudentById } from '@/lib/repo/students'
+import { updateParent } from '@/lib/repo/parents'
+import { safeCompare } from '@/lib/safeCompare'
+import { checkLimit, verifyOtpLimiter } from '@/lib/ratelimit'
 
 export async function POST(request) {
+  const { allowed } = await checkLimit(verifyOtpLimiter, null, request)
+  if (!allowed) {
+    return Response.json({ error: 'Too many attempts. Try again in 15 minutes.' }, { status: 429 })
+  }
+
   let body
   try {
     body = await request.json()
@@ -27,19 +35,23 @@ export async function POST(request) {
     return Response.json({ error: 'Verification code has expired. Please register again.' }, { status: 410 })
   }
 
-  if (verification.otp !== String(otp).trim()) {
+  if (!safeCompare(verification.otp, String(otp).trim())) {
     return Response.json({ error: 'Incorrect code — check your SMS and try again' }, { status: 400 })
   }
 
+  const student = await getStudentById(verification.studentId, null)
+  if (!student?.parent) {
+    // Shouldn't happen — /api/register only issues a verification once a
+    // matching parent record already exists — but fail loudly if it does.
+    return Response.json({ error: 'No parent contact on file for this student' }, { status: 409 })
+  }
+
+  const cleanName = String(parentName).trim().slice(0, 100)
+
   await Promise.all([
     markVerificationUsed(verificationId),
-    updateStudent(verification.studentId, null, {
-      parentName: String(parentName).trim().slice(0, 100),
-      parentPhone: verification.phone,
-    }),
+    updateParent(student.parent.id, { name: cleanName, phoneVerified: true }),
   ])
-
-  const student = await getStudentById(verification.studentId, null)
 
   return Response.json({
     success: true,

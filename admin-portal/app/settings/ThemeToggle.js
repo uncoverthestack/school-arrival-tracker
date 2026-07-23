@@ -12,7 +12,10 @@ const OPTIONS = [
 export function ThemeToggle() {
   const [theme, setThemeState] = useState('system')
 
+  // localStorage only exists client-side, so the stored theme can't be part
+  // of the initial state — it has to be read after mount.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setThemeState(getStoredTheme())
   }, [])
 

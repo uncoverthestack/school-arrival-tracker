@@ -15,6 +15,10 @@ export default function RefreshTicker({ intervalMs = 10_000 }) {
   }, [router])
 
   useEffect(() => {
+    // Intentional: fire once immediately, then on the interval — there's no
+    // SSR-safe way to know "now" ahead of mount, so the first render is a
+    // one-time exception before the polling loop takes over.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     refresh()
     const id = setInterval(refresh, intervalMs)
     return () => clearInterval(id)

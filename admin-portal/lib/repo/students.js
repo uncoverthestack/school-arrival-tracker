@@ -1,21 +1,32 @@
 import { eq, and, or, isNotNull, asc, sql } from 'drizzle-orm'
 import { db } from '../db'
-import { students } from '../schema'
+import { students, parents } from '../schema'
+
+// Reshapes a { students, parents } leftJoin row into a flat student object
+// with a nested `parent` (or null if the student has no parent on file).
+function withParent(row) {
+  return { ...row.students, parent: row.parents?.id ? row.parents : null }
+}
+
+function studentWithParentQuery() {
+  return db.select().from(students).leftJoin(parents, eq(students.parentId, parents.id))
+}
 
 export async function getStudentsBySchool(schoolId) {
-  return db.select().from(students).where(eq(students.schoolId, schoolId)).orderBy(asc(students.name))
+  const rows = await studentWithParentQuery().where(eq(students.schoolId, schoolId)).orderBy(asc(students.name))
+  return rows.map(withParent)
 }
 
 export async function getStudentById(id, schoolId) {
   const clauses = [eq(students.id, id)]
   if (schoolId) clauses.push(eq(students.schoolId, schoolId))
-  const [row] = await db.select().from(students).where(and(...clauses)).limit(1)
-  return row ?? null
+  const [row] = await studentWithParentQuery().where(and(...clauses)).limit(1)
+  return row ? withParent(row) : null
 }
 
 // Matches card_id, student_id, or 6-digit code — the three identifiers the gate accepts
 export async function findStudentByIdentifier(identifier, schoolId) {
-  const [row] = await db.select().from(students)
+  const [row] = await studentWithParentQuery()
     .where(and(
       eq(students.schoolId, schoolId),
       or(
@@ -25,12 +36,12 @@ export async function findStudentByIdentifier(identifier, schoolId) {
       )
     ))
     .limit(1)
-  return row ?? null
+  return row ? withParent(row) : null
 }
 
 export async function getStudentByCode(code) {
-  const [row] = await db.select().from(students).where(eq(students.code, code)).limit(1)
-  return row ?? null
+  const [row] = await studentWithParentQuery().where(eq(students.code, code)).limit(1)
+  return row ? withParent(row) : null
 }
 
 export async function isCodeUnique(code) {

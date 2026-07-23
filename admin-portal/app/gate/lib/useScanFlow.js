@@ -67,7 +67,10 @@ export function useScanFlow(schoolKey) {
   }, [])
 
   // Real connectivity check — the "offline" screen isn't just decorative.
+  // navigator.onLine only exists client-side, so this can't be the initial
+  // state and must be read after mount.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setOnline(navigator.onLine)
     const goOnline = () => setOnline(true)
     const goOffline = () => setOnline(false)
