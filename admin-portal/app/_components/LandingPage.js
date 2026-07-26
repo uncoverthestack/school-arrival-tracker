@@ -7,6 +7,7 @@ import { RequestDemoButton } from './RequestDemoButton'
 import { MobileNav } from './MobileNav'
 import { TiltCard } from './TiltCard'
 import { RollingText } from './RollingText'
+import { SiYoutube, SiInstagram, SiX, SiFacebook, SiTiktok } from 'react-icons/si'
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -33,7 +34,7 @@ const FEATURES = [
       <div className="w-full rounded-lg bg-surface-container-lowest border border-outline-variant p-4 flex items-center gap-3">
         <div className="w-10 h-10 rounded-full bg-success-container text-on-success-container flex items-center justify-center shrink-0">
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-            <path d="M4 10l4 4 8-8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M4 10l4 4 8-8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </div>
         <div className="min-w-0">
@@ -119,7 +120,7 @@ const FEATURES = [
         <div className="flex items-center justify-between px-3 py-2 rounded-md bg-primary-container text-on-primary-container">
           <p className="text-label-large font-medium">Greenfield Academy</p>
           <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-            <path d="M4 10l4 4 8-8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M4 10l4 4 8-8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </div>
         <div className="px-3 py-2 rounded-md text-on-surface-variant">
@@ -147,6 +148,15 @@ const PRICING = [
     features: ['Everything in Standard', 'Unlimited pupils', 'Priority support', 'Dedicated account manager'],
     highlighted: true,
   },
+]
+
+// Not wired yet — accounts don't exist. href="#" until real URLs are ready.
+const SOCIAL_LINKS = [
+  { name: 'YouTube', Icon: SiYoutube },
+  { name: 'Instagram', Icon: SiInstagram },
+  { name: 'X', Icon: SiX },
+  { name: 'Facebook', Icon: SiFacebook },
+  { name: 'TikTok', Icon: SiTiktok },
 ]
 
 const WHY_US = [
@@ -351,7 +361,7 @@ export function LandingPage() {
                 {plan.features.map(f => (
                   <li key={f} className="flex items-start gap-2 text-body-medium tracking-[0.1px] text-on-surface">
                     <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true" className="text-success shrink-0 mt-0.5">
-                      <path d="M4 10l4 4 8-8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      <path d="M4 10l4 4 8-8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                     {f}
                   </li>
@@ -416,20 +426,37 @@ export function LandingPage() {
       </section>
 
       <footer className="border-t border-outline-variant">
-        <div className="max-w-7xl mx-auto px-4 sm:px-8 py-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-center sm:text-left">
-            <div className="flex items-center gap-2 justify-center sm:justify-start">
+        <div className="max-w-7xl mx-auto px-4 sm:px-8 py-16">
+          <div className="grid grid-cols-1 md:grid-cols-3 items-center gap-6 text-center md:text-left">
+            <div className="flex items-center gap-2 justify-center md:justify-self-start">
               <img src="/brand/childmap-icon-256.png" alt="" width={28} height={28} className="size-7 shrink-0" />
               <div>
                 <p className="text-title-medium font-bold text-on-surface">Childmap</p>
                 <p className="text-body-medium tracking-[0.1px] text-on-surface-variant">Real-time school arrival &amp; departure tracking.</p>
               </div>
             </div>
-            <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-6">
+
+            <div className="flex items-center gap-3 justify-center md:justify-self-center">
+              {SOCIAL_LINKS.map(s => (
+                <a
+                  key={s.name}
+                  href="#"
+                  aria-label={s.name}
+                  className="w-10 h-10 rounded-full flex items-center justify-center bg-primary text-on-primary hover:opacity-90 transition-opacity focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                >
+                  <s.Icon size={16} aria-hidden="true" />
+                </a>
+              ))}
+            </div>
+
+            <div className="flex items-center gap-6 justify-center md:justify-self-end">
               <Link href="/privacy" className="rounded-sm text-body-medium tracking-[0.1px] text-primary hover:opacity-80 focus-visible:ring-2 focus-visible:ring-primary transition-opacity">Privacy Policy</Link>
-              <p className="text-body-medium tracking-[0.1px] text-on-surface-variant">© {new Date().getFullYear()} Childmap. All rights reserved.</p>
+              <Link href="/terms" className="rounded-sm text-body-medium tracking-[0.1px] text-primary hover:opacity-80 focus-visible:ring-2 focus-visible:ring-primary transition-opacity">Terms</Link>
+              <a href="#pricing" className="rounded-sm text-body-medium tracking-[0.1px] text-primary hover:opacity-80 focus-visible:ring-2 focus-visible:ring-primary transition-opacity">Pricing</a>
             </div>
           </div>
+
+          <p className="mt-10 pt-6 border-t border-outline-variant text-center text-body-medium tracking-[0.1px] text-on-surface-variant">© {new Date().getFullYear()} Childmap. All rights reserved.</p>
         </div>
       </footer>
     </div>
