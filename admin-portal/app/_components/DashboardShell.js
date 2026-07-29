@@ -40,7 +40,13 @@ export function DashboardShell({ watchlistCount, children }) {
         <Sidebar watchlistCount={watchlistCount} onNavigate={() => setOpen(false)} />
       </div>
 
-      <main className="flex-1 flex flex-col gap-8 px-4 pt-20 pb-8 lg:px-10 lg:py-8 min-w-0">
+      <main className="relative flex-1 flex flex-col gap-8 px-4 pt-20 pb-8 lg:px-10 lg:py-8 min-w-0 overflow-hidden">
+        <img
+          src="/images/mascot.png"
+          alt=""
+          aria-hidden="true"
+          className="pointer-events-none select-none absolute -bottom-16 -right-16 w-80 lg:w-[28rem] opacity-10"
+        />
         {children}
       </main>
     </div>
