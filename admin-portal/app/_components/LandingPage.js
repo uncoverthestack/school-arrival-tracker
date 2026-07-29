@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion'
 import { RequestDemoButton } from './RequestDemoButton'
@@ -8,6 +8,22 @@ import { MobileNav } from './MobileNav'
 import { TiltCard } from './TiltCard'
 import { RollingText } from './RollingText'
 import { SiYoutube, SiInstagram, SiX, SiFacebook, SiTiktok } from 'react-icons/si'
+
+// The gradient-mesh blobs' continuous drift animation is cheap to composite on desktop GPUs
+// but janks badly on phones once scroll-linked transforms are also running — the blur filters
+// are the expensive part. Below the sm breakpoint we skip the animation loop entirely and let
+// the blobs sit static.
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false)
+  useEffect(() => {
+    const query = window.matchMedia('(max-width: 639px)')
+    const apply = e => setIsMobile(e.matches)
+    apply(query)
+    query.addEventListener('change', apply)
+    return () => query.removeEventListener('change', apply)
+  }, [])
+  return isMobile
+}
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -181,6 +197,8 @@ const WHY_US = [
 export function LandingPage() {
   const heroRef = useRef(null)
   const reduceMotion = useReducedMotion()
+  const isMobile = useIsMobile()
+  const skipBlobAnimation = reduceMotion || isMobile
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] })
   const heroTextY = useTransform(scrollYProgress, [0, 1], [0, reduceMotion ? 0 : -60])
   const heroTextOpacity = useTransform(scrollYProgress, [0, 0.8], [1, reduceMotion ? 1 : 0])
@@ -227,23 +245,25 @@ export function LandingPage() {
             keeps clean contrast; a scrim gradient reinforces that on the left. */}
         <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
           <motion.div
-            className="absolute -top-32 left-1/3 w-136 h-136 rounded-full bg-[#1d6fc4]/70 blur-[100px]"
-            animate={reduceMotion ? undefined : { x: [0, 40, 0], y: [0, 24, 0] }}
+            className="absolute -top-32 left-1/3 w-72 h-72 sm:w-136 sm:h-136 rounded-full bg-[#1d6fc4]/70 blur-2xl sm:blur-[100px]"
+            animate={skipBlobAnimation ? undefined : { x: [0, 40, 0], y: [0, 24, 0] }}
             transition={{ duration: 22, repeat: Infinity, ease: 'easeInOut' }}
           />
           <motion.div
-            className="absolute -top-24 -right-40 w-lg h-128 rounded-full bg-[#14b8a6]/60 blur-[100px]"
-            animate={reduceMotion ? undefined : { x: [0, -30, 0], y: [0, 30, 0] }}
+            className="absolute -top-24 -right-40 w-72 h-72 sm:w-lg sm:h-128 rounded-full bg-[#14b8a6]/60 blur-2xl sm:blur-[100px]"
+            animate={skipBlobAnimation ? undefined : { x: [0, -30, 0], y: [0, 30, 0] }}
             transition={{ duration: 26, repeat: Infinity, ease: 'easeInOut' }}
           />
+          {/* Skipped entirely on mobile rather than just de-animated — one fewer blurred layer
+              for small-GPU devices to composite while scrolling. */}
           <motion.div
-            className="absolute top-1/4 left-4 w-104 h-104 rounded-full bg-[#7c3aed]/50 blur-[110px]"
-            animate={reduceMotion ? undefined : { x: [0, 26, 0], y: [0, -20, 0] }}
+            className="hidden sm:block absolute top-1/4 left-4 w-104 h-104 rounded-full bg-[#7c3aed]/50 blur-[110px]"
+            animate={skipBlobAnimation ? undefined : { x: [0, 26, 0], y: [0, -20, 0] }}
             transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }}
           />
           <motion.div
-            className="absolute bottom-0 right-1/4 w-96 h-96 rounded-full bg-amber-500/40 blur-[110px]"
-            animate={reduceMotion ? undefined : { x: [0, -20, 0], y: [0, 20, 0] }}
+            className="absolute bottom-0 right-1/4 w-56 h-56 sm:w-96 sm:h-96 rounded-full bg-amber-500/40 blur-2xl sm:blur-[110px]"
+            animate={skipBlobAnimation ? undefined : { x: [0, -20, 0], y: [0, 20, 0] }}
             transition={{ duration: 24, repeat: Infinity, ease: 'easeInOut' }}
           />
           <div className="absolute inset-0 bg-gradient-to-r from-surface-container-low/70 via-surface-container-low/20 to-transparent" />
@@ -426,9 +446,9 @@ export function LandingPage() {
         {/* Same rich gradient-mesh treatment as the hero, bookending the page. Blobs sit up top
             behind the product preview and fade out well before the CTA text via the mask below. */}
         <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute -top-40 left-1/4 w-120 h-120 rounded-full bg-[#14b8a6]/55 blur-[100px]" />
-          <div className="absolute -top-24 -right-32 w-md h-112 rounded-full bg-[#1d6fc4]/60 blur-[100px]" />
-          <div className="absolute bottom-0 left-1/3 w-96 h-96 rounded-full bg-[#7c3aed]/35 blur-[110px]" />
+          <div className="absolute -top-40 left-1/4 w-60 h-60 sm:w-120 sm:h-120 rounded-full bg-[#14b8a6]/55 blur-2xl sm:blur-[100px]" />
+          <div className="absolute -top-24 -right-32 w-60 h-60 sm:w-md sm:h-112 rounded-full bg-[#1d6fc4]/60 blur-2xl sm:blur-[100px]" />
+          <div className="hidden sm:block absolute bottom-0 left-1/3 w-96 h-96 rounded-full bg-[#7c3aed]/35 blur-[110px]" />
         </div>
 
         {/* Product preview — sits on top, blurring and fading down into the heading below. */}
