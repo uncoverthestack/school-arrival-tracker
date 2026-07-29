@@ -1,11 +1,29 @@
 'use client'
 
-import { useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion'
 import { RequestDemoButton } from './RequestDemoButton'
 import { MobileNav } from './MobileNav'
 import { TiltCard } from './TiltCard'
+import { RollingText } from './RollingText'
+import { SiYoutube, SiInstagram, SiX, SiFacebook, SiTiktok } from 'react-icons/si'
+
+// The gradient-mesh blobs' continuous drift animation is cheap to composite on desktop GPUs
+// but janks badly on phones once scroll-linked transforms are also running — the blur filters
+// are the expensive part. Below the sm breakpoint we skip the animation loop entirely and let
+// the blobs sit static.
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false)
+  useEffect(() => {
+    const query = window.matchMedia('(max-width: 639px)')
+    const apply = e => setIsMobile(e.matches)
+    apply(query)
+    query.addEventListener('change', apply)
+    return () => query.removeEventListener('change', apply)
+  }, [])
+  return isMobile
+}
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -32,7 +50,7 @@ const FEATURES = [
       <div className="w-full rounded-lg bg-surface-container-lowest border border-outline-variant p-4 flex items-center gap-3">
         <div className="w-10 h-10 rounded-full bg-success-container text-on-success-container flex items-center justify-center shrink-0">
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-            <path d="M4 10l4 4 8-8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M4 10l4 4 8-8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </div>
         <div className="min-w-0">
@@ -118,7 +136,7 @@ const FEATURES = [
         <div className="flex items-center justify-between px-3 py-2 rounded-md bg-primary-container text-on-primary-container">
           <p className="text-label-large font-medium">Greenfield Academy</p>
           <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-            <path d="M4 10l4 4 8-8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M4 10l4 4 8-8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </div>
         <div className="px-3 py-2 rounded-md text-on-surface-variant">
@@ -148,6 +166,15 @@ const PRICING = [
   },
 ]
 
+// Not wired yet — accounts don't exist. href="#" until real URLs are ready.
+const SOCIAL_LINKS = [
+  { name: 'YouTube', Icon: SiYoutube },
+  { name: 'Instagram', Icon: SiInstagram },
+  { name: 'X', Icon: SiX },
+  { name: 'Facebook', Icon: SiFacebook },
+  { name: 'TikTok', Icon: SiTiktok },
+]
+
 const WHY_US = [
   {
     title: 'Live "In-School" Visibility',
@@ -170,6 +197,8 @@ const WHY_US = [
 export function LandingPage() {
   const heroRef = useRef(null)
   const reduceMotion = useReducedMotion()
+  const isMobile = useIsMobile()
+  const skipBlobAnimation = reduceMotion || isMobile
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] })
   const heroTextY = useTransform(scrollYProgress, [0, 1], [0, reduceMotion ? 0 : -60])
   const heroTextOpacity = useTransform(scrollYProgress, [0, 0.8], [1, reduceMotion ? 1 : 0])
@@ -189,42 +218,80 @@ export function LandingPage() {
             <a href="#pricing" className="rounded-sm hover:text-on-surface focus-visible:ring-2 focus-visible:ring-primary transition-colors">Pricing</a>
           </nav>
           <div className="flex items-center gap-2 justify-self-end">
+            {/* Outlined, not filled — Login is a secondary action for returning admins, so it
+                should read quieter than the "Request Demo" CTAs elsewhere on the page. Fills in
+                solid on hover, with the arrow nudging forward, instead of competing for attention
+                as an identical solid pill. */}
             <Link
               href="/login"
-              className="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-on-primary text-label-large font-bold shadow-sm transition-all hover:opacity-90 hover:shadow-md focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+              className="group hidden sm:inline-flex items-center gap-1.5 pl-4 pr-3.5 py-2 rounded-full border border-primary text-primary text-label-large font-semibold transition-all hover:bg-primary hover:text-on-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
             >
-              <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-                <rect x="4" y="9" width="9" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.6" />
-                <path d="M6.5 9V6a3.5 3.5 0 0 1 7 0v3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+              <RollingText>Login</RollingText>
+              <svg
+                width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true"
+                className="transition-transform duration-200 group-hover:translate-x-0.5"
+              >
+                <path d="M7 4l6 6-6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
-              Login
             </Link>
             <MobileNav />
           </div>
         </div>
       </header>
 
-      <section ref={heroRef} className="relative overflow-hidden bg-surface-container-low">
+      <section ref={heroRef} data-theme="dark" className="relative overflow-hidden bg-surface-container-low">
+        {/* Rich gradient-mesh backdrop — slow-drifting blurred color blobs over a near-black
+            base, instead of a flat gray. Confined mostly to the top/right so the text column
+            keeps clean contrast; a scrim gradient reinforces that on the left. */}
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
+          <motion.div
+            className="absolute -top-32 left-1/3 w-72 h-72 sm:w-136 sm:h-136 rounded-full bg-[#1d6fc4]/70 blur-2xl sm:blur-[100px]"
+            animate={skipBlobAnimation ? undefined : { x: [0, 40, 0], y: [0, 24, 0] }}
+            transition={{ duration: 22, repeat: Infinity, ease: 'easeInOut' }}
+          />
+          <motion.div
+            className="absolute -top-24 -right-40 w-72 h-72 sm:w-lg sm:h-128 rounded-full bg-[#14b8a6]/60 blur-2xl sm:blur-[100px]"
+            animate={skipBlobAnimation ? undefined : { x: [0, -30, 0], y: [0, 30, 0] }}
+            transition={{ duration: 26, repeat: Infinity, ease: 'easeInOut' }}
+          />
+          {/* Skipped entirely on mobile rather than just de-animated — one fewer blurred layer
+              for small-GPU devices to composite while scrolling. */}
+          <motion.div
+            className="hidden sm:block absolute top-1/4 left-4 w-104 h-104 rounded-full bg-[#7c3aed]/50 blur-[110px]"
+            animate={skipBlobAnimation ? undefined : { x: [0, 26, 0], y: [0, -20, 0] }}
+            transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }}
+          />
+          <motion.div
+            className="absolute bottom-0 right-1/4 w-56 h-56 sm:w-96 sm:h-96 rounded-full bg-amber-500/40 blur-2xl sm:blur-[110px]"
+            animate={skipBlobAnimation ? undefined : { x: [0, -20, 0], y: [0, 20, 0] }}
+            transition={{ duration: 24, repeat: Infinity, ease: 'easeInOut' }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-surface-container-low/70 via-surface-container-low/20 to-transparent" />
+        </div>
+
         <div className="relative max-w-7xl mx-auto px-4 sm:px-8 py-24 sm:py-40 grid lg:grid-cols-12 gap-16 items-center">
           <motion.div
             style={{ y: heroTextY, opacity: heroTextOpacity }}
             initial="hidden" animate="show" variants={staggerContainer} className="lg:col-span-5"
           >
             <motion.h1 variants={fadeUp} className="text-display-small sm:text-display-large font-bold text-on-surface">
-              Track Every Arrival <span className="text-primary">and Departure.</span>
+              Track Every Arrival{' '}
+              <span className="bg-[linear-gradient(90deg,var(--c-primary),var(--c-tertiary))] bg-clip-text text-transparent">
+                and Departure.
+              </span>
             </motion.h1>
             <motion.p variants={fadeUp} className="mt-6 text-body-large tracking-[0.2px] text-on-surface-variant max-w-md">
               Replace the paper logbook with instant gate check-ins, live dashboards, and SMS alerts parents actually see.
             </motion.p>
             <motion.div variants={fadeUp} className="mt-8 flex flex-wrap gap-3">
-              <RequestDemoButton className="px-6 py-3 rounded-lg bg-primary text-on-primary text-label-large font-bold shadow-sm transition-all hover:opacity-90 hover:shadow-md">
-                Request Demo
+              <RequestDemoButton className="group px-6 py-3 rounded-lg bg-[#1d6fc4] text-white text-label-large font-bold shadow-sm transition-all hover:opacity-90 hover:shadow-md">
+                <RollingText>Request Demo</RollingText>
               </RequestDemoButton>
               <a
                 href="#features"
-                className="px-6 py-3 rounded-lg bg-surface-container-lowest border border-outline-variant text-on-surface text-label-large font-semibold shadow-sm transition-all hover:bg-surface-container hover:shadow-md focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                className="group px-6 py-3 rounded-lg bg-on-surface/5 backdrop-blur border border-on-surface/15 text-on-surface text-label-large font-semibold shadow-sm transition-all hover:bg-on-surface/10 hover:shadow-md focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
               >
-                Learn More ↓
+                <RollingText>Learn More ↓</RollingText>
               </a>
             </motion.div>
           </motion.div>
@@ -245,49 +312,9 @@ export function LandingPage() {
               className="pointer-events-none absolute -inset-8 rounded-[28px] bg-gradient-to-br from-primary/35 via-tertiary/20 to-transparent blur-2xl"
             />
             <div data-theme="dark" className="relative">
-            <TiltCard tiltStrength={6} className="rounded-lg shadow-2xl">
-              <div className="rounded-lg bg-surface-container-lowest border border-outline-variant overflow-hidden">
-                <div className="flex items-center gap-1.5 px-4 py-3 border-b border-outline-variant bg-surface-container">
-                  <span className="w-2.5 h-2.5 rounded-full bg-error" />
-                  <span className="w-2.5 h-2.5 rounded-full bg-warning" />
-                  <span className="w-2.5 h-2.5 rounded-full bg-success" />
-                  <span className="ml-3 text-label-medium tracking-[0.15px] text-on-surface-variant font-mono truncate">app.childmap.ng</span>
-                  <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true" className="ml-auto text-on-surface-variant md:hidden shrink-0">
-                    <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-                  </svg>
-                </div>
-                <div className="flex">
-                  <div className="hidden md:flex flex-col gap-1 w-40 shrink-0 border-r border-outline-variant p-3">
-                    <p className="text-label-medium tracking-[0.15px] font-bold text-on-surface px-2 pb-2">Childmap</p>
-                    <span className="text-label-medium tracking-[0.15px] font-medium rounded-md px-2 py-1.5 bg-primary-container text-on-primary-container">Today</span>
-                    <span className="text-label-medium tracking-[0.15px] font-medium rounded-md px-2 py-1.5 text-on-surface-variant">Gate scanner</span>
-                    <span className="text-label-medium tracking-[0.15px] font-medium rounded-md px-2 py-1.5 text-on-surface-variant">Watchlist</span>
-                    <span className="text-label-medium tracking-[0.15px] font-medium rounded-md px-2 py-1.5 text-on-surface-variant">Students</span>
-                    <span className="text-label-medium tracking-[0.15px] font-medium rounded-md px-2 py-1.5 text-on-surface-variant">Messages</span>
-                  </div>
-                  <div className="p-4 sm:p-5 flex-1 min-w-0">
-                    <p className="text-title-small font-bold text-on-surface mb-3">Welcome, Admin</p>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 mb-4">
-                      <MockMetric label="Checked in" value="128" bg="bg-success-container" text="text-on-success-container" />
-                      <MockMetric label="Checked out" value="94" bg="bg-secondary-container" text="text-on-secondary-container" />
-                      <MockMetric label="Expected" value="150" bg="bg-primary-container" text="text-on-primary-container" />
-                      <MockMetric label="Unaccounted" value="22" bg="bg-warning-container" text="text-on-warning-container" />
-                      <MockMetric label="Alerts sent" value="340" bg="bg-tertiary-container" text="text-on-tertiary-container" />
-                      <MockMetric label="Classes" value="18" bg="bg-surface-container" text="text-on-surface" />
-                    </div>
-                    <div className="rounded-xl bg-surface-container p-3">
-                      <p className="text-label-medium tracking-[0.15px] text-on-surface-variant mb-2">Arrival flow</p>
-                      <svg viewBox="0 0 200 50" className="w-full h-10 text-primary" preserveAspectRatio="none">
-                        <polyline
-                          points="0,45 20,40 40,30 60,15 80,10 100,8 120,12 140,20 160,28 180,35 200,42"
-                          fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-                        />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </TiltCard>
+              <TiltCard tiltStrength={6} className="rounded-lg shadow-2xl">
+                <DashboardMockup />
+              </TiltCard>
             </div>
           </motion.div>
         </div>
@@ -371,15 +398,13 @@ export function LandingPage() {
           {PRICING.map(plan => (
             <motion.div key={plan.name} variants={fadeUp} className="h-full">
             <div
-              className={`relative h-full flex flex-col rounded-lg px-8 py-8 sm:py-10 border transition-all duration-200 hover:-translate-y-0.5 ${
-                plan.highlighted
-                  ? 'border-primary bg-surface-container-lowest shadow-md hover:shadow-xl'
-                  : 'border-outline-variant bg-surface-container-lowest shadow-sm hover:border-primary hover:shadow-lg'
+              className={`relative h-full flex flex-col overflow-hidden rounded-lg px-8 py-8 sm:py-10 bg-surface-container-lowest border transition-all duration-200 hover:shadow-md ${
+                plan.highlighted ? 'border-2 border-primary' : 'border-outline-variant'
               }`}
             >
               {plan.highlighted && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-primary text-on-primary text-label-small tracking-[0.2px] font-bold">
-                  Best value for growth
+                <span className="absolute top-0 right-0 rounded-bl-lg bg-primary text-on-primary text-label-small tracking-[0.2px] uppercase font-bold px-4 py-2">
+                  Best Value
                 </span>
               )}
               <p className="text-title-large font-bold text-on-surface text-center">{plan.name}</p>
@@ -392,25 +417,23 @@ export function LandingPage() {
                 {plan.features.map(f => (
                   <li key={f} className="flex items-start gap-2 text-body-medium tracking-[0.1px] text-on-surface">
                     <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true" className="text-success shrink-0 mt-0.5">
-                      <path d="M4 10l4 4 8-8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      <path d="M4 10l4 4 8-8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                     {f}
                   </li>
                 ))}
               </ul>
               {plan.highlighted ? (
-                <RequestDemoButton
-                  className="mt-8 w-full py-3 rounded-lg text-label-large font-bold bg-primary text-on-primary shadow-sm hover:opacity-90 hover:shadow-md transition-all"
-                >
-                  Get Started
+                <RequestDemoButton className="group mt-8 w-full py-3 rounded-lg text-label-large font-bold bg-primary text-on-primary shadow-sm transition-all hover:opacity-90 hover:shadow-md">
+                  <RollingText>Get Started</RollingText>
                 </RequestDemoButton>
               ) : (
                 // Not wired yet — destination TBD, don't open the demo modal for this plan.
                 <button
                   type="button"
-                  className="mt-8 w-full py-3 rounded-lg text-label-large font-bold bg-surface-container-lowest text-on-surface border border-outline shadow-sm hover:bg-surface-container hover:shadow-md transition-all"
+                  className="group mt-8 w-full py-3 rounded-lg text-label-large font-bold bg-surface-container-lowest text-on-surface border border-outline shadow-sm hover:bg-surface-container hover:shadow-md transition-all"
                 >
-                  Get Started
+                  <RollingText>Get Started</RollingText>
                 </button>
               )}
             </div>
@@ -419,36 +442,85 @@ export function LandingPage() {
         </motion.div>
       </section>
 
-      <section className="bg-primary text-on-primary">
+      <section data-theme="dark" className="relative overflow-hidden bg-surface-container-low">
+        {/* Same rich gradient-mesh treatment as the hero, bookending the page. Blobs sit up top
+            behind the product preview and fade out well before the CTA text via the mask below. */}
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div className="absolute -top-40 left-1/4 w-60 h-60 sm:w-120 sm:h-120 rounded-full bg-[#14b8a6]/55 blur-2xl sm:blur-[100px]" />
+          <div className="absolute -top-24 -right-32 w-60 h-60 sm:w-md sm:h-112 rounded-full bg-[#1d6fc4]/60 blur-2xl sm:blur-[100px]" />
+          <div className="hidden sm:block absolute bottom-0 left-1/3 w-96 h-96 rounded-full bg-[#7c3aed]/35 blur-[110px]" />
+        </div>
+
+        {/* Product preview — sits on top, blurring and fading down into the heading below. */}
+        <motion.div
+          aria-hidden="true"
+          initial={{ opacity: 0, y: -20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={scrollReveal}
+          transition={{ duration: 0.6, ease: 'easeOut' }}
+          className="relative max-w-lg mx-auto px-4 sm:px-8 pt-16"
+        >
+          <div className="scale-90 origin-top">
+            <DashboardMockup />
+          </div>
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent via-surface-container-low/80 to-surface-container-low" />
+          <div
+            className="pointer-events-none absolute inset-x-0 bottom-0 h-32"
+            style={{
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)',
+              maskImage: 'linear-gradient(to bottom, transparent, black 60%)',
+              WebkitMaskImage: 'linear-gradient(to bottom, transparent, black 60%)',
+            }}
+          />
+        </motion.div>
+
         <motion.div
           initial="hidden" whileInView="show" viewport={scrollReveal} variants={staggerContainer}
-          className="max-w-3xl mx-auto px-4 sm:px-8 py-16 text-center"
+          className="relative mt-6 max-w-3xl mx-auto px-4 sm:px-8 pb-16 text-center"
         >
-          <motion.h2 variants={fadeUp} className="text-headline-medium font-bold">Ready to get started?</motion.h2>
-          <motion.p variants={fadeUp} className="mt-3 text-body-large tracking-[0.2px] opacity-90">Tell us about your school and we&apos;ll set up a walkthrough.</motion.p>
+          <motion.h2 variants={fadeUp} className="text-headline-medium font-bold text-on-surface">Ready to get started?</motion.h2>
+          <motion.p variants={fadeUp} className="mt-3 text-body-large tracking-[0.2px] text-on-surface-variant">Tell us about your school and we&apos;ll set up a walkthrough.</motion.p>
           <motion.div variants={fadeUp} className="mt-8">
-            <RequestDemoButton className="px-8 py-3.5 rounded-lg bg-surface-container-lowest text-primary text-label-large font-bold shadow-sm transition-all hover:opacity-90 hover:shadow-md">
-              Request Demo
+            <RequestDemoButton className="group px-8 py-3.5 rounded-lg bg-[#1d6fc4] text-white text-label-large font-bold shadow-sm transition-all hover:opacity-90 hover:shadow-md">
+              <RollingText>Request Demo</RollingText>
             </RequestDemoButton>
           </motion.div>
         </motion.div>
       </section>
 
       <footer className="border-t border-outline-variant">
-        <div className="max-w-7xl mx-auto px-4 sm:px-8 py-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-center sm:text-left">
-            <div className="flex items-center gap-2 justify-center sm:justify-start">
+        <div className="max-w-7xl mx-auto px-4 sm:px-8 py-16">
+          <div className="grid grid-cols-1 md:grid-cols-3 items-center gap-6 text-center md:text-left">
+            <div className="flex items-center gap-2 justify-center md:justify-self-start">
               <img src="/brand/childmap-icon-256.png" alt="" width={28} height={28} className="size-7 shrink-0" />
               <div>
                 <p className="text-title-medium font-bold text-on-surface">Childmap</p>
                 <p className="text-body-medium tracking-[0.1px] text-on-surface-variant">Real-time school arrival &amp; departure tracking.</p>
               </div>
             </div>
-            <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-6">
+
+            <div className="flex items-center gap-3 justify-center md:justify-self-center">
+              {SOCIAL_LINKS.map(s => (
+                <a
+                  key={s.name}
+                  href="#"
+                  aria-label={s.name}
+                  className="w-10 h-10 rounded-full flex items-center justify-center bg-primary text-on-primary hover:opacity-90 transition-opacity focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                >
+                  <s.Icon size={16} aria-hidden="true" />
+                </a>
+              ))}
+            </div>
+
+            <div className="flex items-center gap-6 justify-center md:justify-self-end">
               <Link href="/privacy" className="rounded-sm text-body-medium tracking-[0.1px] text-primary hover:opacity-80 focus-visible:ring-2 focus-visible:ring-primary transition-opacity">Privacy Policy</Link>
-              <p className="text-body-medium tracking-[0.1px] text-on-surface-variant">© {new Date().getFullYear()} Childmap. All rights reserved.</p>
+              <Link href="/terms" className="rounded-sm text-body-medium tracking-[0.1px] text-primary hover:opacity-80 focus-visible:ring-2 focus-visible:ring-primary transition-opacity">Terms</Link>
+              <a href="#pricing" className="rounded-sm text-body-medium tracking-[0.1px] text-primary hover:opacity-80 focus-visible:ring-2 focus-visible:ring-primary transition-opacity">Pricing</a>
             </div>
           </div>
+
+          <p className="mt-10 pt-6 border-t border-outline-variant text-center text-body-medium tracking-[0.1px] text-on-surface-variant">© {new Date().getFullYear()} Childmap. All rights reserved.</p>
         </div>
       </footer>
     </div>
@@ -460,6 +532,54 @@ function MockMetric({ label, value, bg, text }) {
     <div className={`${bg} ${text} rounded-lg px-2.5 py-2`}>
       <p className="text-label-small tracking-[0.2px] font-medium opacity-80 truncate">{label}</p>
       <p className="text-title-large font-bold leading-tight">{value}</p>
+    </div>
+  )
+}
+
+// A stylized preview of the real Today dashboard, always dark to match the app screenshot.
+// Shared between the hero and the closing CTA so both sections echo the same visual.
+function DashboardMockup() {
+  return (
+    <div className="rounded-lg bg-surface-container-lowest border border-outline-variant overflow-hidden">
+      <div className="flex items-center gap-1.5 px-4 py-3 border-b border-outline-variant bg-surface-container">
+        <span className="w-2.5 h-2.5 rounded-full bg-error" />
+        <span className="w-2.5 h-2.5 rounded-full bg-warning" />
+        <span className="w-2.5 h-2.5 rounded-full bg-success" />
+        <span className="ml-3 text-label-medium tracking-[0.15px] text-on-surface-variant font-mono truncate">app.childmap.ng</span>
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true" className="ml-auto text-on-surface-variant md:hidden shrink-0">
+          <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+        </svg>
+      </div>
+      <div className="flex">
+        <div className="hidden md:flex flex-col gap-1 w-40 shrink-0 border-r border-outline-variant p-3">
+          <p className="text-label-medium tracking-[0.15px] font-bold text-on-surface px-2 pb-2">Childmap</p>
+          <span className="text-label-medium tracking-[0.15px] font-medium rounded-md px-2 py-1.5 bg-primary-container text-on-primary-container">Today</span>
+          <span className="text-label-medium tracking-[0.15px] font-medium rounded-md px-2 py-1.5 text-on-surface-variant">Gate scanner</span>
+          <span className="text-label-medium tracking-[0.15px] font-medium rounded-md px-2 py-1.5 text-on-surface-variant">Watchlist</span>
+          <span className="text-label-medium tracking-[0.15px] font-medium rounded-md px-2 py-1.5 text-on-surface-variant">Students</span>
+          <span className="text-label-medium tracking-[0.15px] font-medium rounded-md px-2 py-1.5 text-on-surface-variant">Messages</span>
+        </div>
+        <div className="p-4 sm:p-5 flex-1 min-w-0">
+          <p className="text-title-small font-bold text-on-surface mb-3">Welcome, Admin</p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 mb-4">
+            <MockMetric label="Checked in" value="128" bg="bg-success-container" text="text-on-success-container" />
+            <MockMetric label="Checked out" value="94" bg="bg-secondary-container" text="text-on-secondary-container" />
+            <MockMetric label="Expected" value="150" bg="bg-primary-container" text="text-on-primary-container" />
+            <MockMetric label="Unaccounted" value="22" bg="bg-warning-container" text="text-on-warning-container" />
+            <MockMetric label="Alerts sent" value="340" bg="bg-tertiary-container" text="text-on-tertiary-container" />
+            <MockMetric label="Classes" value="18" bg="bg-surface-container" text="text-on-surface" />
+          </div>
+          <div className="rounded-xl bg-surface-container p-3">
+            <p className="text-label-medium tracking-[0.15px] text-on-surface-variant mb-2">Arrival flow</p>
+            <svg viewBox="0 0 200 50" className="w-full h-10 text-primary" preserveAspectRatio="none">
+              <polyline
+                points="0,45 20,40 40,30 60,15 80,10 100,8 120,12 140,20 160,28 180,35 200,42"
+                fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+              />
+            </svg>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

@@ -4,6 +4,7 @@ export function KioskHeader({ title, scanType, online, time, onToggleScanType })
   return (
     <header className="flex flex-wrap items-center justify-between gap-3 px-4 sm:px-10 py-4 sm:py-6 border-b border-outline-variant">
       <div className="flex items-center gap-4">
+        <img src="/brand/childmap-icon-256.png" alt="" width={28} height={28} className="size-7 shrink-0" />
         <Link
           href="/"
           className="flex items-center gap-1.5 text-title-medium text-on-surface-variant hover:text-on-surface transition-colors"

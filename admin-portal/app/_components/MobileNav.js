@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
+import { RollingText } from './RollingText'
 
 const LINKS = [
   { href: '#features', label: 'Features' },
@@ -59,9 +60,9 @@ export function MobileNav() {
             <Link
               href="/login"
               onClick={() => setOpen(false)}
-              className="mt-1 px-3 py-2.5 rounded-lg text-label-large font-bold bg-primary text-on-primary text-center focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+              className="group mt-1 px-3 py-2.5 rounded-lg text-label-large font-bold bg-primary text-on-primary text-center focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
             >
-              Login
+              <RollingText>Login</RollingText>
             </Link>
           </motion.div>
         )}

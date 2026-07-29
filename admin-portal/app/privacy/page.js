@@ -19,8 +19,8 @@ export default function PrivacyPolicyPage() {
       </header>
 
       <main className="max-w-3xl mx-auto px-4 sm:px-8 py-12">
-        <div className="rounded-xl bg-warning-container text-on-warning-container text-sm px-4 py-3 mb-8">
-          <strong>Draft — pending legal review.</strong> This page describes what SchoolPass actually collects and how it's
+        <div className="rounded-xl bg-warning-container text-on-warning-container text-body-medium tracking-[0.1px] px-4 py-3 mb-8">
+          <strong>Draft — pending legal review.</strong> This page describes what Childmap actually collects and how it's
           used today. It has not been reviewed by a lawyer and should not be relied on as a compliance guarantee
           (e.g. under Nigeria&apos;s NDPR) before real public launch.
         </div>
@@ -30,7 +30,7 @@ export default function PrivacyPolicyPage() {
 
         <div className={sectionClass}>
           <p className={bodyClass}>
-            SchoolPass ("we", "our") provides a school gate attendance and parent-notification system. This policy
+            Childmap ("we", "our") provides a school gate attendance and parent-notification system. This policy
             explains what information we collect from schools, students, and parents, and how it's used.
           </p>
         </div>
