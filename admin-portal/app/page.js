@@ -1,5 +1,6 @@
 import { getAdminSession } from '@/lib/session'
 import { isValidPhone } from '@/lib/validation'
+import { getMessagesCount } from '@/lib/repo/messages'
 import { supabase } from '@/lib/supabase'
 import RefreshTicker from './RefreshTicker'
 import { DashboardShell } from './_components/DashboardShell'
@@ -119,11 +120,14 @@ export default async function Home() {
     weekday: 'short', day: 'numeric', month: 'long', timeZone: 'Africa/Lagos'
   })
 
-  const data = await getDashboardData(session.schoolId)
+  const [data, messagesCount] = await Promise.all([
+    getDashboardData(session.schoolId),
+    getMessagesCount(session.schoolId),
+  ])
   const displayName = session.adminName || session.schoolName
 
   return (
-    <DashboardShell watchlistCount={data.needsAttention.length}>
+    <DashboardShell watchlistCount={data.needsAttention.length} messagesCount={messagesCount}>
         <div className="flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2 flex-wrap">
