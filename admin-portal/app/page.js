@@ -1,7 +1,10 @@
 import { getAdminSession } from '@/lib/session'
 import { isValidPhone } from '@/lib/validation'
 import { getMessagesCount } from '@/lib/repo/messages'
-import { supabase } from '@/lib/supabase'
+import { getSchoolById } from '@/lib/repo/schools'
+import { getStudentsBySchool, getStudentCountsByClass } from '@/lib/repo/students'
+import { getClassesBySchool } from '@/lib/repo/classes'
+import { getArrivalRecordsBySchoolAndDate } from '@/lib/repo/arrivals'
 import RefreshTicker from './RefreshTicker'
 import { DashboardShell } from './_components/DashboardShell'
 import { ArrivalFlowChart } from './_components/ArrivalFlowChart'
@@ -64,30 +67,30 @@ function buildArrivalFlow(arrivalTimestamps) {
 async function getDashboardData(schoolId) {
   const today = new Date().toISOString().split('T')[0]
 
-  const [{ data: school }, { data: students }, { data: arrivals }] = await Promise.all([
-    supabase.from('schools').select('arrival_cutoff_hour, arrival_cutoff_minute').eq('id', schoolId).maybeSingle(),
-    supabase.from('students').select('id, name, student_class, uses_bus, parents(phone)').eq('school_id', schoolId),
-    supabase.from('arrivals').select('student_id, type, scanned_at, alerted_at').eq('school_id', schoolId).eq('date', today)
+  const [school, allStudents, todaysArrivals, classes, classCounts] = await Promise.all([
+    getSchoolById(schoolId),
+    getStudentsBySchool(schoolId),
+    getArrivalRecordsBySchoolAndDate(schoolId, today),
+    getClassesBySchool(schoolId),
+    getStudentCountsByClass(schoolId),
   ])
 
-  const cutoffHour = school?.arrival_cutoff_hour ?? 8
-  const cutoffMinute = school?.arrival_cutoff_minute ?? 15
+  const cutoffHour = school?.arrivalCutoffHour ?? 8
+  const cutoffMinute = school?.arrivalCutoffMinute ?? 15
 
-  const allStudents = students ?? []
-  const todaysArrivals = arrivals ?? []
   const arrivalRows = todaysArrivals.filter(a => a.type === 'arrival')
   const departureRows = todaysArrivals.filter(a => a.type === 'departure')
 
   const totalStudents = allStudents.length
   const arrivedToday = arrivalRows.length
   const departedToday = departureRows.length
-  const alertsSentToday = todaysArrivals.filter(a => a.alerted_at).length
+  const alertsSentToday = todaysArrivals.filter(a => a.alertedAt).length
   const pastCutoff = isPastCutoff(cutoffHour, cutoffMinute)
   const unaccounted = pastCutoff ? Math.max(0, totalStudents - arrivedToday) : 0
   const percentArrived = totalStudents > 0 ? Math.round((arrivedToday / totalStudents) * 100) : 0
   const percentDeparted = totalStudents > 0 ? Math.round((departedToday / totalStudents) * 100) : 0
 
-  const arrivedStudentIds = new Set(arrivalRows.map(a => a.student_id))
+  const arrivedStudentIds = new Set(arrivalRows.map(a => a.studentId))
 
   // Needs attention: not-yet-arrived (only once past cutoff, and never for bus
   // riders — their arrival depends on the route, not a fixed gate time) +
@@ -96,19 +99,34 @@ async function getDashboardData(schoolId) {
   const attention = new Map()
   if (pastCutoff) {
     for (const s of allStudents) {
-      if (!s.uses_bus && !arrivedStudentIds.has(s.id)) attention.set(s.id, { student: s, reason: 'not_arrived' })
+      if (!s.usesBus && !arrivedStudentIds.has(s.id)) attention.set(s.id, { student: s, reason: 'not_arrived' })
     }
   }
   for (const s of allStudents) {
-    if (!isValidPhone(s.parents?.phone)) attention.set(s.id, { student: s, reason: 'invalid_phone' })
+    if (!isValidPhone(s.parent?.phone)) attention.set(s.id, { student: s, reason: 'invalid_phone' })
   }
   const needsAttention = [...attention.values()].sort((a, b) => a.student.name.localeCompare(b.student.name))
 
-  const arrivalFlow = buildArrivalFlow(arrivalRows.map(a => a.scanned_at))
+  const arrivalFlow = buildArrivalFlow(arrivalRows.map(a => a.scannedAt))
+
+  // Class breakdown: every configured class (JSS1A, JSS1B, ...) shown with its
+  // enrollment, including classes with zero students — plus an "Other" bucket
+  // for any student whose class label doesn't match a configured class (e.g.
+  // legacy data), so the numbers always add up to totalStudents.
+  const countByLabel = new Map(classCounts.map(c => [c.studentClass, c.count]))
+  const classBreakdown = classes.map(c => {
+    const label = `${c.level}${c.arm}`
+    return { label, count: countByLabel.get(label) ?? 0 }
+  })
+  const knownLabels = new Set(classes.map(c => `${c.level}${c.arm}`))
+  const otherCount = classCounts
+    .filter(c => !knownLabels.has(c.studentClass))
+    .reduce((sum, c) => sum + c.count, 0)
+  if (otherCount > 0) classBreakdown.push({ label: 'Other', count: otherCount })
 
   return {
     totalStudents, arrivedToday, departedToday, unaccounted, alertsSentToday, percentArrived, percentDeparted,
-    needsAttention, arrivalFlow, cutoffHour, cutoffMinute
+    needsAttention, arrivalFlow, cutoffHour, cutoffMinute, classBreakdown
   }
 }
 
@@ -189,6 +207,28 @@ export default async function Home() {
         </div>
 
         <div className="bg-surface-container-lowest border border-outline-variant rounded-lg p-6 flex flex-col gap-4">
+          <div>
+            <p className="text-title-medium tracking-[0.15px] text-on-surface">Class breakdown</p>
+            <p className="text-body-small tracking-[0.4px] text-on-surface-variant">Enrollment by class</p>
+          </div>
+
+          {data.classBreakdown.length === 0 ? (
+            <p className="text-body-medium tracking-[0.25px] text-on-surface-variant py-2">
+              No classes configured yet — set them up from the Students page.
+            </p>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
+              {data.classBreakdown.map(c => (
+                <div key={c.label} className="rounded-lg bg-surface-container p-4 flex flex-col gap-1">
+                  <p className="text-label-large tracking-[0.1px] text-on-surface-variant truncate">{c.label}</p>
+                  <p className="text-headline-small font-bold text-on-surface">{c.count}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="bg-surface-container-lowest border border-outline-variant rounded-lg p-6 flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <p className="text-title-medium tracking-[0.15px] text-on-surface">Needs attention</p>
             {/* Not built yet — visual only, matching the Figma sidebar's Watchlist entry. */}
@@ -213,7 +253,7 @@ export default async function Home() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-body-large tracking-[0.5px] text-on-surface truncate">{student.name}</p>
-                    <p className="text-body-small tracking-[0.4px] text-on-surface-variant truncate">{student.student_class}</p>
+                    <p className="text-body-small tracking-[0.4px] text-on-surface-variant truncate">{student.studentClass}</p>
                   </div>
                   {reason === 'invalid_phone' ? (
                     <span className="flex items-center gap-1.5 bg-error-container text-on-error-container text-body-small rounded-full px-3 py-2 shrink-0">

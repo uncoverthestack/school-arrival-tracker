@@ -1,7 +1,8 @@
 import { redirect } from 'next/navigation'
 import { getAdminSession } from '@/lib/session'
 import { getSchoolById } from '@/lib/repo/schools'
-import { supabase } from '@/lib/supabase'
+import { getStudentsBySchool } from '@/lib/repo/students'
+import { getArrivalRecordsBySchoolAndDate } from '@/lib/repo/arrivals'
 import { DashboardShell } from '../_components/DashboardShell'
 
 function nowInLagos() {
@@ -29,21 +30,20 @@ function getInitials(name) {
 async function getMessagesData(schoolId, school) {
   const today = new Date().toISOString().split('T')[0]
 
-  const [{ data: students }, { data: arrivalsToday }] = await Promise.all([
-    supabase.from('students').select('id, name, student_class, uses_bus').eq('school_id', schoolId),
-    supabase.from('arrivals').select('student_id, type').eq('school_id', schoolId).eq('date', today),
+  const [allStudents, arrivalsToday] = await Promise.all([
+    getStudentsBySchool(schoolId),
+    getArrivalRecordsBySchoolAndDate(schoolId, today),
   ])
 
-  const allStudents = students ?? []
-  const arrivedIds = new Set((arrivalsToday ?? []).filter(a => a.type === 'arrival').map(a => a.student_id))
-  const departedIds = new Set((arrivalsToday ?? []).filter(a => a.type === 'departure').map(a => a.student_id))
+  const arrivedIds = new Set(arrivalsToday.filter(a => a.type === 'arrival').map(a => a.studentId))
+  const departedIds = new Set(arrivalsToday.filter(a => a.type === 'departure').map(a => a.studentId))
 
   const notCheckedIn = isPastCutoff(school.arrivalCutoffHour, school.arrivalCutoffMinute)
-    ? allStudents.filter(s => !s.uses_bus && !arrivedIds.has(s.id))
+    ? allStudents.filter(s => !s.usesBus && !arrivedIds.has(s.id))
     : []
 
   const notCheckedOut = isPastCutoff(school.departureCutoffHour, school.departureCutoffMinute)
-    ? allStudents.filter(s => !s.uses_bus && arrivedIds.has(s.id) && !departedIds.has(s.id))
+    ? allStudents.filter(s => !s.usesBus && arrivedIds.has(s.id) && !departedIds.has(s.id))
     : []
 
   let payment = null
@@ -130,7 +130,7 @@ export default async function MessagesPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-body-large tracking-[0.5px] text-on-surface truncate">{student.name}</p>
-                    <p className="text-body-small tracking-[0.4px] text-on-surface-variant truncate">{student.student_class}</p>
+                    <p className="text-body-small tracking-[0.4px] text-on-surface-variant truncate">{student.studentClass}</p>
                   </div>
                   <p className="text-label-large tracking-[0.1px] text-on-surface-variant shrink-0">
                     {reason === 'not_arrived'

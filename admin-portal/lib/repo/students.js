@@ -54,6 +54,16 @@ export async function countStudentsBySchool(schoolId) {
   return n ?? 0
 }
 
+// Student counts per class label (e.g. "JSS1A"), for schools that want to see
+// enrollment broken down by class segment rather than just a total.
+export async function getStudentCountsByClass(schoolId) {
+  const rows = await db.select({ studentClass: students.studentClass, count: sql`count(*)::int` })
+    .from(students)
+    .where(eq(students.schoolId, schoolId))
+    .groupBy(students.studentClass)
+  return rows
+}
+
 export async function createStudent(data) {
   const [row] = await db.insert(students).values(data).returning()
   return row
