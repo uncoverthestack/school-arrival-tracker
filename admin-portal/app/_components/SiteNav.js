@@ -5,10 +5,10 @@ import { usePathname } from 'next/navigation'
 import LogoutButton from '../LogoutButton'
 
 // The auth pages (login/signup) have their own branded layout, the
-// dashboard and students pages now use the sidebar nav, and the gate
-// scanner is a full-screen kiosk with no nav at all — the global top nav
-// would just duplicate or clutter all of these.
-const HIDDEN_ON = ['/login', '/signup', '/', '/students', '/gate']
+// dashboard, students, settings, and messages pages now use the sidebar
+// nav, and the gate scanner is a full-screen kiosk with no nav at all —
+// the global top nav would just duplicate or clutter all of these.
+const HIDDEN_ON = ['/login', '/signup', '/', '/students', '/gate', '/settings', '/messages']
 
 export function SiteNav({ schoolId, schoolName }) {
   const pathname = usePathname()
