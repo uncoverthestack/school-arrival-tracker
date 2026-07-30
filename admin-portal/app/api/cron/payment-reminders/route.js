@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase'
+import { getActiveSchoolsWithPaymentDue, updateSchool } from '@/lib/repo/schools'
 import { sendPaymentDueReminderEmail } from '@/lib/email'
 
 const REMINDER_WINDOW_DAYS = 3
@@ -9,23 +9,17 @@ export async function GET(request) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const { data: schools, error } = await supabase
-    .from('schools')
-    .select('id, name, subdomain, admin_email, payment_due_at, payment_reminder_sent_at')
-    .eq('status', 'active')
-    .not('payment_due_at', 'is', null)
-
-  if (error) return Response.json({ error: error.message }, { status: 500 })
+  const schools = await getActiveSchoolsWithPaymentDue()
 
   const now = new Date()
   const due = []
-  for (const s of schools ?? []) {
-    const dueAt = new Date(s.payment_due_at)
+  for (const s of schools) {
+    const dueAt = new Date(s.paymentDueAt)
     const daysLeft = Math.ceil((dueAt - now) / (1000 * 60 * 60 * 24))
     if (daysLeft < 0 || daysLeft > REMINDER_WINDOW_DAYS) continue
 
     const windowStart = new Date(dueAt.getTime() - REMINDER_WINDOW_DAYS * 24 * 60 * 60 * 1000)
-    const alreadyReminded = s.payment_reminder_sent_at && new Date(s.payment_reminder_sent_at) >= windowStart
+    const alreadyReminded = s.paymentReminderSentAt && new Date(s.paymentReminderSentAt) >= windowStart
     if (alreadyReminded) continue
 
     due.push({ ...s, daysLeft })
@@ -33,13 +27,13 @@ export async function GET(request) {
 
   for (const s of due) {
     await sendPaymentDueReminderEmail({
-      toEmail: s.admin_email,
+      toEmail: s.adminEmail,
       schoolName: s.name,
       subdomain: s.subdomain,
       daysLeft: s.daysLeft,
-      paymentDueAt: s.payment_due_at,
+      paymentDueAt: s.paymentDueAt,
     })
-    await supabase.from('schools').update({ payment_reminder_sent_at: now.toISOString() }).eq('id', s.id)
+    await updateSchool(s.id, { paymentReminderSentAt: now })
   }
 
   return Response.json({ reminded: due.map(s => s.subdomain) })

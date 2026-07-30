@@ -1,5 +1,6 @@
-import { supabase } from '../supabase'
 import { getSchoolById } from './schools'
+import { getStudentsBySchool } from './students'
+import { getArrivalRecordsBySchoolAndDate } from './arrivals'
 
 function nowInLagosMinutes() {
   const parts = new Intl.DateTimeFormat('en-GB', {
@@ -22,21 +23,20 @@ export async function getMessagesCount(schoolId) {
   if (!school) return 0
 
   const today = new Date().toISOString().split('T')[0]
-  const [{ data: students }, { data: arrivalsToday }] = await Promise.all([
-    supabase.from('students').select('id, uses_bus').eq('school_id', schoolId),
-    supabase.from('arrivals').select('student_id, type').eq('school_id', schoolId).eq('date', today),
+  const [allStudents, arrivalsToday] = await Promise.all([
+    getStudentsBySchool(schoolId),
+    getArrivalRecordsBySchoolAndDate(schoolId, today),
   ])
 
-  const allStudents = students ?? []
-  const arrivedIds = new Set((arrivalsToday ?? []).filter(a => a.type === 'arrival').map(a => a.student_id))
-  const departedIds = new Set((arrivalsToday ?? []).filter(a => a.type === 'departure').map(a => a.student_id))
+  const arrivedIds = new Set(arrivalsToday.filter(a => a.type === 'arrival').map(a => a.studentId))
+  const departedIds = new Set(arrivalsToday.filter(a => a.type === 'departure').map(a => a.studentId))
 
   const notCheckedIn = isPastCutoff(school.arrivalCutoffHour, school.arrivalCutoffMinute)
-    ? allStudents.filter(s => !s.uses_bus && !arrivedIds.has(s.id)).length
+    ? allStudents.filter(s => !s.usesBus && !arrivedIds.has(s.id)).length
     : 0
 
   const notCheckedOut = isPastCutoff(school.departureCutoffHour, school.departureCutoffMinute)
-    ? allStudents.filter(s => !s.uses_bus && arrivedIds.has(s.id) && !departedIds.has(s.id)).length
+    ? allStudents.filter(s => !s.usesBus && arrivedIds.has(s.id) && !departedIds.has(s.id)).length
     : 0
 
   const paymentDue = school.paymentDueAt ? 1 : 0

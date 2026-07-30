@@ -15,6 +15,20 @@ export async function createArrival(data) {
   return row
 }
 
+// Raw, unjoined rows for a school/date — used to compute per-student
+// checked-in/out sets and stats (dashboard, messages, alert cron jobs),
+// as opposed to getArrivalsBySchoolAndDate's display-joined shape below.
+export async function getArrivalRecordsBySchoolAndDate(schoolId, date) {
+  return db.select({
+    studentId: arrivals.studentId,
+    type:      arrivals.type,
+    scannedAt: arrivals.scannedAt,
+    alertedAt: arrivals.alertedAt,
+  })
+  .from(arrivals)
+  .where(and(eq(arrivals.schoolId, schoolId), eq(arrivals.date, date)))
+}
+
 export async function getArrivalsBySchoolAndDate(schoolId, date, { limit } = {}) {
   let q = db.select({
     id:           arrivals.id,

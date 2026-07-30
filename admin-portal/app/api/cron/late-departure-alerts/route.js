@@ -1,4 +1,6 @@
-import { supabase } from '@/lib/supabase'
+import { getActiveSchools } from '@/lib/repo/schools'
+import { getStudentsBySchool, updateStudent } from '@/lib/repo/students'
+import { getArrivalRecordsBySchoolAndDate } from '@/lib/repo/arrivals'
 import { notifyParentNotCheckedOut } from '@/lib/notify'
 
 function nowInLagos() {
@@ -19,44 +21,34 @@ export async function GET(request) {
   const today = new Date().toISOString().split('T')[0]
   const { totalMinutes: nowMinutes } = nowInLagos()
 
-  const { data: schools, error } = await supabase
-    .from('schools')
-    .select('id, name, departure_cutoff_hour, departure_cutoff_minute')
-    .eq('status', 'active')
-
-  if (error) return Response.json({ error: error.message }, { status: 500 })
+  const schools = await getActiveSchools()
 
   const alerted = []
 
-  for (const school of schools ?? []) {
-    const cutoffMinutes = school.departure_cutoff_hour * 60 + school.departure_cutoff_minute
+  for (const school of schools) {
+    const cutoffMinutes = school.departureCutoffHour * 60 + school.departureCutoffMinute
     if (nowMinutes < cutoffMinutes) continue // this school's departure cutoff hasn't passed yet today
 
-    const cutoffLabel = `${String(school.departure_cutoff_hour).padStart(2, '0')}:${String(school.departure_cutoff_minute).padStart(2, '0')}`
+    const cutoffLabel = `${String(school.departureCutoffHour).padStart(2, '0')}:${String(school.departureCutoffMinute).padStart(2, '0')}`
 
-    const [{ data: students }, { data: arrivalsToday }] = await Promise.all([
-      supabase.from('students')
-        .select('id, name, uses_bus, last_late_departure_alert_date, parents(phone)')
-        .eq('school_id', school.id)
-        .eq('uses_bus', false),
-      supabase.from('arrivals')
-        .select('student_id, type')
-        .eq('school_id', school.id)
-        .eq('date', today),
+    const [allStudents, arrivalsToday] = await Promise.all([
+      getStudentsBySchool(school.id),
+      getArrivalRecordsBySchoolAndDate(school.id, today),
     ])
 
-    const arrivedIds = new Set((arrivalsToday ?? []).filter(a => a.type === 'arrival').map(a => a.student_id))
-    const departedIds = new Set((arrivalsToday ?? []).filter(a => a.type === 'departure').map(a => a.student_id))
+    const students = allStudents.filter(s => !s.usesBus)
+    const arrivedIds = new Set(arrivalsToday.filter(a => a.type === 'arrival').map(a => a.studentId))
+    const departedIds = new Set(arrivalsToday.filter(a => a.type === 'departure').map(a => a.studentId))
 
-    for (const s of students ?? []) {
+    for (const s of students) {
       if (!arrivedIds.has(s.id)) continue // never checked in today — not a "forgot to check out" case
       if (departedIds.has(s.id)) continue // already checked out
-      if (s.last_late_departure_alert_date === today) continue
-      if (!s.parents?.phone) continue
+      if (s.lastLateDepartureAlertDate === today) continue
+      if (!s.parent?.phone) continue
 
       try {
-        await notifyParentNotCheckedOut(s.parents.phone, s.name, cutoffLabel)
-        await supabase.from('students').update({ last_late_departure_alert_date: today }).eq('id', s.id)
+        await notifyParentNotCheckedOut(s.parent.phone, s.name, cutoffLabel)
+        await updateStudent(s.id, school.id, { lastLateDepartureAlertDate: today })
         alerted.push({ school: school.name, student: s.name })
       } catch (err) {
         console.error(`late-departure alert failed for ${s.name} (${school.name}):`, err.message)

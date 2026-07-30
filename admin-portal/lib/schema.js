@@ -7,6 +7,7 @@ export const schools = pgTable('schools', {
   apiKey:              text('api_key').notNull().unique(),
   adminEmail:          text('admin_email').notNull().unique(),
   adminPasswordHash:   text('admin_password_hash').notNull(),
+  adminName:           text('admin_name'),
   status:              text('status').default('pending').notNull(),
   schoolType:          text('school_type').default('primary').notNull(),
   // Time (school's local/Africa-Lagos clock) after which a not-yet-arrived,
@@ -20,6 +21,7 @@ export const schools = pgTable('schools', {
   archivedAt:          timestamp('archived_at', { withTimezone: true }),
   paymentApprovedAt:   timestamp('payment_approved_at', { withTimezone: true }),
   paymentDueAt:        timestamp('payment_due_at', { withTimezone: true }),
+  paymentReminderSentAt: timestamp('payment_reminder_sent_at', { withTimezone: true }),
   pendingExpiresAt:    timestamp('pending_expires_at', { withTimezone: true }),
   createdAt:           timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 })
@@ -72,6 +74,7 @@ export const arrivals = pgTable('arrivals', {
   type:      text('type').notNull(), // 'arrival' | 'departure'
   date:      text('date').notNull(), // YYYY-MM-DD
   scannedAt: timestamp('scanned_at', { withTimezone: true }).defaultNow().notNull(),
+  alertedAt: timestamp('alerted_at', { withTimezone: true }),
 })
 
 export const demoRequests = pgTable('demo_requests', {
