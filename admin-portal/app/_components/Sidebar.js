@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 
 const itemClass = 'flex items-center gap-3 p-3 rounded-md w-full text-label-large text-on-surface-variant'
 const activeItemClass = 'flex items-center gap-3 p-3 rounded-md w-full text-label-large bg-primary-container text-on-primary-container'
@@ -70,9 +71,10 @@ function LogoutIcon() {
   )
 }
 
-export function Sidebar({ watchlistCount = 0, onNavigate }) {
+export function Sidebar({ watchlistCount = 0, messagesCount = 0, onNavigate }) {
   const pathname = usePathname()
   const router = useRouter()
+  const reduceMotion = useReducedMotion()
 
   async function handleLogout() {
     await fetch('/api/auth/logout', { method: 'POST' })
@@ -114,11 +116,24 @@ export function Sidebar({ watchlistCount = 0, onNavigate }) {
           <span className="flex-1">Students</span>
         </Link>
 
-        {/* Not built yet — visual only, matching the Figma sidebar. */}
-        <div className={itemClass}>
+        <Link href="/messages" onClick={onNavigate} className={pathname === '/messages' ? activeItemClass : itemClass}>
           <MessagesIcon />
           <span className="flex-1">Messages</span>
-        </div>
+          <AnimatePresence>
+            {messagesCount > 0 && (
+              <motion.span
+                key={messagesCount}
+                initial={reduceMotion ? { opacity: 0 } : { scale: 0.4, opacity: 0 }}
+                animate={reduceMotion ? { opacity: 1 } : { scale: 1, opacity: 1 }}
+                exit={reduceMotion ? { opacity: 0 } : { scale: 0.4, opacity: 0 }}
+                transition={reduceMotion ? { duration: 0.15 } : { type: 'spring', stiffness: 500, damping: 15 }}
+                className="bg-warning-container text-on-warning-container text-label-small tracking-[0.5px] rounded-full px-2 py-1"
+              >
+                {messagesCount}
+              </motion.span>
+            )}
+          </AnimatePresence>
+        </Link>
       </div>
 
       <div className="flex flex-col gap-1 w-full mt-auto pt-4">

@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { getAdminSession } from '@/lib/session'
 import { getSchoolById } from '@/lib/repo/schools'
+import { getMessagesCount } from '@/lib/repo/messages'
 import { DashboardShell } from '../_components/DashboardShell'
 import { ThemeToggle } from './ThemeToggle'
 import { AttendanceSettings } from './AttendanceSettings'
@@ -9,10 +10,13 @@ export default async function SettingsPage() {
   const session = await getAdminSession()
   if (!session.schoolId) redirect('/login')
 
-  const school = await getSchoolById(session.schoolId)
+  const [school, messagesCount] = await Promise.all([
+    getSchoolById(session.schoolId),
+    getMessagesCount(session.schoolId),
+  ])
 
   return (
-    <DashboardShell>
+    <DashboardShell messagesCount={messagesCount}>
       <div className="mb-8">
         <h1 className="text-headline-small text-on-surface">Settings</h1>
         <p className="text-body-medium tracking-[0.25px] text-on-surface-variant mt-1">

@@ -1,4 +1,4 @@
-import { eq, and, ne, or, gt, lt, inArray, sql } from 'drizzle-orm'
+import { eq, and, ne, or, gt, lt, inArray, isNotNull, sql } from 'drizzle-orm'
 import { db } from '../db'
 import { schools, students } from '../schema'
 
@@ -34,6 +34,16 @@ export async function getSchoolByAdminEmail(email) {
 
 export async function getAllSchools() {
   return db.select().from(schools).orderBy(schools.createdAt)
+}
+
+export async function getActiveSchools() {
+  return db.select().from(schools).where(eq(schools.status, 'active'))
+}
+
+// Active schools with a payment due date set — the cron-job candidate pool
+// for payment reminders (the exact due-window/dedup check happens in the route).
+export async function getActiveSchoolsWithPaymentDue() {
+  return db.select().from(schools).where(and(eq(schools.status, 'active'), isNotNull(schools.paymentDueAt)))
 }
 
 export async function createSchool(data) {
