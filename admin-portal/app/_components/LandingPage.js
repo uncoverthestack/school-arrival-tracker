@@ -166,13 +166,13 @@ const PRICING = [
   },
 ]
 
-// Not wired yet — accounts don't exist. href="#" until real URLs are ready.
+// Only Instagram has a real account so far — the rest stay href="#" until they exist.
 const SOCIAL_LINKS = [
-  { name: 'YouTube', Icon: SiYoutube },
-  { name: 'Instagram', Icon: SiInstagram },
-  { name: 'X', Icon: SiX },
-  { name: 'Facebook', Icon: SiFacebook },
-  { name: 'TikTok', Icon: SiTiktok },
+  { name: 'YouTube', Icon: SiYoutube, url: '#' },
+  { name: 'Instagram', Icon: SiInstagram, url: 'https://www.instagram.com/childmap_technologies?utm_source=qr' },
+  { name: 'X', Icon: SiX, url: '#' },
+  { name: 'Facebook', Icon: SiFacebook, url: '#' },
+  { name: 'TikTok', Icon: SiTiktok, url: '#' },
 ]
 
 const WHY_US = [
@@ -491,20 +491,24 @@ export function LandingPage() {
 
       <footer className="border-t border-outline-variant">
         <div className="max-w-7xl mx-auto px-4 sm:px-8 py-16">
-          <div className="grid grid-cols-1 md:grid-cols-3 items-center gap-6 text-center md:text-left">
-            <div className="flex items-center gap-2 justify-center md:justify-self-start">
+          {/* Mobile: three clearly separated, centered blocks (brand, social, links) stacked
+              with generous spacing. Desktop: back to the original 3-column row. */}
+          <div className="flex flex-col items-center gap-10 md:grid md:grid-cols-3 md:items-center md:gap-6 md:text-left">
+            <div className="flex flex-col items-center gap-2 md:flex-row md:justify-self-start">
               <img src="/brand/childmap-icon-256.png" alt="" width={28} height={28} className="size-7 shrink-0" />
-              <div>
+              <div className="text-center md:text-left">
                 <p className="text-title-medium font-bold text-on-surface">Childmap</p>
                 <p className="text-body-medium tracking-[0.1px] text-on-surface-variant">Real-time school arrival &amp; departure tracking.</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3 justify-center md:justify-self-center">
+            <div className="flex items-center gap-3 md:justify-self-center">
               {SOCIAL_LINKS.map(s => (
                 <a
                   key={s.name}
-                  href="#"
+                  href={s.url}
+                  target={s.url === '#' ? undefined : '_blank'}
+                  rel={s.url === '#' ? undefined : 'noopener noreferrer'}
                   aria-label={s.name}
                   className="w-10 h-10 rounded-full flex items-center justify-center bg-primary text-on-primary hover:opacity-90 transition-opacity focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                 >
@@ -513,10 +517,10 @@ export function LandingPage() {
               ))}
             </div>
 
-            <div className="flex items-center gap-6 justify-center md:justify-self-end">
+            <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 md:justify-self-end">
               <Link href="/privacy" className="rounded-sm text-body-medium tracking-[0.1px] text-primary hover:opacity-80 focus-visible:ring-2 focus-visible:ring-primary transition-opacity">Privacy Policy</Link>
               <Link href="/terms" className="rounded-sm text-body-medium tracking-[0.1px] text-primary hover:opacity-80 focus-visible:ring-2 focus-visible:ring-primary transition-opacity">Terms</Link>
-              <a href="#pricing" className="rounded-sm text-body-medium tracking-[0.1px] text-primary hover:opacity-80 focus-visible:ring-2 focus-visible:ring-primary transition-opacity">Pricing</a>
+              <Link href="/about" className="rounded-sm text-body-medium tracking-[0.1px] text-primary hover:opacity-80 focus-visible:ring-2 focus-visible:ring-primary transition-opacity">About</Link>
             </div>
           </div>
 
