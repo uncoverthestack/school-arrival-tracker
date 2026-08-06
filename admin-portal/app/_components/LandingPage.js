@@ -204,7 +204,7 @@ export function LandingPage() {
                 reads quieter than the solid "Request Demo" pill next to it. */}
             <Link
               href="/login"
-              className="hidden sm:inline-block rounded-sm text-label-large font-medium text-on-surface-variant hover:text-on-surface focus-visible:ring-2 focus-visible:ring-primary transition-colors"
+              className="inline-block rounded-sm text-label-large font-medium text-on-surface-variant hover:text-on-surface focus-visible:ring-2 focus-visible:ring-primary transition-colors"
             >
               <RollingText>Login</RollingText>
             </Link>
