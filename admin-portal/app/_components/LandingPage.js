@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useRef } from 'react'
 import Link from 'next/link'
 import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion'
 import { RequestDemoButton } from './RequestDemoButton'
@@ -8,22 +8,6 @@ import { MobileNav } from './MobileNav'
 import { TiltCard } from './TiltCard'
 import { RollingText } from './RollingText'
 import { SiYoutube, SiInstagram, SiX, SiFacebook, SiTiktok } from 'react-icons/si'
-
-// The gradient-mesh blobs' continuous drift animation is cheap to composite on desktop GPUs
-// but janks badly on phones once scroll-linked transforms are also running — the blur filters
-// are the expensive part. Below the sm breakpoint we skip the animation loop entirely and let
-// the blobs sit static.
-function useIsMobile() {
-  const [isMobile, setIsMobile] = useState(false)
-  useEffect(() => {
-    const query = window.matchMedia('(max-width: 639px)')
-    const apply = e => setIsMobile(e.matches)
-    apply(query)
-    query.addEventListener('change', apply)
-    return () => query.removeEventListener('change', apply)
-  }, [])
-  return isMobile
-}
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -197,8 +181,6 @@ const WHY_US = [
 export function LandingPage() {
   const heroRef = useRef(null)
   const reduceMotion = useReducedMotion()
-  const isMobile = useIsMobile()
-  const skipBlobAnimation = reduceMotion || isMobile
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] })
   const heroTextY = useTransform(scrollYProgress, [0, 1], [0, reduceMotion ? 0 : -60])
   const heroTextOpacity = useTransform(scrollYProgress, [0, 0.8], [1, reduceMotion ? 1 : 0])
@@ -217,88 +199,50 @@ export function LandingPage() {
             <a href="#why-us" className="rounded-sm hover:text-on-surface focus-visible:ring-2 focus-visible:ring-primary transition-colors">Why Childmap</a>
             <a href="#pricing" className="rounded-sm hover:text-on-surface focus-visible:ring-2 focus-visible:ring-primary transition-colors">Pricing</a>
           </nav>
-          <div className="flex items-center gap-2 justify-self-end">
-            {/* Outlined, not filled — Login is a secondary action for returning admins, so it
-                should read quieter than the "Request Demo" CTAs elsewhere on the page. Fills in
-                solid on hover, with the arrow nudging forward, instead of competing for attention
-                as an identical solid pill. */}
+          <div className="flex items-center gap-5 justify-self-end">
+            {/* Plain text, not a pill — Login is a secondary action for returning admins, so it
+                reads quieter than the solid "Request Demo" pill next to it. */}
             <Link
               href="/login"
-              className="group hidden sm:inline-flex items-center gap-1.5 pl-4 pr-3.5 py-2 rounded-full border border-primary text-primary text-label-large font-semibold transition-all hover:bg-primary hover:text-on-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+              className="hidden sm:inline-block rounded-sm text-label-large font-medium text-on-surface-variant hover:text-on-surface focus-visible:ring-2 focus-visible:ring-primary transition-colors"
             >
               <RollingText>Login</RollingText>
-              <svg
-                width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true"
-                className="transition-transform duration-200 group-hover:translate-x-0.5"
-              >
-                <path d="M7 4l6 6-6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
             </Link>
+            <RequestDemoButton className="hidden sm:inline-flex px-5 py-2.5 rounded-full border-2 border-on-surface text-on-surface text-label-large font-bold transition-all hover:bg-on-surface hover:text-surface">
+              <RollingText>Request Demo</RollingText>
+            </RequestDemoButton>
             <MobileNav />
           </div>
         </div>
       </header>
 
-      <section ref={heroRef} data-theme="dark" className="relative overflow-hidden bg-surface-container-low">
-        {/* Rich gradient-mesh backdrop — slow-drifting blurred color blobs over a near-black
-            base, instead of a flat gray. Confined mostly to the top/right so the text column
-            keeps clean contrast; a scrim gradient reinforces that on the left. */}
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
-          <motion.div
-            className="absolute -top-32 left-1/3 w-72 h-72 sm:w-136 sm:h-136 rounded-full bg-[#1d6fc4]/70 blur-2xl sm:blur-[100px]"
-            animate={skipBlobAnimation ? undefined : { x: [0, 40, 0], y: [0, 24, 0] }}
-            transition={{ duration: 22, repeat: Infinity, ease: 'easeInOut' }}
-          />
-          <motion.div
-            className="absolute -top-24 -right-40 w-72 h-72 sm:w-lg sm:h-128 rounded-full bg-[#14b8a6]/60 blur-2xl sm:blur-[100px]"
-            animate={skipBlobAnimation ? undefined : { x: [0, -30, 0], y: [0, 30, 0] }}
-            transition={{ duration: 26, repeat: Infinity, ease: 'easeInOut' }}
-          />
-          {/* Skipped entirely on mobile rather than just de-animated — one fewer blurred layer
-              for small-GPU devices to composite while scrolling. */}
-          <motion.div
-            className="hidden sm:block absolute top-1/4 left-4 w-104 h-104 rounded-full bg-[#7c3aed]/50 blur-[110px]"
-            animate={skipBlobAnimation ? undefined : { x: [0, 26, 0], y: [0, -20, 0] }}
-            transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }}
-          />
-          <motion.div
-            className="absolute bottom-0 right-1/4 w-56 h-56 sm:w-96 sm:h-96 rounded-full bg-amber-500/40 blur-2xl sm:blur-[110px]"
-            animate={skipBlobAnimation ? undefined : { x: [0, -20, 0], y: [0, 20, 0] }}
-            transition={{ duration: 24, repeat: Infinity, ease: 'easeInOut' }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-surface-container-low/70 via-surface-container-low/20 to-transparent" />
-        </div>
-
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-8 py-24 sm:py-40 grid lg:grid-cols-12 gap-16 items-center">
+      <section ref={heroRef} className="relative overflow-hidden bg-surface">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-8 py-20 sm:py-28 grid lg:grid-cols-12 gap-16 items-center">
           <motion.div
             style={{ y: heroTextY, opacity: heroTextOpacity }}
             initial="hidden" animate="show" variants={staggerContainer} className="lg:col-span-5"
           >
             <motion.h1 variants={fadeUp} className="text-display-small sm:text-display-large font-bold text-on-surface">
-              Track Every Arrival{' '}
-              <span className="bg-[linear-gradient(90deg,var(--c-primary),var(--c-tertiary))] bg-clip-text text-transparent">
-                and Departure.
-              </span>
+              Track Every Arrival <span className="text-primary">and Departure.</span>
             </motion.h1>
             <motion.p variants={fadeUp} className="mt-6 text-body-large tracking-[0.2px] text-on-surface-variant max-w-md">
               Replace the paper logbook with instant gate check-ins, live dashboards, and SMS alerts parents actually see.
             </motion.p>
             <motion.div variants={fadeUp} className="mt-8 flex flex-wrap gap-3">
-              <RequestDemoButton className="group px-6 py-3 rounded-lg bg-[#1d6fc4] text-white text-label-large font-bold shadow-sm transition-all hover:opacity-90 hover:shadow-md">
+              <RequestDemoButton className="group px-6 py-3 rounded-full bg-on-surface text-surface text-label-large font-bold transition-all hover:opacity-85">
                 <RollingText>Request Demo</RollingText>
               </RequestDemoButton>
               <a
                 href="#features"
-                className="group px-6 py-3 rounded-lg bg-on-surface/5 backdrop-blur border border-on-surface/15 text-on-surface text-label-large font-semibold shadow-sm transition-all hover:bg-on-surface/10 hover:shadow-md focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                className="group px-6 py-3 rounded-full border-2 border-outline text-on-surface text-label-large font-bold transition-all hover:border-on-surface focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
               >
-                <RollingText>Learn More ↓</RollingText>
+                <RollingText>Learn More</RollingText>
               </a>
             </motion.div>
           </motion.div>
 
           {/* Dashboard mockup — a stylized preview of the real Today dashboard, always dark to match the app
-              screenshot. Sits flat at rest (a contained glow gives it depth instead of a 3D tilt); TiltCard
-              still tilts it toward the cursor on hover. */}
+              screenshot, sitting on a plain light card like a product photo rather than a glowing gradient. */}
           <motion.div
             aria-hidden="true"
             initial={{ opacity: 0, x: 60 }}
@@ -307,14 +251,12 @@ export function LandingPage() {
             transition={{ duration: 0.7, delay: 0.25, ease: 'easeOut' }}
             className="relative lg:col-span-7"
           >
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute -inset-8 rounded-[28px] bg-gradient-to-br from-primary/35 via-tertiary/20 to-transparent blur-2xl"
-            />
-            <div data-theme="dark" className="relative">
-              <TiltCard tiltStrength={6} className="rounded-lg shadow-2xl">
-                <DashboardMockup />
-              </TiltCard>
+            <div className="rounded-[28px] bg-surface-container-low p-6 sm:p-10">
+              <div data-theme="dark" className="relative">
+                <TiltCard tiltStrength={6} className="rounded-lg shadow-xl">
+                  <DashboardMockup />
+                </TiltCard>
+              </div>
             </div>
           </motion.div>
         </div>
@@ -442,16 +384,8 @@ export function LandingPage() {
         </motion.div>
       </section>
 
-      <section data-theme="dark" className="relative overflow-hidden bg-surface-container-low">
-        {/* Same rich gradient-mesh treatment as the hero, bookending the page. Blobs sit up top
-            behind the product preview and fade out well before the CTA text via the mask below. */}
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute -top-40 left-1/4 w-60 h-60 sm:w-120 sm:h-120 rounded-full bg-[#14b8a6]/55 blur-2xl sm:blur-[100px]" />
-          <div className="absolute -top-24 -right-32 w-60 h-60 sm:w-md sm:h-112 rounded-full bg-[#1d6fc4]/60 blur-2xl sm:blur-[100px]" />
-          <div className="hidden sm:block absolute bottom-0 left-1/3 w-96 h-96 rounded-full bg-[#7c3aed]/35 blur-[110px]" />
-        </div>
-
-        {/* Product preview — sits on top, blurring and fading down into the heading below. */}
+      <section className="relative overflow-hidden bg-surface-container-low">
+        {/* Product preview — sits on top, fading down into the heading below. */}
         <motion.div
           aria-hidden="true"
           initial={{ opacity: 0, y: -20 }}
@@ -464,15 +398,6 @@ export function LandingPage() {
             <DashboardMockup />
           </div>
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent via-surface-container-low/80 to-surface-container-low" />
-          <div
-            className="pointer-events-none absolute inset-x-0 bottom-0 h-32"
-            style={{
-              backdropFilter: 'blur(10px)',
-              WebkitBackdropFilter: 'blur(10px)',
-              maskImage: 'linear-gradient(to bottom, transparent, black 60%)',
-              WebkitMaskImage: 'linear-gradient(to bottom, transparent, black 60%)',
-            }}
-          />
         </motion.div>
 
         <motion.div
@@ -482,14 +407,14 @@ export function LandingPage() {
           <motion.h2 variants={fadeUp} className="text-headline-medium font-bold text-on-surface">Ready to get started?</motion.h2>
           <motion.p variants={fadeUp} className="mt-3 text-body-large tracking-[0.2px] text-on-surface-variant">Tell us about your school and we&apos;ll set up a walkthrough.</motion.p>
           <motion.div variants={fadeUp} className="mt-8">
-            <RequestDemoButton className="group px-8 py-3.5 rounded-lg bg-[#1d6fc4] text-white text-label-large font-bold shadow-sm transition-all hover:opacity-90 hover:shadow-md">
+            <RequestDemoButton className="group px-8 py-3.5 rounded-full bg-on-surface text-surface text-label-large font-bold transition-all hover:opacity-85">
               <RollingText>Request Demo</RollingText>
             </RequestDemoButton>
           </motion.div>
         </motion.div>
       </section>
 
-      <footer className="border-t border-outline-variant">
+      <footer className="bg-[#0a0a0a]">
         <div className="max-w-7xl mx-auto px-4 sm:px-8 py-16">
           {/* Mobile: three clearly separated, centered blocks (brand, social, links) stacked
               with generous spacing. Desktop: back to the original 3-column row. */}
@@ -497,8 +422,8 @@ export function LandingPage() {
             <div className="flex flex-col items-center gap-2 md:flex-row md:justify-self-start">
               <img src="/brand/childmap-icon-256.png" alt="" width={28} height={28} className="size-7 shrink-0" />
               <div className="text-center md:text-left">
-                <p className="text-title-medium font-bold text-on-surface">Childmap</p>
-                <p className="text-body-medium tracking-[0.1px] text-on-surface-variant">Real-time school arrival &amp; departure tracking.</p>
+                <p className="text-title-medium font-bold text-white">Childmap</p>
+                <p className="text-body-medium tracking-[0.1px] text-white/60">Real-time school arrival &amp; departure tracking.</p>
               </div>
             </div>
 
@@ -510,7 +435,7 @@ export function LandingPage() {
                   target={s.url === '#' ? undefined : '_blank'}
                   rel={s.url === '#' ? undefined : 'noopener noreferrer'}
                   aria-label={s.name}
-                  className="w-10 h-10 rounded-full flex items-center justify-center bg-primary text-on-primary hover:opacity-90 transition-opacity focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                  className="w-10 h-10 rounded-full flex items-center justify-center bg-white/10 text-white hover:bg-white/20 transition-colors focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0a]"
                 >
                   <s.Icon size={16} aria-hidden="true" />
                 </a>
@@ -518,13 +443,13 @@ export function LandingPage() {
             </div>
 
             <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 md:justify-self-end">
-              <Link href="/privacy" className="rounded-sm text-body-medium tracking-[0.1px] text-primary hover:opacity-80 focus-visible:ring-2 focus-visible:ring-primary transition-opacity">Privacy Policy</Link>
-              <Link href="/terms" className="rounded-sm text-body-medium tracking-[0.1px] text-primary hover:opacity-80 focus-visible:ring-2 focus-visible:ring-primary transition-opacity">Terms</Link>
-              <Link href="/about" className="rounded-sm text-body-medium tracking-[0.1px] text-primary hover:opacity-80 focus-visible:ring-2 focus-visible:ring-primary transition-opacity">About</Link>
+              <Link href="/privacy" className="rounded-sm text-body-medium tracking-[0.1px] text-white/70 hover:text-white focus-visible:ring-2 focus-visible:ring-white transition-colors">Privacy Policy</Link>
+              <Link href="/terms" className="rounded-sm text-body-medium tracking-[0.1px] text-white/70 hover:text-white focus-visible:ring-2 focus-visible:ring-white transition-colors">Terms</Link>
+              <Link href="/about" className="rounded-sm text-body-medium tracking-[0.1px] text-white/70 hover:text-white focus-visible:ring-2 focus-visible:ring-white transition-colors">About</Link>
             </div>
           </div>
 
-          <p className="mt-10 pt-6 border-t border-outline-variant text-center text-body-medium tracking-[0.1px] text-on-surface-variant">© {new Date().getFullYear()} Childmap. All rights reserved.</p>
+          <p className="mt-10 pt-6 border-t border-white/10 text-center text-body-medium tracking-[0.1px] text-white/50">© {new Date().getFullYear()} Childmap. All rights reserved.</p>
         </div>
       </footer>
     </div>

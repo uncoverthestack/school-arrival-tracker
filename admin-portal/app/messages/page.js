@@ -3,6 +3,7 @@ import { getAdminSession } from '@/lib/session'
 import { getSchoolById } from '@/lib/repo/schools'
 import { getStudentsBySchool } from '@/lib/repo/students'
 import { getArrivalRecordsBySchoolAndDate } from '@/lib/repo/arrivals'
+import { countOpenWatchlistEntriesBySchool } from '@/lib/repo/watchlist'
 import { DashboardShell } from '../_components/DashboardShell'
 
 function nowInLagos() {
@@ -60,14 +61,17 @@ export default async function MessagesPage() {
   const session = await getAdminSession()
   if (!session.schoolId) redirect('/login')
 
-  const school = await getSchoolById(session.schoolId)
+  const [school, watchlistCount] = await Promise.all([
+    getSchoolById(session.schoolId),
+    countOpenWatchlistEntriesBySchool(session.schoolId),
+  ])
   const { notCheckedIn, notCheckedOut, payment } = await getMessagesData(session.schoolId, school)
 
   const attendanceCount = notCheckedIn.length + notCheckedOut.length
   const messagesCount = attendanceCount + (payment ? 1 : 0)
 
   return (
-    <DashboardShell messagesCount={messagesCount}>
+    <DashboardShell messagesCount={messagesCount} watchlistCount={watchlistCount}>
       <div className="mb-8">
         <h1 className="text-headline-small text-on-surface">Messages</h1>
         <p className="text-body-medium tracking-[0.25px] text-on-surface-variant mt-1">

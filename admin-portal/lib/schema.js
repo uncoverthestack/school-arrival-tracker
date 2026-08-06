@@ -77,6 +77,19 @@ export const arrivals = pgTable('arrivals', {
   alertedAt: timestamp('alerted_at', { withTimezone: true }),
 })
 
+// A record of a student flagged by the cutoff-time alert cron jobs — created
+// at the same moment the parent's SMS goes out, so admins have a browsable,
+// persistent log instead of just the on-the-fly "Needs attention" preview.
+export const watchlistEntries = pgTable('watchlist_entries', {
+  id:         uuid('id').defaultRandom().primaryKey(),
+  schoolId:   uuid('school_id').references(() => schools.id).notNull(),
+  studentId:  uuid('student_id').references(() => students.id).notNull(),
+  reason:     text('reason').notNull(), // 'not_arrived' | 'not_departed'
+  date:       text('date').notNull(),   // YYYY-MM-DD
+  flaggedAt:  timestamp('flagged_at', { withTimezone: true }).defaultNow().notNull(),
+  resolvedAt: timestamp('resolved_at', { withTimezone: true }),
+})
+
 export const demoRequests = pgTable('demo_requests', {
   id:            uuid('id').defaultRandom().primaryKey(),
   firstName:     text('first_name').notNull(),

@@ -1,6 +1,7 @@
 import { getAdminSession } from '@/lib/session'
 import { isValidPhone } from '@/lib/validation'
 import { getMessagesCount } from '@/lib/repo/messages'
+import { countOpenWatchlistEntriesBySchool } from '@/lib/repo/watchlist'
 import { getSchoolById } from '@/lib/repo/schools'
 import { getStudentsBySchool, getStudentCountsByClass } from '@/lib/repo/students'
 import { getClassesBySchool } from '@/lib/repo/classes'
@@ -138,14 +139,15 @@ export default async function Home() {
     weekday: 'short', day: 'numeric', month: 'long', timeZone: 'Africa/Lagos'
   })
 
-  const [data, messagesCount] = await Promise.all([
+  const [data, messagesCount, watchlistCount] = await Promise.all([
     getDashboardData(session.schoolId),
     getMessagesCount(session.schoolId),
+    countOpenWatchlistEntriesBySchool(session.schoolId),
   ])
   const displayName = session.adminName || session.schoolName
 
   return (
-    <DashboardShell watchlistCount={data.needsAttention.length} messagesCount={messagesCount}>
+    <DashboardShell watchlistCount={watchlistCount} messagesCount={messagesCount}>
         <div className="flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2 flex-wrap">
