@@ -187,33 +187,43 @@ export function LandingPage() {
 
   return (
     <div data-theme="light" className="min-h-screen bg-surface text-on-surface font-kiosk">
-      {/* Everything visible at every size — no hamburger. Stacks into three centered rows
-          on mobile (logo, nav links wrapping as needed, actions); reverts to the original
-          single-row 3-column grid from sm upward. */}
+      {/* Everything visible at every size — no hamburger. Two clean bands on mobile: a
+          primary bar (logo flush left, actions flush right — same edges as every row below
+          it) and a secondary nav band underneath, separated by a hairline so it reads as
+          organized rather than a loose stack. Reverts to the original single-row 3-column
+          grid from sm upward. */}
       <header className="sticky top-0 z-40 bg-surface-container-low/80 backdrop-blur">
-        <div className="max-w-7xl mx-auto flex flex-col items-center gap-3 px-4 py-3 sm:grid sm:grid-cols-[1fr_auto_1fr] sm:gap-0 sm:px-8 sm:py-4">
-          <div className="flex items-center gap-2 self-start sm:justify-self-start">
-            <img src="/brand/childmap-icon-256.png" alt="" width={30} height={30} className="size-7.5 shrink-0" />
-            <p className="text-title-medium font-medium text-on-surface">Childmap</p>
+        <div className="max-w-7xl mx-auto px-4 sm:px-8">
+          <div className="flex items-center justify-between py-3 sm:grid sm:grid-cols-[1fr_auto_1fr] sm:py-4">
+            <div className="flex items-center gap-2 sm:justify-self-start">
+              <img src="/brand/childmap-icon-256.png" alt="" width={30} height={30} className="size-7.5 shrink-0" />
+              <p className="text-title-medium font-medium text-on-surface">Childmap</p>
+            </div>
+            <nav className="hidden sm:flex items-center gap-8 text-label-large font-medium text-on-surface-variant sm:justify-self-center">
+              <a href="#features" className="rounded-sm hover:text-on-surface focus-visible:ring-2 focus-visible:ring-primary transition-colors">Features</a>
+              <a href="#why-us" className="rounded-sm hover:text-on-surface focus-visible:ring-2 focus-visible:ring-primary transition-colors">Why Childmap</a>
+              <a href="#pricing" className="rounded-sm hover:text-on-surface focus-visible:ring-2 focus-visible:ring-primary transition-colors">Pricing</a>
+            </nav>
+            <div className="flex items-center gap-5 sm:justify-self-end">
+              {/* Plain text, not a pill — Login is a secondary action for returning admins, so it
+                  reads quieter than the solid "Request Demo" pill next to it. */}
+              <Link
+                href="/login"
+                className="inline-block rounded-sm text-label-large font-medium text-on-surface-variant hover:text-on-surface focus-visible:ring-2 focus-visible:ring-primary transition-colors"
+              >
+                <RollingText>Login</RollingText>
+              </Link>
+              <RequestDemoButton className="inline-flex px-5 py-2.5 rounded-full border-2 border-on-surface text-on-surface text-label-large font-bold transition-all hover:bg-on-surface hover:text-surface">
+                <RollingText>Request Demo</RollingText>
+              </RequestDemoButton>
+            </div>
           </div>
-          <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-1 text-label-large font-medium text-on-surface-variant sm:justify-self-center">
+
+          <nav className="sm:hidden flex flex-wrap items-center justify-center gap-x-6 gap-y-1.5 border-t border-outline-variant/60 py-2.5 text-label-medium font-medium text-on-surface-variant">
             <a href="#features" className="rounded-sm hover:text-on-surface focus-visible:ring-2 focus-visible:ring-primary transition-colors">Features</a>
             <a href="#why-us" className="rounded-sm hover:text-on-surface focus-visible:ring-2 focus-visible:ring-primary transition-colors">Why Childmap</a>
             <a href="#pricing" className="rounded-sm hover:text-on-surface focus-visible:ring-2 focus-visible:ring-primary transition-colors">Pricing</a>
           </nav>
-          <div className="flex items-center gap-5 sm:justify-self-end">
-            {/* Plain text, not a pill — Login is a secondary action for returning admins, so it
-                reads quieter than the solid "Request Demo" pill next to it. */}
-            <Link
-              href="/login"
-              className="inline-block rounded-sm text-label-large font-medium text-on-surface-variant hover:text-on-surface focus-visible:ring-2 focus-visible:ring-primary transition-colors"
-            >
-              <RollingText>Login</RollingText>
-            </Link>
-            <RequestDemoButton className="inline-flex px-5 py-2.5 rounded-full border-2 border-on-surface text-on-surface text-label-large font-bold transition-all hover:bg-on-surface hover:text-surface">
-              <RollingText>Request Demo</RollingText>
-            </RequestDemoButton>
-          </div>
         </div>
       </header>
 
