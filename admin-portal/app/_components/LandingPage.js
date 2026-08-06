@@ -4,7 +4,6 @@ import { useRef } from 'react'
 import Link from 'next/link'
 import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion'
 import { RequestDemoButton } from './RequestDemoButton'
-import { MobileNav } from './MobileNav'
 import { TiltCard } from './TiltCard'
 import { RollingText } from './RollingText'
 import { SiYoutube, SiInstagram, SiX, SiFacebook, SiTiktok } from 'react-icons/si'
@@ -188,18 +187,21 @@ export function LandingPage() {
 
   return (
     <div data-theme="light" className="min-h-screen bg-surface text-on-surface font-kiosk">
+      {/* Everything visible at every size — no hamburger. Stacks into three centered rows
+          on mobile (logo, nav links wrapping as needed, actions); reverts to the original
+          single-row 3-column grid from sm upward. */}
       <header className="sticky top-0 z-40 bg-surface-container-low/80 backdrop-blur">
-        <div className="max-w-7xl mx-auto grid grid-cols-[1fr_auto_1fr] items-center px-4 sm:px-8 py-4">
-          <div className="flex items-center gap-2 justify-self-start">
+        <div className="max-w-7xl mx-auto flex flex-col items-center gap-3 px-4 py-3 sm:grid sm:grid-cols-[1fr_auto_1fr] sm:gap-0 sm:px-8 sm:py-4">
+          <div className="flex items-center gap-2 self-start sm:justify-self-start">
             <img src="/brand/childmap-icon-256.png" alt="" width={30} height={30} className="size-7.5 shrink-0" />
             <p className="text-title-medium font-medium text-on-surface">Childmap</p>
           </div>
-          <nav className="hidden sm:flex items-center gap-8 text-label-large font-medium text-on-surface-variant justify-self-center">
+          <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-1 text-label-large font-medium text-on-surface-variant sm:justify-self-center">
             <a href="#features" className="rounded-sm hover:text-on-surface focus-visible:ring-2 focus-visible:ring-primary transition-colors">Features</a>
             <a href="#why-us" className="rounded-sm hover:text-on-surface focus-visible:ring-2 focus-visible:ring-primary transition-colors">Why Childmap</a>
             <a href="#pricing" className="rounded-sm hover:text-on-surface focus-visible:ring-2 focus-visible:ring-primary transition-colors">Pricing</a>
           </nav>
-          <div className="flex items-center gap-5 justify-self-end">
+          <div className="flex items-center gap-5 sm:justify-self-end">
             {/* Plain text, not a pill — Login is a secondary action for returning admins, so it
                 reads quieter than the solid "Request Demo" pill next to it. */}
             <Link
@@ -208,10 +210,9 @@ export function LandingPage() {
             >
               <RollingText>Login</RollingText>
             </Link>
-            <RequestDemoButton className="hidden sm:inline-flex px-5 py-2.5 rounded-full border-2 border-on-surface text-on-surface text-label-large font-bold transition-all hover:bg-on-surface hover:text-surface">
+            <RequestDemoButton className="inline-flex px-5 py-2.5 rounded-full border-2 border-on-surface text-on-surface text-label-large font-bold transition-all hover:bg-on-surface hover:text-surface">
               <RollingText>Request Demo</RollingText>
             </RequestDemoButton>
-            <MobileNav />
           </div>
         </div>
       </header>
