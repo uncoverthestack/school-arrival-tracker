@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useId } from 'react'
+import { createPortal } from 'react-dom'
 import { motion, useReducedMotion } from 'framer-motion'
 import { RollingText } from './RollingText'
 
@@ -216,7 +217,14 @@ export function RequestDemoButton({ className, children }) {
       >
         {children}
       </motion.button>
-      {open && <RequestDemoModal onClose={() => setOpen(false)} triggerRef={triggerRef} />}
+      {/* Portaled straight to <body> — otherwise a transformed ancestor elsewhere on the
+          page (e.g. the hero mockup's TiltCard, which sets a live CSS transform) can pull
+          this fixed-position modal into its own stacking context and bury it under other
+          content, even with z-50. */}
+      {open && createPortal(
+        <RequestDemoModal onClose={() => setOpen(false)} triggerRef={triggerRef} />,
+        document.body
+      )}
     </>
   )
 }

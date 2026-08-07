@@ -100,8 +100,7 @@ export function Sidebar({ watchlistCount = 0, messagesCount = 0, onNavigate }) {
           <span className="flex-1">Gate scanner</span>
         </Link>
 
-        {/* Not built yet — visual only, matching the Figma sidebar. */}
-        <div className={itemClass}>
+        <Link href="/watchlist" onClick={onNavigate} className={pathname === '/watchlist' ? activeItemClass : itemClass}>
           <WatchlistIcon />
           <span className="flex-1">Watchlist</span>
           {watchlistCount > 0 && (
@@ -109,7 +108,7 @@ export function Sidebar({ watchlistCount = 0, messagesCount = 0, onNavigate }) {
               {watchlistCount}
             </span>
           )}
-        </div>
+        </Link>
 
         <Link href="/students" onClick={onNavigate} className={pathname === '/students' ? activeItemClass : itemClass}>
           <StudentsIcon />

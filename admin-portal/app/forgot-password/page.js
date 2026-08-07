@@ -7,7 +7,7 @@ import { AuthLayout } from '../_components/AuthLayout'
 const labelClass = 'block text-body-medium tracking-[0.25px] text-on-surface-variant mb-2'
 const inputClass =
   'w-full h-12 px-4 py-3 rounded-sm bg-surface-container-lowest border border-outline-variant ' +
-  'text-on-surface text-body-large tracking-[0.5px] outline-none ' +
+  'text-on-surface text-body-large tracking-[0.5px] ' +
   'focus:outline-2 focus:outline-primary focus:-outline-offset-1 focus:border-transparent'
 
 export default function ForgotPasswordPage() {

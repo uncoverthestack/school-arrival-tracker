@@ -41,6 +41,7 @@ Production: \`https://{subdomain}.dataocelotschools.com\`
     { name: 'Classes', description: 'Class levels & arms (e.g. JSS1A, JSS1B) — requires admin session' },
     { name: 'Arrivals & Scanning', description: 'Gate scan and arrival log — requires API key' },
     { name: 'Stats', description: 'Attendance summary — requires API key' },
+    { name: 'Watchlist', description: 'Students flagged for missed check-in/check-out — requires admin session' },
     { name: 'Parent Registration', description: 'Parent phone OTP verification flow' },
     { name: 'Demo Requests', description: 'Public "Request a Demo" form on the landing page' },
     { name: 'Super Admin', description: 'Platform-level school management — requires super admin session' }
@@ -82,6 +83,19 @@ Production: \`https://{subdomain}.dataocelotschools.com\`
           photo_url: { type: 'string', format: 'uri', nullable: true },
           face_descriptor: { type: 'string', nullable: true, description: 'JSON array of 128 floats (face-api.js descriptor). Null if not enrolled.' },
           created_at: { type: 'string', format: 'date-time' }
+        }
+      },
+      WatchlistEntry: {
+        type: 'object',
+        description: 'A student flagged by the arrival/departure cutoff alert cron jobs — created only after the parent notification succeeds.',
+        properties: {
+          id: { type: 'string', format: 'uuid' },
+          schoolId: { type: 'string', format: 'uuid' },
+          studentId: { type: 'string', format: 'uuid' },
+          reason: { type: 'string', enum: ['not_arrived', 'not_departed'] },
+          date: { type: 'string', format: 'date', example: '2026-08-07' },
+          flaggedAt: { type: 'string', format: 'date-time' },
+          resolvedAt: { type: 'string', format: 'date-time', nullable: true, description: 'Set once an admin resolves the entry from the Watchlist page' }
         }
       },
       Arrival: {
@@ -682,6 +696,30 @@ Production: \`https://{subdomain}.dataocelotschools.com\`
             }
           },
           401: { description: 'Unauthorized', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } }
+        }
+      }
+    },
+
+    // ── Watchlist ────────────────────────────────────────────────────
+    '/api/watchlist/{id}': {
+      patch: {
+        tags: ['Watchlist'],
+        summary: 'Resolve a watchlist entry',
+        description: 'Marks a flagged student as resolved, removing them from the open Watchlist. Entries are created automatically by the arrival/departure cutoff alert cron jobs — only after the parent SMS/WhatsApp notification succeeds. Requires admin session (browser use only — not API-key authenticated).',
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }
+        ],
+        responses: {
+          200: {
+            description: 'Entry resolved',
+            content: {
+              'application/json': {
+                schema: { type: 'object', properties: { entry: { $ref: '#/components/schemas/WatchlistEntry' } } }
+              }
+            }
+          },
+          401: { description: 'Unauthorized', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+          404: { description: 'Watchlist entry not found', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } }
         }
       }
     },

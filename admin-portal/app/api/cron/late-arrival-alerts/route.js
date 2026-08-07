@@ -1,6 +1,7 @@
 import { getActiveSchools } from '@/lib/repo/schools'
 import { getStudentsBySchool, updateStudent } from '@/lib/repo/students'
 import { getArrivalRecordsBySchoolAndDate } from '@/lib/repo/arrivals'
+import { createWatchlistEntry } from '@/lib/repo/watchlist'
 import { notifyParentAbsent } from '@/lib/notify'
 
 function nowInLagos() {
@@ -47,6 +48,7 @@ export async function GET(request) {
       try {
         await notifyParentAbsent(s.parent.phone, s.name, cutoffLabel)
         await updateStudent(s.id, school.id, { lastLateAlertDate: today })
+        await createWatchlistEntry({ schoolId: school.id, studentId: s.id, reason: 'not_arrived', date: today })
         alerted.push({ school: school.name, student: s.name })
       } catch (err) {
         console.error(`late-arrival alert failed for ${s.name} (${school.name}):`, err.message)
