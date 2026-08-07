@@ -1,7 +1,7 @@
 const BASE_URL = 'https://dataocelotschools.com'
 
 export default function sitemap() {
-  const routes = ['', '/privacy', '/login', '/signup']
+  const routes = ['', '/about', '/privacy', '/terms', '/login', '/signup']
 
   return routes.map(path => ({
     url: `${BASE_URL}${path}`,

@@ -8,7 +8,7 @@ import LogoutButton from '../LogoutButton'
 // dashboard, students, settings, and messages pages now use the sidebar
 // nav, and the gate scanner is a full-screen kiosk with no nav at all —
 // the global top nav would just duplicate or clutter all of these.
-const HIDDEN_ON = ['/login', '/signup', '/', '/students', '/gate', '/settings', '/messages']
+const HIDDEN_ON = ['/login', '/signup', '/', '/students', '/gate', '/settings', '/messages', '/watchlist']
 
 export function SiteNav({ schoolId, schoolName }) {
   const pathname = usePathname()

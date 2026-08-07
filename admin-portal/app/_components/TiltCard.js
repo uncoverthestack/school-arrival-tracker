@@ -2,10 +2,6 @@
 
 import { useRef } from 'react'
 import { motion, useMotionValue, useSpring, useTransform, useReducedMotion } from 'framer-motion'
-
-// Cursor-following 3D tilt — classic "cinematic" card effect. Rotation is
-// driven by pointer position relative to the card's own center, smoothed
-// with a spring so it settles instead of snapping.
 export function TiltCard({ children, className, tiltStrength = 10 }) {
   const ref = useRef(null)
   const x = useMotionValue(0)
