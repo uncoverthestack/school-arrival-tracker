@@ -1,10 +1,11 @@
 import { eq, and, ne, or, gt, lt, inArray, isNotNull, sql } from 'drizzle-orm'
 import { db } from '../db'
 import { schools, students } from '../schema'
+import { codePrefixCandidates } from '../codePrefix'
 
 export async function getSchoolByApiKey(apiKey) {
   if (!apiKey) return null
-  const [row] = await db.select({ id: schools.id, name: schools.name })
+  const [row] = await db.select({ id: schools.id, name: schools.name, codePrefix: schools.codePrefix })
     .from(schools).where(eq(schools.apiKey, apiKey)).limit(1)
   return row ?? null
 }
@@ -46,8 +47,21 @@ export async function getActiveSchoolsWithPaymentDue() {
   return db.select().from(schools).where(and(eq(schools.status, 'active'), isNotNull(schools.paymentDueAt)))
 }
 
+// Walks codePrefixCandidates() in order and returns the first one not
+// already taken by another school — "TA" for the first "Test Academy",
+// falling back to "TES", then "T", then "T2", "T3"... for later schools
+// whose name collides with one already registered.
+async function resolveCodePrefix(name) {
+  for (const candidate of codePrefixCandidates(name)) {
+    const [existing] = await db.select({ id: schools.id })
+      .from(schools).where(eq(schools.codePrefix, candidate)).limit(1)
+    if (!existing) return candidate
+  }
+}
+
 export async function createSchool(data) {
-  const [row] = await db.insert(schools).values(data).returning()
+  const codePrefix = data.codePrefix ?? await resolveCodePrefix(data.name)
+  const [row] = await db.insert(schools).values({ ...data, codePrefix }).returning()
   return row
 }
 

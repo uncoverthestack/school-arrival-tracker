@@ -15,6 +15,20 @@
       "when": 1785946346769,
       "tag": "0001_worried_namora",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1786189299242,
+      "tag": "0002_cooing_rhino",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1786191031822,
+      "tag": "0003_watery_sinister_six",
+      "breakpoints": true
     }
   ]
 }

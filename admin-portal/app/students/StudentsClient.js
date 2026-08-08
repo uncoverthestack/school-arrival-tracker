@@ -570,6 +570,7 @@ function BulkImportModal({ onClose }) {
       parentPhone: r.parentphone,
       parentEmail: r.parentemail,
       cardId: r.cardid,
+      photoUrl: r.photourl,
       usesBus: ['true', 'yes', '1'].includes((r.usesbus ?? '').toLowerCase()),
     }))
     setRows(parsed)
@@ -600,8 +601,9 @@ function BulkImportModal({ onClose }) {
       <div className="bg-surface-container-lowest rounded-2xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
         <h2 className="text-lg font-bold mb-1">Bulk Import Students</h2>
         <p className="text-xs text-on-surface-variant mb-5">
-          CSV with columns: name, studentClass, parentName, parentPhone, parentEmail, cardId, usesBus
-          (name, studentClass, and parentPhone are required — usesBus accepts true/yes/1).
+          CSV with columns: name, studentClass, parentName, parentPhone, parentEmail, cardId, photoUrl, usesBus
+          (name, studentClass, and parentPhone are required — usesBus accepts true/yes/1 — photoUrl must be a
+          public http(s) link, e.g. from Supabase Storage).
         </p>
 
         <label className="block w-full text-center py-3 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface text-sm font-semibold cursor-pointer transition-colors mb-4">
@@ -760,7 +762,7 @@ function ManageClassesModal({ classes, onClose }) {
   )
 }
 
-export default function StudentsClient({ students, classes }) {
+export default function StudentsClient({ students, classes, codePrefix }) {
   const [editing, setEditing] = useState(null)
   const [enrolling, setEnrolling] = useState(null)
   const [adding, setAdding] = useState(false)
@@ -862,7 +864,7 @@ export default function StudentsClient({ students, classes }) {
                 </td>
                 <td className="px-6 py-4">
                   <span className="font-mono text-lg font-bold tracking-widest text-primary">
-                    {s.code ?? '—'}
+                    {s.code ? `${codePrefix ? `${codePrefix}-` : ''}${s.code}` : '—'}
                   </span>
                 </td>
                 <td className="px-6 py-4 text-on-surface-variant text-xs hidden lg:table-cell">

@@ -503,7 +503,9 @@ Production: \`https://{subdomain}.dataocelotschools.com\`
                         parentPhone: { type: 'string' },
                         parentName: { type: 'string', nullable: true },
                         parentEmail: { type: 'string', format: 'email', nullable: true },
-                        cardId: { type: 'string', nullable: true }
+                        cardId: { type: 'string', nullable: true },
+                        photoUrl: { type: 'string', format: 'uri', nullable: true, description: 'Must be a public http(s) link (e.g. a Supabase Storage public URL); invalid or blank values are stored as null.' },
+                        usesBus: { type: 'boolean', nullable: true }
                       }
                     }
                   }

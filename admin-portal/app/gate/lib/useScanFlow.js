@@ -119,6 +119,10 @@ export function useScanFlow(schoolKey) {
       showResult({ state: 'error', student: null, message: `Card not recognised: ${id}` }, returnTo)
       return
     }
+    if (data.error === 'unverified') {
+      showResult({ state: 'warning', student: data.student, message: data.message }, returnTo)
+      return
+    }
     if (data.duplicate) {
       showResult({ state: 'warning', student: data.student, time: data.time, message: data.message }, returnTo)
       return
@@ -180,7 +184,7 @@ export function useScanFlow(schoolKey) {
       showResult({ state: 'error', student: null, message: 'Code not found — check the digits and try again' }, 'code')
       return
     }
-    setConfirmTarget({ student: data.student, code: trimmed })
+    setConfirmTarget({ student: data.student, code: trimmed, codePrefix: data.codePrefix })
     setView('confirm')
   }, [schoolKey, showResult])
 

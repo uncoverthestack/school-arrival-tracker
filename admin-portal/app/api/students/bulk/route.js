@@ -18,6 +18,19 @@ async function generateUniqueCode() {
   throw new Error('Could not generate unique code')
 }
 
+// Only accept http(s) links — anything else (blank, "N/A", a local file path
+// pasted by mistake) is treated as "no photo yet" rather than failing the row.
+function sanitizePhotoUrl(value) {
+  const trimmed = String(value ?? '').trim()
+  if (!trimmed) return null
+  try {
+    const parsed = new URL(trimmed)
+    return ['http:', 'https:'].includes(parsed.protocol) ? trimmed : null
+  } catch {
+    return null
+  }
+}
+
 export async function POST(request) {
   const session = await getAdminSession()
   if (!session.schoolId) {
@@ -86,9 +99,9 @@ export async function POST(request) {
       studentClass,
       parentId: parent.id,
       cardId: row.cardId ? String(row.cardId).trim() : studentId,
+      photoUrl: sanitizePhotoUrl(row.photoUrl),
       code,
       codeYear,
-      photoUrl: null,
       usesBus: !!row.usesBus,
     })
 
