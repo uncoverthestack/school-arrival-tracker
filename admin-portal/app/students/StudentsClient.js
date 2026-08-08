@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
+import { ClassFilter, filterByClass } from '../_components/ClassFilter'
 
 const MODEL_URL = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@0.22.2/weights'
 
@@ -768,6 +769,13 @@ export default function StudentsClient({ students, classes, codePrefix }) {
   const [adding, setAdding] = useState(false)
   const [importing, setImporting] = useState(false)
   const [managingClasses, setManagingClasses] = useState(false)
+  const [levelFilter, setLevelFilter] = useState(null)
+  const [armFilter, setArmFilter] = useState(null)
+
+  const visibleStudents = useMemo(
+    () => filterByClass(students, levelFilter, armFilter),
+    [students, levelFilter, armFilter]
+  )
 
   const toolbar = (
     <div className="flex flex-wrap gap-3 mb-6">
@@ -819,7 +827,19 @@ export default function StudentsClient({ students, classes, codePrefix }) {
     <>
       {modals}
       {toolbar}
+      <ClassFilter
+        items={students}
+        level={levelFilter}
+        arm={armFilter}
+        onLevel={(l) => { setLevelFilter(l); setArmFilter(null) }}
+        onArm={setArmFilter}
+      />
 
+      {visibleStudents.length === 0 ? (
+        <div className="bg-surface-container-lowest rounded-xl p-12 text-center">
+          <p className="text-on-surface-variant text-sm">No students in this class.</p>
+        </div>
+      ) : (
       <div className="bg-surface-container-lowest rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
         <table className="w-full text-sm min-w-160">
@@ -836,13 +856,27 @@ export default function StudentsClient({ students, classes, codePrefix }) {
             </tr>
           </thead>
           <tbody className="divide-y divide-outline-variant">
-            {students.map(s => (
+            {visibleStudents.map(s => (
               <tr key={s.id} className="hover:bg-surface-container-high/50 transition-colors">
                 <td className="px-6 py-4">
                   {s.photoUrl ? (
-                    <img src={s.photoUrl} alt={s.name} className="w-10 h-10 rounded-full object-cover" />
+                    // Hardcoded px + explicit maxWidth/minWidth: a global
+                    // `img, video { max-width: 100% }` reset (there's no
+                    // matching max-height) was capping width down to
+                    // whatever sliver of space this table cell rendered
+                    // with — max-width always overrides width, even an
+                    // inline one, so width alone wasn't enough to fix it.
+                    <img
+                      src={s.photoUrl}
+                      alt={s.name}
+                      className="rounded-full object-cover shrink-0"
+                      style={{ width: '40px', height: '40px', maxWidth: '40px', minWidth: '40px' }}
+                    />
                   ) : (
-                    <div className="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-base font-bold text-on-primary-container">
+                    <div
+                      className="rounded-full bg-primary-container flex items-center justify-center text-base font-bold text-on-primary-container shrink-0"
+                      style={{ width: '40px', height: '40px' }}
+                    >
                       {s.name?.[0] ?? '?'}
                     </div>
                   )}
@@ -898,6 +932,7 @@ export default function StudentsClient({ students, classes, codePrefix }) {
         </table>
         </div>
       </div>
+      )}
     </>
   )
 }
