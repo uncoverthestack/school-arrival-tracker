@@ -34,7 +34,7 @@ export function DashboardShell({ watchlistCount, messagesCount, children }) {
 
       <div
         className={`fixed inset-y-0 left-0 z-50 transition-transform duration-200 ease-in-out
-          lg:static lg:z-auto lg:translate-x-0
+          lg:sticky lg:top-0 lg:h-screen lg:z-auto lg:translate-x-0
           ${open ? 'translate-x-0' : '-translate-x-full'}`}
       >
         <Sidebar watchlistCount={watchlistCount} messagesCount={messagesCount} onNavigate={() => setOpen(false)} />
