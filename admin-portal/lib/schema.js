@@ -1,8 +1,14 @@
-import { pgTable, uuid, text, boolean, integer, timestamp } from 'drizzle-orm/pg-core'
+import { pgTable, uuid, text, boolean, integer, timestamp, unique } from 'drizzle-orm/pg-core'
 
 export const schools = pgTable('schools', {
   id:                  uuid('id').defaultRandom().primaryKey(),
   name:                text('name').notNull(),
+  // Short human-readable tag shown in front of gate codes for this school
+  // (e.g. "TA" -> "TA-482910") — resolved once at creation time and never
+  // recomputed, so a later school with a colliding name falls back to a
+  // different tag instead of silently displaying the same prefix as an
+  // earlier school. See lib/codePrefix.js.
+  codePrefix:          text('code_prefix').unique(),
   subdomain:           text('subdomain').notNull().unique(),
   apiKey:              text('api_key').notNull().unique(),
   adminEmail:          text('admin_email').notNull().unique(),
@@ -57,7 +63,15 @@ export const students = pgTable('students', {
   lastLateAlertDate:        text('last_late_alert_date'), // YYYY-MM-DD — arrival-alert dedup guard
   lastLateDepartureAlertDate: text('last_late_departure_alert_date'), // YYYY-MM-DD — departure-alert dedup guard
   createdAt:         timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-})
+}, (table) => [
+  // studentId/cardId are per-school sequence numbers (see createStudent
+  // call sites) — they only need to be unique within a school, not across
+  // the whole app. Scoped here to replace stray global-unique constraints
+  // that existed directly on the database outside of migration history and
+  // caused collisions between different schools' students.
+  unique('students_school_student_id_unique').on(table.schoolId, table.studentId),
+  unique('students_school_card_id_unique').on(table.schoolId, table.cardId),
+])
 
 export const classes = pgTable('classes', {
   id:        uuid('id').defaultRandom().primaryKey(),

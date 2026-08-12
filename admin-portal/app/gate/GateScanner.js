@@ -125,6 +125,7 @@ export function GateScanner({ schoolKey }) {
           <ConfirmView
             student={confirmTarget.student}
             code={confirmTarget.code}
+            codePrefix={confirmTarget.codePrefix}
             onConfirm={confirmCheckIn}
             onCancel={cancelConfirm}
           />

@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
+import { ClassFilter, filterByClass } from '../_components/ClassFilter'
 
 const MODEL_URL = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@0.22.2/weights'
 
@@ -570,6 +571,7 @@ function BulkImportModal({ onClose }) {
       parentPhone: r.parentphone,
       parentEmail: r.parentemail,
       cardId: r.cardid,
+      photoUrl: r.photourl,
       usesBus: ['true', 'yes', '1'].includes((r.usesbus ?? '').toLowerCase()),
     }))
     setRows(parsed)
@@ -600,8 +602,9 @@ function BulkImportModal({ onClose }) {
       <div className="bg-surface-container-lowest rounded-2xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
         <h2 className="text-lg font-bold mb-1">Bulk Import Students</h2>
         <p className="text-xs text-on-surface-variant mb-5">
-          CSV with columns: name, studentClass, parentName, parentPhone, parentEmail, cardId, usesBus
-          (name, studentClass, and parentPhone are required — usesBus accepts true/yes/1).
+          CSV with columns: name, studentClass, parentName, parentPhone, parentEmail, cardId, photoUrl, usesBus
+          (name, studentClass, and parentPhone are required — usesBus accepts true/yes/1 — photoUrl must be a
+          public http(s) link, e.g. from Supabase Storage).
         </p>
 
         <label className="block w-full text-center py-3 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface text-sm font-semibold cursor-pointer transition-colors mb-4">
@@ -760,12 +763,19 @@ function ManageClassesModal({ classes, onClose }) {
   )
 }
 
-export default function StudentsClient({ students, classes }) {
+export default function StudentsClient({ students, classes, codePrefix }) {
   const [editing, setEditing] = useState(null)
   const [enrolling, setEnrolling] = useState(null)
   const [adding, setAdding] = useState(false)
   const [importing, setImporting] = useState(false)
   const [managingClasses, setManagingClasses] = useState(false)
+  const [levelFilter, setLevelFilter] = useState(null)
+  const [armFilter, setArmFilter] = useState(null)
+
+  const visibleStudents = useMemo(
+    () => filterByClass(students, levelFilter, armFilter),
+    [students, levelFilter, armFilter]
+  )
 
   const toolbar = (
     <div className="flex flex-wrap gap-3 mb-6">
@@ -817,7 +827,19 @@ export default function StudentsClient({ students, classes }) {
     <>
       {modals}
       {toolbar}
+      <ClassFilter
+        items={students}
+        level={levelFilter}
+        arm={armFilter}
+        onLevel={(l) => { setLevelFilter(l); setArmFilter(null) }}
+        onArm={setArmFilter}
+      />
 
+      {visibleStudents.length === 0 ? (
+        <div className="bg-surface-container-lowest rounded-xl p-12 text-center">
+          <p className="text-on-surface-variant text-sm">No students in this class.</p>
+        </div>
+      ) : (
       <div className="bg-surface-container-lowest rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
         <table className="w-full text-sm min-w-160">
@@ -834,13 +856,27 @@ export default function StudentsClient({ students, classes }) {
             </tr>
           </thead>
           <tbody className="divide-y divide-outline-variant">
-            {students.map(s => (
+            {visibleStudents.map(s => (
               <tr key={s.id} className="hover:bg-surface-container-high/50 transition-colors">
                 <td className="px-6 py-4">
                   {s.photoUrl ? (
-                    <img src={s.photoUrl} alt={s.name} className="w-10 h-10 rounded-full object-cover" />
+                    // Hardcoded px + explicit maxWidth/minWidth: a global
+                    // `img, video { max-width: 100% }` reset (there's no
+                    // matching max-height) was capping width down to
+                    // whatever sliver of space this table cell rendered
+                    // with — max-width always overrides width, even an
+                    // inline one, so width alone wasn't enough to fix it.
+                    <img
+                      src={s.photoUrl}
+                      alt={s.name}
+                      className="rounded-full object-cover shrink-0"
+                      style={{ width: '40px', height: '40px', maxWidth: '40px', minWidth: '40px' }}
+                    />
                   ) : (
-                    <div className="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-base font-bold text-on-primary-container">
+                    <div
+                      className="rounded-full bg-primary-container flex items-center justify-center text-base font-bold text-on-primary-container shrink-0"
+                      style={{ width: '40px', height: '40px' }}
+                    >
                       {s.name?.[0] ?? '?'}
                     </div>
                   )}
@@ -862,7 +898,7 @@ export default function StudentsClient({ students, classes }) {
                 </td>
                 <td className="px-6 py-4">
                   <span className="font-mono text-lg font-bold tracking-widest text-primary">
-                    {s.code ?? '—'}
+                    {s.code ? `${codePrefix ? `${codePrefix}-` : ''}${s.code}` : '—'}
                   </span>
                 </td>
                 <td className="px-6 py-4 text-on-surface-variant text-xs hidden lg:table-cell">
@@ -896,6 +932,7 @@ export default function StudentsClient({ students, classes }) {
         </table>
         </div>
       </div>
+      )}
     </>
   )
 }

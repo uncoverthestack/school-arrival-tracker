@@ -4,6 +4,7 @@ import { notifyParent } from '@/lib/notify'
 import { getSchool } from '@/lib/schools'
 import { findStudentByIdentifier } from '@/lib/repo/students'
 import { getTodayArrivalByStudent, createArrival } from '@/lib/repo/arrivals'
+import { deriveCodePrefix } from '@/lib/codePrefix'
 
 function sanitizeId(cardId) {
   return String(cardId ?? '').trim().replace(/[^a-zA-Z0-9\-]/g, '').slice(0, 50)
@@ -28,7 +29,7 @@ export async function lookupStudent(code, schoolKey) {
   const student = await findStudentByIdentifier(safeId, school.id)
   if (!student) return { error: 'not_found', cardId: code }
 
-  return { student: toStudentInfo(student) }
+  return { student: toStudentInfo(student), codePrefix: school.codePrefix ?? deriveCodePrefix(school.name) }
 }
 
 export async function scanCard(cardId, type, schoolKey) {
@@ -44,6 +45,17 @@ export async function scanCard(cardId, type, schoolKey) {
 
   const student = await findStudentByIdentifier(safeId, school.id)
   if (!student) return { error: 'not_found', cardId }
+
+  // Check-in is withheld until the parent has confirmed their own phone via
+  // the SMS OTP flow (/api/register + /api/verify) — otherwise a mistyped
+  // or unverified number could silently be trusted for pickup notifications.
+  if (!student.parent?.phoneVerified) {
+    return {
+      error: 'unverified',
+      student: toStudentInfo(student),
+      message: `${student.name}'s parent hasn't verified their phone yet — check-in is blocked until they do`,
+    }
+  }
 
   const today = new Date().toISOString().split('T')[0]
   const existing = await getTodayArrivalByStudent(student.id, type, today)

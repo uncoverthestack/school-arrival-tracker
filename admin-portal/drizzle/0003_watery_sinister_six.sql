@@ -1,0 +1,2 @@
+ALTER TABLE "students" ADD CONSTRAINT "students_school_student_id_unique" UNIQUE("school_id","student_id");--> statement-breakpoint
+ALTER TABLE "students" ADD CONSTRAINT "students_school_card_id_unique" UNIQUE("school_id","card_id");

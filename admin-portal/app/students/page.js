@@ -4,6 +4,8 @@ import { getStudentsBySchool } from '@/lib/repo/students'
 import { getClassesBySchool } from '@/lib/repo/classes'
 import { getMessagesCount } from '@/lib/repo/messages'
 import { countOpenWatchlistEntriesBySchool } from '@/lib/repo/watchlist'
+import { getSchoolById } from '@/lib/repo/schools'
+import { deriveCodePrefix } from '@/lib/codePrefix'
 import { DashboardShell } from '../_components/DashboardShell'
 import StudentsClient from './StudentsClient'
 
@@ -11,12 +13,18 @@ export default async function StudentsPage() {
   const session = await getAdminSession()
   if (!session.schoolId) redirect('/login')
 
-  const [students, classes, messagesCount, watchlistCount] = await Promise.all([
+  const [students, classes, messagesCount, watchlistCount, school] = await Promise.all([
     getStudentsBySchool(session.schoolId),
     getClassesBySchool(session.schoolId),
     getMessagesCount(session.schoolId),
     countOpenWatchlistEntriesBySchool(session.schoolId),
+    getSchoolById(session.schoolId),
   ])
+  // Falls back to a live-derived (non-persisted, no uniqueness check) prefix
+  // only if this school predates the codePrefix column and hasn't been
+  // backfilled — every school created through createSchool() going forward
+  // already has one stored.
+  const codePrefix = school?.codePrefix ?? deriveCodePrefix(school?.name)
 
   return (
     <DashboardShell messagesCount={messagesCount} watchlistCount={watchlistCount}>
@@ -27,7 +35,7 @@ export default async function StudentsPage() {
         </p>
       </div>
 
-      <StudentsClient students={students} classes={classes} />
+      <StudentsClient students={students} classes={classes} codePrefix={codePrefix} />
     </DashboardShell>
   )
 }

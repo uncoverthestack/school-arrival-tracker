@@ -1,12 +1,14 @@
 import { IdCard } from './IdCard'
 import { StudentDetails } from './StudentDetails'
 
-export function ConfirmView({ student, code, onConfirm, onCancel }) {
+export function ConfirmView({ student, code, codePrefix, onConfirm, onCancel }) {
+  const displayCode = codePrefix ? `${codePrefix}-${code}` : code
+
   return (
     <div className="flex flex-col items-center gap-6 text-center">
       <div className="flex flex-col items-center gap-1">
         <p className="text-headline-small text-on-surface">Is this the right student?</p>
-        <p className="text-body-large tracking-[0.5px] text-on-surface-variant">Code {code} matched one student</p>
+        <p className="text-body-large tracking-[0.5px] text-on-surface-variant">Code {displayCode} matched one student</p>
       </div>
 
       <IdCard variant="photo" photoUrl={student.photoUrl} studentName={student.name} />
@@ -16,7 +18,7 @@ export function ConfirmView({ student, code, onConfirm, onCancel }) {
         fields={[
           { label: 'CLASS', value: student.studentClass ?? '—' },
           { label: 'STUDENT ID', value: student.studentId ?? '—' },
-          { label: 'ENTERED CODE', value: code }
+          { label: 'ENTERED CODE', value: displayCode }
         ]}
       />
 
