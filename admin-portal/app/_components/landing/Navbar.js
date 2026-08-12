@@ -36,7 +36,7 @@ export function Navbar() {
       <div className="max-w-7xl mx-auto px-4 md:px-8">
         <div className="flex items-center justify-between py-4 md:grid md:grid-cols-[1fr_auto_1fr]">
           <Link href="/" className="flex items-center gap-2.5 group md:justify-self-start">
-            <img src="/brand/childmap-icon-256.png" alt="" width={28} height={28} className="size-7 shrink-0" />
+            <img src="/brand/childmap-icon-256.png" alt="" width={34} height={34} className="size-8.5 shrink-0" />
             <span className={`font-bold text-base ${scrolled ? 'text-on-surface' : 'text-white'}`}>Childmap</span>
           </Link>
 
@@ -51,7 +51,7 @@ export function Navbar() {
           <div className="flex items-center gap-5 md:justify-self-end">
             <Link
               href="/login"
-              className={`text-sm font-medium transition-colors ${scrolled ? 'text-on-surface-variant hover:text-on-surface' : 'text-white/70 hover:text-white'}`}
+              className={`group text-sm font-medium transition-colors ${scrolled ? 'text-on-surface-variant hover:text-on-surface' : 'text-white/70 hover:text-white'}`}
             >
               <RollingText>Login</RollingText>
             </Link>
