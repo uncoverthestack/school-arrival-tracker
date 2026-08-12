@@ -62,7 +62,7 @@ export function Footer() {
 
         <div className="flex flex-col items-start justify-between gap-8 pt-10 lg:flex-row lg:items-center">
           <div className="flex items-center gap-3">
-            <img src="/brand/childmap-icon-256.png" alt="" width={28} height={28} className="size-7 shrink-0" />
+            <img src="/brand/childmap-icon-256.png" alt="" width={34} height={34} className="size-8.5 shrink-0" />
             <span className="font-sans text-lg font-bold tracking-tight text-white">Childmap</span>
           </div>
 

@@ -85,13 +85,13 @@ export function Pricing() {
                 </ul>
 
                 {plan.highlighted ? (
-                  <RequestDemoButton className="group/btn mt-8 w-full py-3 rounded-lg text-sm font-bold bg-primary text-on-primary shadow-sm transition-all hover:opacity-90 active:scale-[0.98]">
+                  <RequestDemoButton className="group mt-8 w-full py-3 rounded-lg text-sm font-bold bg-primary text-on-primary shadow-sm transition-all hover:opacity-90 active:scale-[0.98]">
                     <RollingText>Get Started</RollingText>
                   </RequestDemoButton>
                 ) : (
                   <button
                     type="button"
-                    className="group/btn mt-8 w-full py-3 rounded-lg text-sm font-bold border border-outline text-on-surface transition-all hover:bg-surface-container active:scale-[0.98]"
+                    className="group mt-8 w-full py-3 rounded-lg text-sm font-bold border border-outline text-on-surface transition-all hover:bg-surface-container active:scale-[0.98]"
                   >
                     <RollingText>Get Started</RollingText>
                   </button>
