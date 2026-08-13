@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { AuthLayout } from '../_components/AuthLayout'
+import { ROOT_DOMAIN } from '@/lib/domain'
 
 const labelClass = 'block text-body-medium tracking-[0.25px] text-on-surface-variant mb-2'
 const inputClass =
@@ -83,7 +84,7 @@ export default function SignupPage() {
           <div>
             <p className="text-headline-small text-on-surface font-bold">Registration received</p>
             <p className="text-body-medium tracking-[0.25px] text-on-surface-variant mt-2">
-              Your account for <strong>{form.subdomain}.dataocelotschools.com</strong> is under review.
+              Your account for <strong>{form.subdomain}.{ROOT_DOMAIN}</strong> is under review.
               You will receive access once your payment is confirmed by our team.
             </p>
           </div>
@@ -167,7 +168,7 @@ export default function SignupPage() {
               maxLength={32}
               className="bg-transparent outline-none flex-1 min-w-0 text-on-surface text-body-large tracking-[0.5px]"
             />
-            <span className="text-body-medium tracking-[0.25px] text-on-surface-variant whitespace-nowrap">.dataocelotschools.com</span>
+            <span className="text-body-medium tracking-[0.25px] text-on-surface-variant whitespace-nowrap">.{ROOT_DOMAIN}</span>
           </div>
           <p className="text-body-small tracking-[0.4px] text-on-surface-variant mt-1">Lowercase letters, numbers and hyphens only</p>
         </div>

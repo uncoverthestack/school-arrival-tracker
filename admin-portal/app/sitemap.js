@@ -1,4 +1,6 @@
-const BASE_URL = 'https://dataocelotschools.com'
+import { ROOT_DOMAIN } from '@/lib/domain'
+
+const BASE_URL = `https://${ROOT_DOMAIN}`
 
 export default function sitemap() {
   const routes = ['', '/about', '/privacy', '/terms', '/login', '/signup']

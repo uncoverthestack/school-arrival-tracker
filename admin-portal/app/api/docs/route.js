@@ -1,7 +1,9 @@
+import { ROOT_DOMAIN } from '@/lib/domain'
+
 const spec = {
   openapi: '3.0.3',
   info: {
-    title: 'Childmap — DataOcelot Schools API',
+    title: 'Childmap API',
     version: '1.0.0',
     description: `
 ## Authentication
@@ -27,11 +29,12 @@ Your school API key is shown in the dashboard after login.
 
 ## Base URL
 
-Production: \`https://{subdomain}.dataocelotschools.com\`
+Production: \`https://{subdomain}.${ROOT_DOMAIN}\`
     `.trim()
   },
   servers: [
-    { url: 'https://dataocelotschools.com', description: 'Production' },
+    { url: `https://${ROOT_DOMAIN}`, description: 'Production' },
+    { url: 'https://dataocelotschools.com', description: 'Legacy domain (still resolves — subdomain matching is domain-agnostic)' },
     { url: 'http://localhost:3000', description: 'Local dev' }
   ],
   tags: [

@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
+import { ROOT_DOMAIN } from '@/lib/domain'
 
 export function LogoutButton() {
   const router = useRouter()
@@ -114,7 +115,7 @@ function SchoolRow({ school, onAction }) {
     <tr className="hover:bg-gray-800/40 transition-colors">
       <td className="px-6 py-4">
         <p className="font-semibold">{school.name}</p>
-        <p className="text-xs text-gray-500 mt-0.5">{school.subdomain}.dataocelotschools.com</p>
+        <p className="text-xs text-gray-500 mt-0.5">{school.subdomain}.{ROOT_DOMAIN}</p>
         {school.schoolType && (
           <span className="inline-block mt-1 px-1.5 py-0.5 rounded text-xs bg-gray-800 text-gray-400 capitalize">
             {school.schoolType === 'combined' ? 'Primary + Secondary' : school.schoolType}

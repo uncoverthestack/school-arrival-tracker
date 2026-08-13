@@ -1,3 +1,5 @@
+import { ROOT_DOMAIN } from '@/lib/domain'
+
 export default function robots() {
   return {
     rules: [
@@ -7,6 +9,6 @@ export default function robots() {
         disallow: ['/api/', '/superadmin', '/students', '/settings', '/gate'],
       },
     ],
-    sitemap: 'https://dataocelotschools.com/sitemap.xml',
+    sitemap: `https://${ROOT_DOMAIN}/sitemap.xml`,
   }
 }

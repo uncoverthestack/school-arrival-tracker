@@ -1,4 +1,5 @@
 import { SESv2Client, SendEmailCommand } from '@aws-sdk/client-sesv2'
+import { ROOT_DOMAIN } from './domain'
 
 const ses = new SESv2Client({
   region: process.env.SES_REGION || 'us-east-1',
@@ -16,7 +17,7 @@ async function sendEmail({ to, subject, html, text }) {
 
   try {
     await ses.send(new SendEmailCommand({
-      FromEmailAddress: process.env.SES_FROM_EMAIL || 'SchoolPass <no-reply@dataocelotschools.com>',
+      FromEmailAddress: process.env.SES_FROM_EMAIL || `SchoolPass <no-reply@${ROOT_DOMAIN}>`,
       Destination: { ToAddresses: [to] },
       Content: {
         Simple: {
@@ -58,10 +59,10 @@ export async function sendPaymentDueReminderEmail({ toEmail, schoolName, subdoma
   const subject = daysLeft <= 0
     ? 'SchoolPass — Payment overdue'
     : `SchoolPass — Payment due in ${daysLeft} day${daysLeft === 1 ? '' : 's'}`
-  const text = `${schoolName}'s SchoolPass subscription is due on ${dueDate}. Please arrange payment to keep ${subdomain}.dataocelotschools.com active without interruption.`
+  const text = `${schoolName}'s SchoolPass subscription is due on ${dueDate}. Please arrange payment to keep ${subdomain}.${ROOT_DOMAIN} active without interruption.`
   const html = layout('Payment reminder', `
     <p><strong>${schoolName}</strong>'s SchoolPass subscription is due on <strong>${dueDate}</strong>.</p>
-    <p>Please arrange payment to keep <span style="font-family:monospace">${subdomain}.dataocelotschools.com</span> active without interruption.</p>
+    <p>Please arrange payment to keep <span style="font-family:monospace">${subdomain}.${ROOT_DOMAIN}</span> active without interruption.</p>
     <p>If payment isn't received by the due date, portal access will be paused until renewal is approved.</p>
   `)
   await sendEmail({ to: toEmail, subject, html, text })
@@ -83,7 +84,7 @@ export async function sendDemoRequestNotification({ firstName, lastName, phone, 
 }
 
 export async function sendPasswordResetEmail({ toEmail, schoolName, subdomain, token }) {
-  const url = `https://${subdomain}.dataocelotschools.com/reset-password?token=${token}`
+  const url = `https://${subdomain}.${ROOT_DOMAIN}/reset-password?token=${token}`
   const subject = 'SchoolPass — Reset your password'
   const text = `A password reset was requested for ${schoolName}'s SchoolPass account. Reset it here (expires in 1 hour): ${url}\n\nIf you didn't request this, you can ignore this email.`
   const html = layout('Reset your password', `
@@ -95,7 +96,7 @@ export async function sendPasswordResetEmail({ toEmail, schoolName, subdomain, t
 }
 
 export async function sendPaymentConfirmedEmail({ toEmail, schoolName, subdomain, isRenewal }) {
-  const url = `https://${subdomain}.dataocelotschools.com`
+  const url = `https://${subdomain}.${ROOT_DOMAIN}`
   const subject = isRenewal ? 'SchoolPass — Payment confirmed, access renewed' : 'SchoolPass — You\'re approved!'
   const text = `${isRenewal ? 'Your payment was confirmed and access has been renewed.' : `${schoolName} is now approved on SchoolPass.`} Your portal: ${url}`
   const html = layout(isRenewal ? 'Access renewed' : 'You\'re approved!', `
