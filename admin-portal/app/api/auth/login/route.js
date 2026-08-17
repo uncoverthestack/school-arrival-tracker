@@ -26,11 +26,15 @@ export async function POST(request) {
     return Response.json({ error: 'Email and password are required' }, { status: 400 })
   }
 
-  // Resolved solely from the middleware-set header (derived server-side from the
-  // request's Host header) — never trust a client-supplied key here, since that
+  // Resolved from the httpOnly school-key cookie set by proxy.js from the
+  // request's Host header — never trust a client-supplied key here, since that
   // would mean handing the school's full-access API key to the browser just to
-  // route a login request.
-  const resolvedKey = request.headers.get('x-school-key')
+  // route a login request. Note: the x-school-key *header* proxy.js also sets
+  // doesn't reach this route — proxy.js's matcher excludes /api/*, so a plain
+  // fetch('/api/auth/login') never passes through it. The cookie does travel
+  // with the request regardless (httpOnly only blocks JS access to it, not the
+  // browser's automatic cookie transmission), so it's the one to read here.
+  const resolvedKey = request.cookies.get('school-key')?.value
 
   let school = null
   if (resolvedKey) {
