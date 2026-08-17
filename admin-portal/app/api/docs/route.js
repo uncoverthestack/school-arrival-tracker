@@ -236,7 +236,7 @@ const spec = {
       post: {
         tags: ['Authentication'],
         summary: 'School admin login',
-        description: 'Authenticates the school admin and sets an `sp-admin` session cookie. Required before accessing admin portal endpoints.',
+        description: 'Authenticates the school admin and sets an `sp-admin` session cookie. Must be called on the school\'s own subdomain — the school is resolved server-side from the request host, not from the request body.',
         requestBody: {
           required: true,
           content: {
@@ -246,8 +246,7 @@ const spec = {
                 required: ['email', 'password'],
                 properties: {
                   email: { type: 'string', format: 'email' },
-                  password: { type: 'string' },
-                  schoolKey: { type: 'string', description: 'API key — required when not on the school subdomain' }
+                  password: { type: 'string' }
                 }
               }
             }

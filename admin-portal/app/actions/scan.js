@@ -1,10 +1,21 @@
 'use server'
 
+import { headers } from 'next/headers'
 import { notifyParent } from '@/lib/notify'
 import { getSchool } from '@/lib/schools'
-import { findStudentByIdentifier } from '@/lib/repo/students'
+import { findStudentByIdentifier, getEnrolledFaceDescriptors } from '@/lib/repo/students'
 import { getTodayArrivalByStudent, createArrival } from '@/lib/repo/arrivals'
 import { deriveCodePrefix } from '@/lib/codePrefix'
+
+// The gate kiosk's own UI resolves its school from the x-school-key request
+// header — set server-side by proxy.js from the subdomain, never handed to
+// client JS — instead of trusting a key the browser passes in. Third-party
+// integrations hitting the documented /api/* routes directly still use their
+// own stored API key via the x-api-key header; this is only for our kiosk UI.
+async function resolveSchool() {
+  const key = (await headers()).get('x-school-key')
+  return getSchool(key)
+}
 
 function sanitizeId(cardId) {
   return String(cardId ?? '').trim().replace(/[^a-zA-Z0-9\-]/g, '').slice(0, 50)
@@ -19,11 +30,19 @@ function toStudentInfo(student) {
   }
 }
 
-export async function lookupStudent(code, schoolKey) {
+export async function getFaceDescriptors() {
+  const school = await resolveSchool()
+  if (!school) return { error: 'unauthorized' }
+
+  const students = await getEnrolledFaceDescriptors(school.id)
+  return { students }
+}
+
+export async function lookupStudent(code) {
   const safeId = sanitizeId(code)
   if (!safeId) return { error: 'invalid_input' }
 
-  const school = await getSchool(schoolKey)
+  const school = await resolveSchool()
   if (!school) return { error: 'unauthorized' }
 
   const student = await findStudentByIdentifier(safeId, school.id)
@@ -32,7 +51,7 @@ export async function lookupStudent(code, schoolKey) {
   return { student: toStudentInfo(student), codePrefix: school.codePrefix ?? deriveCodePrefix(school.name) }
 }
 
-export async function scanCard(cardId, type, schoolKey) {
+export async function scanCard(cardId, type) {
   if (!cardId || !['arrival', 'departure'].includes(type)) {
     return { error: 'invalid_input' }
   }
@@ -40,7 +59,7 @@ export async function scanCard(cardId, type, schoolKey) {
   const safeId = sanitizeId(cardId)
   if (!safeId) return { error: 'invalid_input' }
 
-  const school = await getSchool(schoolKey)
+  const school = await resolveSchool()
   if (!school) return { error: 'unauthorized' }
 
   const student = await findStudentByIdentifier(safeId, school.id)

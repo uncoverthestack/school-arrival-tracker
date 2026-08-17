@@ -21,14 +21,16 @@ export async function POST(request) {
     return Response.json({ error: 'Invalid request' }, { status: 400 })
   }
 
-  const { email, password, schoolKey } = body
+  const { email, password } = body
   if (!email || !password) {
     return Response.json({ error: 'Email and password are required' }, { status: 400 })
   }
 
-  const { headers } = request
-  const keyFromMiddleware = headers.get('x-school-key')
-  const resolvedKey = keyFromMiddleware || schoolKey
+  // Resolved solely from the middleware-set header (derived server-side from the
+  // request's Host header) — never trust a client-supplied key here, since that
+  // would mean handing the school's full-access API key to the browser just to
+  // route a login request.
+  const resolvedKey = request.headers.get('x-school-key')
 
   let school = null
   if (resolvedKey) {

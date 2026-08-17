@@ -43,9 +43,12 @@ export async function proxy(request) {
     response.headers.set('x-school-key', school.api_key)
     response.headers.set('x-school-name', school.name)
 
-    // Client components (gate page) read this cookie
+    // Kept as a backup for any server-side reader that isn't in the request-header
+    // path — httpOnly since nothing client-side should ever need the raw API key.
+    // The gate kiosk UI and the login route both resolve it via the x-school-key
+    // header instead.
     response.cookies.set('school-key', school.api_key, {
-      httpOnly: false,
+      httpOnly: true,
       sameSite: 'lax',
       path: '/',
       maxAge: 60 * 60 * 8
