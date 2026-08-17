@@ -12,6 +12,7 @@ import { getStudentIdsBySchool, deleteStudentsBySchool } from '@/lib/repo/studen
 import { deleteVerificationsByStudentIds } from '@/lib/repo/verifications'
 import { deleteArrivalsBySchool } from '@/lib/repo/arrivals'
 import { sendPaymentConfirmedEmail } from '@/lib/email'
+import { getRootDomain } from '@/lib/domain'
 
 async function authorize() {
   const session = await getSuperSession()
@@ -86,11 +87,13 @@ export async function PATCH(request) {
   if (!updated) return Response.json({ error: 'School not found' }, { status: 404 })
 
   if (action === 'approve' && schoolToApprove) {
+    const rootDomain = await getRootDomain()
     after(() => sendPaymentConfirmedEmail({
       toEmail: schoolToApprove.adminEmail,
       schoolName: schoolToApprove.name,
       subdomain: schoolToApprove.subdomain,
       isRenewal: schoolToApprove.status === 'payment_due',
+      rootDomain,
     }))
   }
 

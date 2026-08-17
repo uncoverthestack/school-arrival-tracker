@@ -1,6 +1,6 @@
-import { ROOT_DOMAIN } from '@/lib/domain'
+import { getRootDomain } from '@/lib/domain'
 
-export default function robots() {
+export default async function robots() {
   return {
     rules: [
       {
@@ -9,6 +9,6 @@ export default function robots() {
         disallow: ['/api/', '/superadmin', '/students', '/settings', '/gate'],
       },
     ],
-    sitemap: `https://${ROOT_DOMAIN}/sitemap.xml`,
+    sitemap: `https://${await getRootDomain()}/sitemap.xml`,
   }
 }

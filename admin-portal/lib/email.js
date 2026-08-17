@@ -97,8 +97,8 @@ export async function sendSupportMessageNotification({ name, email, schoolName, 
   await sendEmail({ to: toEmail, subject, html, text })
 }
 
-export async function sendPasswordResetEmail({ toEmail, schoolName, subdomain, token }) {
-  const url = `https://${subdomain}.${ROOT_DOMAIN}/reset-password?token=${token}`
+export async function sendPasswordResetEmail({ toEmail, schoolName, subdomain, token, rootDomain = ROOT_DOMAIN }) {
+  const url = `https://${subdomain}.${rootDomain}/reset-password?token=${token}`
   const subject = 'SchoolPass — Reset your password'
   const text = `A password reset was requested for ${schoolName}'s SchoolPass account. Reset it here (expires in 1 hour): ${url}\n\nIf you didn't request this, you can ignore this email.`
   const html = layout('Reset your password', `
@@ -109,8 +109,8 @@ export async function sendPasswordResetEmail({ toEmail, schoolName, subdomain, t
   await sendEmail({ to: toEmail, subject, html, text })
 }
 
-export async function sendPaymentConfirmedEmail({ toEmail, schoolName, subdomain, isRenewal }) {
-  const url = `https://${subdomain}.${ROOT_DOMAIN}`
+export async function sendPaymentConfirmedEmail({ toEmail, schoolName, subdomain, isRenewal, rootDomain = ROOT_DOMAIN }) {
+  const url = `https://${subdomain}.${rootDomain}`
   const subject = isRenewal ? 'SchoolPass — Payment confirmed, access renewed' : 'SchoolPass — You\'re approved!'
   const text = `${isRenewal ? 'Your payment was confirmed and access has been renewed.' : `${schoolName} is now approved on SchoolPass.`} Your portal: ${url}`
   const html = layout(isRenewal ? 'Access renewed' : 'You\'re approved!', `
