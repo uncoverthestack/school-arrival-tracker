@@ -2,6 +2,7 @@ import './globals.css'
 import { getAdminSession } from '@/lib/session'
 import { SiteNav } from './_components/SiteNav'
 import { CookieConsent } from './_components/CookieConsent'
+import { SupportChatButton } from './_components/SupportChatButton'
 import { themeInitScript } from '@/lib/theme'
 
 export const metadata = {
@@ -27,6 +28,7 @@ export default async function RootLayout({ children }) {
         <SiteNav schoolId={session.schoolId} schoolName={session.schoolName} />
         <main className="flex-1 min-w-0">{children}</main>
         <CookieConsent />
+        <SupportChatButton schoolName={session.schoolName} />
       </body>
     </html>
   )
