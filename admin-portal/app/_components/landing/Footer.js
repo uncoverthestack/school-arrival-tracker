@@ -1,7 +1,16 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { SiYoutube, SiInstagram, SiX, SiFacebook, SiTiktok } from 'react-icons/si'
 import { RequestDemoButton } from '../RequestDemoButton'
 import { RollingText } from '../RollingText'
+import logoIcon from '@/public/brand/childmap-icon-256.png'
+
+// TODO: replace with real contact details before launch.
+const CONTACT = {
+  address: '123 Example Street, Lagos, Nigeria',
+  email: 'hello@childmap.org',
+  phone: '+234 000 000 0000',
+}
 
 // Only Instagram has a real account so far — the rest stay href="#" until they exist.
 const SOCIAL_LINKS = [
@@ -40,7 +49,7 @@ export function Footer() {
             </RequestDemoButton>
           </div>
 
-          <div className="grid grid-cols-2 gap-8 md:grid-cols-3 lg:col-span-7 lg:pl-8">
+          <div className="grid grid-cols-2 gap-8 md:grid-cols-4 lg:col-span-7 lg:pl-8">
             <FooterLinkColumn title="PRODUCT">
               <a href="#features" className="text-sm text-white/50 hover:text-white transition-colors">Features</a>
               <a href="#why-us" className="text-sm text-white/50 hover:text-white transition-colors">Why Childmap</a>
@@ -57,12 +66,18 @@ export function Footer() {
               <Link href="/login" className="text-sm text-white/50 hover:text-white transition-colors">Login</Link>
               <Link href="/signup" className="text-sm text-white/50 hover:text-white transition-colors">Create Account</Link>
             </FooterLinkColumn>
+
+            <FooterLinkColumn title="CONTACT">
+              <span className="text-sm text-white/50">{CONTACT.address}</span>
+              <a href={`mailto:${CONTACT.email}`} className="text-sm text-white/50 hover:text-white transition-colors">{CONTACT.email}</a>
+              <a href={`tel:${CONTACT.phone.replace(/\s+/g, '')}`} className="text-sm text-white/50 hover:text-white transition-colors">{CONTACT.phone}</a>
+            </FooterLinkColumn>
           </div>
         </div>
 
         <div className="flex flex-col items-start justify-between gap-8 pt-10 lg:flex-row lg:items-center">
           <div className="flex items-center gap-3">
-            <img src="/brand/childmap-icon-256.png" alt="" width={34} height={34} className="size-8.5 shrink-0" />
+            <Image src={logoIcon} alt="" width={34} height={34} className="size-8.5 shrink-0" />
             <span className="font-sans text-lg font-bold tracking-tight text-white">Childmap</span>
           </div>
 

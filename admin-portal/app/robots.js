@@ -6,7 +6,7 @@ export default async function robots() {
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/api/', '/superadmin', '/students', '/settings', '/gate'],
+        disallow: ['/api/', '/superadmin', '/students', '/settings', '/gate', '/thank-you'],
       },
     ],
     sitemap: `https://${await getRootDomain()}/sitemap.xml`,
