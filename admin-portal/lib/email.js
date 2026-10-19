@@ -83,8 +83,22 @@ export async function sendDemoRequestNotification({ firstName, lastName, phone, 
   await sendEmail({ to: toEmail, subject, html, text })
 }
 
-export async function sendPasswordResetEmail({ toEmail, schoolName, subdomain, token }) {
-  const url = `https://${subdomain}.${ROOT_DOMAIN}/reset-password?token=${token}`
+export async function sendSupportMessageNotification({ name, email, schoolName, message }) {
+  const toEmail = process.env.SUPER_ADMIN_EMAIL
+  if (!toEmail) return
+
+  const subject = `Childmap Support — message from ${name}${schoolName ? ` (${schoolName})` : ''}`
+  const text = `${name} <${email}>${schoolName ? ` from ${schoolName}` : ''} sent a support message:\n\n${message}`
+  const html = layout('New support message', `
+    <p><strong>${name}</strong> ${schoolName ? `from <strong>${schoolName}</strong> ` : ''}sent a message via the support widget.</p>
+    <p>Reply to: <a href="mailto:${email}">${email}</a></p>
+    <p style="white-space:pre-wrap;border-left:3px solid #ddd;padding-left:12px;margin-top:16px">${message}</p>
+  `)
+  await sendEmail({ to: toEmail, subject, html, text })
+}
+
+export async function sendPasswordResetEmail({ toEmail, schoolName, subdomain, token, rootDomain = ROOT_DOMAIN }) {
+  const url = `https://${subdomain}.${rootDomain}/reset-password?token=${token}`
   const subject = 'SchoolPass — Reset your password'
   const text = `A password reset was requested for ${schoolName}'s SchoolPass account. Reset it here (expires in 1 hour): ${url}\n\nIf you didn't request this, you can ignore this email.`
   const html = layout('Reset your password', `
@@ -95,8 +109,8 @@ export async function sendPasswordResetEmail({ toEmail, schoolName, subdomain, t
   await sendEmail({ to: toEmail, subject, html, text })
 }
 
-export async function sendPaymentConfirmedEmail({ toEmail, schoolName, subdomain, isRenewal }) {
-  const url = `https://${subdomain}.${ROOT_DOMAIN}`
+export async function sendPaymentConfirmedEmail({ toEmail, schoolName, subdomain, isRenewal, rootDomain = ROOT_DOMAIN }) {
+  const url = `https://${subdomain}.${rootDomain}`
   const subject = isRenewal ? 'SchoolPass — Payment confirmed, access renewed' : 'SchoolPass — You\'re approved!'
   const text = `${isRenewal ? 'Your payment was confirmed and access has been renewed.' : `${schoolName} is now approved on SchoolPass.`} Your portal: ${url}`
   const html = layout(isRenewal ? 'Access renewed' : 'You\'re approved!', `

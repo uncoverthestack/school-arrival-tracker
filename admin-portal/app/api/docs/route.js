@@ -1,11 +1,7 @@
-import { ROOT_DOMAIN } from '@/lib/domain'
+import { getRootDomain } from '@/lib/domain'
 
-const spec = {
-  openapi: '3.0.3',
-  info: {
-    title: 'Childmap API',
-    version: '1.0.0',
-    description: `
+function buildDescription(rootDomain) {
+  return `
 ## Authentication
 
 Most endpoints require one of two auth methods:
@@ -29,14 +25,26 @@ Your school API key is shown in the dashboard after login.
 
 ## Base URL
 
-Production: \`https://{subdomain}.${ROOT_DOMAIN}\`
+Production: \`https://{subdomain}.${rootDomain}\`
     `.trim()
-  },
-  servers: [
-    { url: `https://${ROOT_DOMAIN}`, description: 'Production' },
-    { url: 'https://dataocelotschools.com', description: 'Legacy domain (still resolves — subdomain matching is domain-agnostic)' },
+}
+
+function buildServers(rootDomain) {
+  return [
+    { url: `https://${rootDomain}`, description: 'Current domain' },
+    { url: 'https://dataocelotschools.com', description: 'Testing' },
+    { url: 'https://childmap.org', description: 'Live' },
     { url: 'http://localhost:3000', description: 'Local dev' }
-  ],
+  ]
+}
+
+const spec = {
+  openapi: '3.0.3',
+  info: {
+    title: 'Childmap API',
+    version: '1.0.0',
+  },
+  servers: [],
   tags: [
     { name: 'School Signup', description: 'Register a new school on the platform' },
     { name: 'Authentication', description: 'School admin login / logout' },
@@ -228,7 +236,7 @@ Production: \`https://{subdomain}.${ROOT_DOMAIN}\`
       post: {
         tags: ['Authentication'],
         summary: 'School admin login',
-        description: 'Authenticates the school admin and sets an `sp-admin` session cookie. Required before accessing admin portal endpoints.',
+        description: 'Authenticates the school admin and sets an `sp-admin` session cookie. Must be called on the school\'s own subdomain — the school is resolved server-side from the request host, not from the request body.',
         requestBody: {
           required: true,
           content: {
@@ -238,8 +246,7 @@ Production: \`https://{subdomain}.${ROOT_DOMAIN}\`
                 required: ['email', 'password'],
                 properties: {
                   email: { type: 'string', format: 'email' },
-                  password: { type: 'string' },
-                  schoolKey: { type: 'string', description: 'API key — required when not on the school subdomain' }
+                  password: { type: 'string' }
                 }
               }
             }
@@ -1042,7 +1049,12 @@ Production: \`https://{subdomain}.${ROOT_DOMAIN}\`
 }
 
 export async function GET() {
-  return Response.json(spec, {
+  const rootDomain = await getRootDomain()
+  return Response.json({
+    ...spec,
+    info: { ...spec.info, description: buildDescription(rootDomain) },
+    servers: buildServers(rootDomain),
+  }, {
     headers: { 'Access-Control-Allow-Origin': '*' }
   })
 }

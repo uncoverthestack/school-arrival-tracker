@@ -1,7 +1,8 @@
 import Link from 'next/link'
 
 export const metadata = {
-  title: 'About — Childmap',
+  title: 'About',
+  description: 'Why we built Childmap: replacing the paper gate logbook with instant check-ins and parent notifications.',
 }
 
 const sectionClass = 'mt-8'

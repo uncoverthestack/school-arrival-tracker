@@ -2,7 +2,6 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { ROOT_DOMAIN } from '@/lib/domain'
 
 export function LogoutButton() {
   const router = useRouter()
@@ -97,7 +96,7 @@ function ConfirmModal({ title, message, confirmLabel, confirmClass, onConfirm, o
   )
 }
 
-function SchoolRow({ school, onAction }) {
+function SchoolRow({ school, onAction, rootDomain }) {
   const actionMap = {
     pending:     [{ label: 'Approve', action: 'approve', style: 'text-green-500 hover:text-green-400' },
                   { label: 'Reject',  action: 'reject',  style: 'text-red-500 hover:text-red-400' }],
@@ -115,7 +114,7 @@ function SchoolRow({ school, onAction }) {
     <tr className="hover:bg-gray-800/40 transition-colors">
       <td className="px-6 py-4">
         <p className="font-semibold">{school.name}</p>
-        <p className="text-xs text-gray-500 mt-0.5">{school.subdomain}.{ROOT_DOMAIN}</p>
+        <p className="text-xs text-gray-500 mt-0.5">{school.subdomain}.{rootDomain}</p>
         {school.schoolType && (
           <span className="inline-block mt-1 px-1.5 py-0.5 rounded text-xs bg-gray-800 text-gray-400 capitalize">
             {school.schoolType === 'combined' ? 'Primary + Secondary' : school.schoolType}
@@ -147,7 +146,7 @@ function SchoolRow({ school, onAction }) {
   )
 }
 
-export function SchoolsTable({ schools }) {
+export function SchoolsTable({ schools, rootDomain }) {
   const router = useRouter()
   const [tab, setTab] = useState('pending')
   const [pending, setPending] = useState(null) // { school, action }
@@ -296,7 +295,7 @@ export function SchoolsTable({ schools }) {
             </thead>
             <tbody className="divide-y divide-gray-800">
               {filtered.map(s => (
-                <SchoolRow key={s.id} school={s}
+                <SchoolRow key={s.id} school={s} rootDomain={rootDomain}
                   onAction={(school, action) => setPending({ school, action })} />
               ))}
             </tbody>

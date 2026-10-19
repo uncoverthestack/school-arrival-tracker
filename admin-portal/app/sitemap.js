@@ -1,9 +1,8 @@
-import { ROOT_DOMAIN } from '@/lib/domain'
+import { getRootDomain } from '@/lib/domain'
 
-const BASE_URL = `https://${ROOT_DOMAIN}`
-
-export default function sitemap() {
-  const routes = ['', '/about', '/privacy', '/terms', '/login', '/signup']
+export default async function sitemap() {
+  const BASE_URL = `https://${await getRootDomain()}`
+  const routes = ['', '/about', '/privacy', '/terms', '/login', '/signup', '/register']
 
   return routes.map(path => ({
     url: `${BASE_URL}${path}`,
