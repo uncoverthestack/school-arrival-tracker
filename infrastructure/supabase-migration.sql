@@ -73,3 +73,24 @@ CREATE INDEX IF NOT EXISTS students_school_id_idx        ON students(school_id);
 CREATE INDEX IF NOT EXISTS students_code_idx             ON students(code);
 CREATE INDEX IF NOT EXISTS arrivals_school_id_date_idx   ON arrivals(school_id, date);
 CREATE INDEX IF NOT EXISTS arrivals_student_type_date_idx ON arrivals(student_id, type, date);
+
+-- ── 9. SMS delivery log ─────────────────────────────────────────────────────
+-- One row per outbound SMS, updated in place by the provider's delivery webhook.
+-- An SMS accepted by the provider API but dropped by the carrier (the common DND
+-- failure mode in Nigeria) is otherwise undetectable.
+CREATE TABLE IF NOT EXISTS sms_deliveries (
+  id              UUID        DEFAULT gen_random_uuid() PRIMARY KEY,
+  provider        TEXT        NOT NULL,
+  message_id      TEXT        UNIQUE,
+  brand           TEXT,
+  phone           TEXT        NOT NULL,
+  kind            TEXT,
+  status          TEXT        NOT NULL DEFAULT 'submitted',
+  provider_status TEXT,
+  failure_reason  TEXT,
+  created_at      TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+  updated_at      TIMESTAMPTZ DEFAULT NOW() NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS sms_deliveries_message_id_idx ON sms_deliveries(message_id);
+CREATE INDEX IF NOT EXISTS sms_deliveries_status_idx     ON sms_deliveries(status, created_at DESC);
