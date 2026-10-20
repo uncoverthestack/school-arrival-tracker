@@ -94,7 +94,7 @@ export async function scanCard(cardId, type) {
   })
 
   if (student.parent?.phone) {
-    notifyParent(student.parent.phone, student.name, type, time).catch(console.error)
+    notifyParent(student.parent.phone, student.name, type, time, school.name).catch(console.error)
   }
 
   return {
