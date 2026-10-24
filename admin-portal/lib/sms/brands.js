@@ -16,9 +16,12 @@ const BRANDS = {
     // Longest-suffix matched against the incoming Host, so school subdomains
     // (greenfield.childmap.org) resolve to the same brand as the apex.
     domains: ['childmap.org', 'childmap.ng'],
-    // Must match the sender ID approved on the SMS account byte for byte — approval is
-    // per exact string, so the lowercase 'm' here is deliberate and not a typo.
-    defaultSenderId: 'Childmap'
+    // Must match the sender ID approved on the SMS account byte for byte: Sendchamp
+    // rejects anything else with "invalid sender name". 'ChildmapLTD' is exactly 11
+    // characters, the GSM alphanumeric limit, so it survives senderIdFor()'s truncation.
+    // The display name above is what parents read in the message body; this is only
+    // what appears as the sender.
+    defaultSenderId: 'ChildmapLTD'
   },
   dataocelot: {
     key: 'dataocelot',

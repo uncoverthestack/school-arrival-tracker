@@ -67,7 +67,7 @@ export async function POST(request) {
   })
 
   if (student.parent?.phone) {
-    notifyParent(student.parent.phone, student.name, type, time).catch(console.error)
+    notifyParent(student.parent.phone, student.name, type, time, school.name).catch(console.error)
   }
 
   return Response.json({

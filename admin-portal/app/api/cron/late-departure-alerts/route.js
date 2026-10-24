@@ -48,7 +48,7 @@ export async function GET(request) {
       if (!s.parent?.phone) continue
 
       try {
-        await notifyParentNotCheckedOut(s.parent.phone, s.name, cutoffLabel)
+        await notifyParentNotCheckedOut(s.parent.phone, s.name, cutoffLabel, school.name)
         await updateStudent(s.id, school.id, { lastLateDepartureAlertDate: today })
         await createWatchlistEntry({ schoolId: school.id, studentId: s.id, reason: 'not_departed', date: today })
         alerted.push({ school: school.name, student: s.name })
