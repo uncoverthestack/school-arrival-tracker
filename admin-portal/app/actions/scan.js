@@ -66,17 +66,6 @@ export async function scanCard(cardId, type) {
   const student = await findStudentByIdentifier(safeId, school.id)
   if (!student) return { error: 'not_found', cardId }
 
-  // Check-in is withheld until the parent has confirmed their own phone via
-  // the SMS OTP flow (/api/register + /api/verify) — otherwise a mistyped
-  // or unverified number could silently be trusted for pickup notifications.
-  if (!student.parent?.phoneVerified) {
-    return {
-      error: 'unverified',
-      student: toStudentInfo(student),
-      message: `${student.name}'s parent hasn't verified their phone yet — check-in is blocked until they do`,
-    }
-  }
-
   const today = new Date().toISOString().split('T')[0]
   const existing = await getTodayArrivalByStudent(student.id, type, today)
   const studentInfo = toStudentInfo(student)

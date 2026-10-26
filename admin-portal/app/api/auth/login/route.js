@@ -1,7 +1,8 @@
 import bcrypt from 'bcryptjs'
 import { getAdminSession } from '@/lib/session'
 import { checkLimit, loginLimiter } from '@/lib/ratelimit'
-import { getSchoolByApiKeyFull, getSchoolBySubdomain } from '@/lib/repo/schools'
+import { getSchoolByApiKeyFull,
+  getSchoolByAdminEmail, getSchoolBySubdomain } from '@/lib/repo/schools'
 
 // Local dev only — lets any teammate log into a fixed seeded test school
 // without needing a subdomain or a `?key=` URL param. Never active in a
@@ -39,12 +40,15 @@ export async function POST(request) {
   let school = null
   if (resolvedKey) {
     school = await getSchoolByApiKeyFull(resolvedKey)
-  } else if (process.env.NODE_ENV !== 'production') {
-    school = await getSchoolBySubdomain(DEV_TEST_SUBDOMAIN)
-  }
-
-  if (!resolvedKey && !school) {
-    return Response.json({ error: 'Could not identify school. Access via your school URL.' }, { status: 400 })
+  } else {
+    // No subdomain context — the admin reached the apex domain rather than their
+    // school URL. adminEmail is unique across schools, so it identifies the school
+    // on its own. This only selects which record to check; the password comparison
+    // below is unchanged, so it grants nothing a correct password would not.
+    school = await getSchoolByAdminEmail(email.trim().toLowerCase())
+    if (!school && process.env.NODE_ENV !== 'production') {
+      school = await getSchoolBySubdomain(DEV_TEST_SUBDOMAIN)
+    }
   }
 
   if (!school || school.adminEmail !== email.trim().toLowerCase()) {
