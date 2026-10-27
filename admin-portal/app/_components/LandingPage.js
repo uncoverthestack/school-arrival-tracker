@@ -5,10 +5,11 @@ import { Features } from './landing/Features'
 import { WhyUs } from './landing/WhyUs'
 import { Pricing } from './landing/Pricing'
 import { Footer } from './landing/Footer'
+import { StickyMobileCTA } from './landing/StickyMobileCTA'
 
 export function LandingPage() {
   return (
-    <div data-theme="dark" className="dark min-h-screen overflow-x-hidden bg-[#101010] font-kiosk text-white">
+    <div data-theme="dark" className="dark min-h-screen overflow-x-hidden bg-[#101010] font-kiosk text-white pb-16 md:pb-0">
       <Navbar />
       <Hero />
       <Stats />
@@ -16,6 +17,7 @@ export function LandingPage() {
       <WhyUs />
       <Pricing />
       <Footer />
+      <StickyMobileCTA />
     </div>
   )
 }

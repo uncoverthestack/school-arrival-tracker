@@ -46,7 +46,7 @@ export async function GET(request) {
       if (!s.parent?.phone) continue
 
       try {
-        await notifyParentAbsent(s.parent.phone, s.name, cutoffLabel)
+        await notifyParentAbsent(s.parent.phone, s.name, cutoffLabel, school.name)
         await updateStudent(s.id, school.id, { lastLateAlertDate: today })
         await createWatchlistEntry({ schoolId: school.id, studentId: s.id, reason: 'not_arrived', date: today })
         alerted.push({ school: school.name, student: s.name })

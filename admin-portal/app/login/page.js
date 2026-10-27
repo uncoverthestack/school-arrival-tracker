@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { AuthLayout } from '../_components/AuthLayout'
 
@@ -13,24 +13,16 @@ const inputClass =
 
 export default function LoginPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+
+  // Only relative, single-slash paths: "//evil.com" and "https://evil.com" are both
+  // rejected so this cannot be used as an open redirect.
+  const rawNext = searchParams.get('next')
+  const next = rawNext && /^\/[^/\\]/.test(rawNext) ? rawNext : '/'
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [schoolKey, setSchoolKey] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-
-  // window/document only exist client-side, so the school key can't be part
-  // of the initial state — it has to be read after mount.
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
-    const keyFromUrl = params.get('key') ?? ''
-    const cookieKey = document.cookie
-      .split('; ')
-      .find(row => row.startsWith('school-key='))
-      ?.split('=')[1] ?? ''
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setSchoolKey(decodeURIComponent(keyFromUrl || cookieKey))
-  }, [])
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -38,10 +30,13 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
+      // Which school this is gets resolved server-side from the request's Host
+      // header — the client never needs to know or send the school's API key
+      // just to log in.
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim(), password, schoolKey })
+        body: JSON.stringify({ email: email.trim(), password })
       })
       const data = await res.json()
 
@@ -50,7 +45,7 @@ export default function LoginPage() {
         return
       }
 
-      router.push('/')
+      router.push(next)
       router.refresh()
     } catch {
       setError('Network error — please try again')

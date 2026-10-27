@@ -28,7 +28,7 @@ function currentLagosClock() {
 // the QR camera lifecycle, and the code-entry confirm step. QR scans call
 // scanCard directly (no confirm); manual codes go through lookupStudent ->
 // confirm -> scanCard.
-export function useScanFlow(schoolKey) {
+export function useScanFlow() {
   const [view, setView] = useState('pick') // 'pick' | 'scan' | 'code' | 'face' | 'confirm' | 'result'
   const [scanType, setScanType] = useState(deriveScanType)
   const [confirmTarget, setConfirmTarget] = useState(null) // { student, code }
@@ -102,7 +102,7 @@ export function useScanFlow(schoolKey) {
     setScanning(true)
     let data
     try {
-      data = await scanCard(id, scanTypeRef.current, schoolKey)
+      data = await scanCard(id, scanTypeRef.current)
     } catch (err) {
       console.error(err)
       setScanning(false)
@@ -112,7 +112,7 @@ export function useScanFlow(schoolKey) {
     setScanning(false)
 
     if (data.error === 'unauthorized') {
-      showResult({ state: 'error', student: null, message: 'Invalid school key — check the URL' }, returnTo)
+      showResult({ state: 'error', student: null, message: 'Could not identify this school — check the gate is loaded on the right school URL' }, returnTo)
       return
     }
     if (data.error === 'not_found') {
@@ -131,7 +131,7 @@ export function useScanFlow(schoolKey) {
       showResult({ state: 'success', student: data.student, time: data.time, message: data.message, eventType: scanTypeRef.current }, returnTo)
       setArrivals(prev => [{ ...data.student, time: data.time, type: scanTypeRef.current }, ...prev])
     }
-  }, [schoolKey, showResult])
+  }, [showResult])
 
   useEffect(() => {
     if (view !== 'scan' || !online) return
@@ -167,7 +167,7 @@ export function useScanFlow(schoolKey) {
     setScanning(true)
     let data
     try {
-      data = await lookupStudent(trimmed, schoolKey)
+      data = await lookupStudent(trimmed)
     } catch (err) {
       console.error(err)
       setScanning(false)
@@ -177,7 +177,7 @@ export function useScanFlow(schoolKey) {
     setScanning(false)
 
     if (data.error === 'unauthorized') {
-      showResult({ state: 'error', student: null, message: 'Invalid school key — check the URL' }, 'code')
+      showResult({ state: 'error', student: null, message: 'Could not identify this school — check the gate is loaded on the right school URL' }, 'code')
       return
     }
     if (data.error === 'not_found') {
@@ -186,7 +186,7 @@ export function useScanFlow(schoolKey) {
     }
     setConfirmTarget({ student: data.student, code: trimmed, codePrefix: data.codePrefix })
     setView('confirm')
-  }, [schoolKey, showResult])
+  }, [showResult])
 
   const confirmCheckIn = useCallback(() => {
     if (!confirmTarget) return

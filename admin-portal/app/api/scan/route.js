@@ -1,3 +1,4 @@
+import { after } from 'next/server'
 import { notifyParent } from '@/lib/notify'
 import { getSchool } from '@/lib/schools'
 import { checkLimit, scanLimiter } from '@/lib/ratelimit'
@@ -67,7 +68,12 @@ export async function POST(request) {
   })
 
   if (student.parent?.phone) {
-    notifyParent(student.parent.phone, student.name, type, time).catch(console.error)
+    // after() keeps the function alive until the notification finishes. Without it the
+    // serverless instance freezes the moment the response is sent, suspending the
+    // in-flight request to the SMS provider — alerts then arrive minutes late when a
+    // later request happens to thaw the same instance, or never arrive at all, while
+    // the gate screen still says "parent notified".
+    after(() => notifyParent(student.parent.phone, student.name, type, time, school.name).catch(console.error))
   }
 
   return Response.json({
@@ -79,6 +85,6 @@ export async function POST(request) {
       photoUrl: student.photoUrl ?? null,
     },
     time,
-    message: `${type === 'arrival' ? 'Arrived' : 'Departed'} at ${time} — parent notified`,
+    message: `${type === 'arrival' ? 'Arrived' : 'Departed'} at ${time} — notifying parent`,
   })
 }

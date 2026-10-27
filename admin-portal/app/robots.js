@@ -1,12 +1,14 @@
-export default function robots() {
+import { getRootDomain } from '@/lib/domain'
+
+export default async function robots() {
   return {
     rules: [
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/api/', '/superadmin', '/students', '/settings', '/gate'],
+        disallow: ['/api/', '/superadmin', '/students', '/settings', '/gate', '/thank-you'],
       },
     ],
-    sitemap: 'https://dataocelotschools.com/sitemap.xml',
+    sitemap: `https://${await getRootDomain()}/sitemap.xml`,
   }
 }

@@ -79,12 +79,12 @@ function ResultScreen({ result }) {
   )
 }
 
-export function GateScanner({ schoolKey }) {
+export function GateScanner() {
   const {
     view, scanType, confirmTarget, result, arrivals, scanning, clock, online,
     enterPickView, enterCodeView, enterFaceView, backToScanner, submitCode, confirmCheckIn, cancelConfirm, directScan,
     toggleScanType
-  } = useScanFlow(schoolKey)
+  } = useScanFlow()
 
   // Follow the OS light/dark preference. Scoped to this wrapper's
   // [data-theme] attribute (not document.documentElement) so it can't
@@ -115,7 +115,6 @@ export function GateScanner({ schoolKey }) {
           <ScannerView onBack={enterPickView} />
         ) : view === 'face' ? (
           <FaceScanView
-            schoolKey={schoolKey}
             onScan={(code) => directScan(code, 'face')}
             onEnterCode={enterPickView}
           />
