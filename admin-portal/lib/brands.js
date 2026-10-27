@@ -1,4 +1,6 @@
-// Brand registry. One notify Lambda serves both storefronts, so every message has to
+// Brand registry, shared by every outbound channel (SMS sender IDs and message
+// prefixes, transactional email subjects and footers). One deployment serves both
+// storefronts, so every message has to
 // carry the identity of the domain the parent actually registered through — a Childmap
 // parent must never receive an SMS signed "DataOcelot", and vice versa.
 //

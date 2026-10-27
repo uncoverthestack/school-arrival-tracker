@@ -1,4 +1,4 @@
-import { brandEnv } from '../brands'
+import { brandEnv } from '../../brands'
 import sendchamp from './sendchamp'
 import termii from './termii'
 import africastalking from './africastalking'

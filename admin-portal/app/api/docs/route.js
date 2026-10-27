@@ -1,3 +1,4 @@
+import { hasDocsAccess } from '@/lib/docsAccess'
 import { getRootDomain } from '@/lib/domain'
 
 function buildDescription(rootDomain) {
@@ -75,7 +76,7 @@ const spec = {
           name: { type: 'string', nullable: true },
           phone: { type: 'string', example: '+2348012345678', description: 'E.164 format' },
           email: { type: 'string', nullable: true },
-          phone_verified: { type: 'boolean', description: 'True once the parent has completed OTP verification via /api/register + /api/verify' },
+          phone_verified: { type: 'boolean', description: 'True once the parent has registered via /api/register' },
           created_at: { type: 'string', format: 'date-time' }
         }
       },
@@ -820,57 +821,6 @@ const spec = {
         }
       }
     },
-    '/api/verify': {
-      post: {
-        tags: ['Parent Registration'],
-        summary: 'Complete OTP verification',
-        description: 'Verifies the OTP from `/api/register`. On success, marks the parent as verified and updates the student record with the confirmed phone and parent name.',
-        requestBody: {
-          required: true,
-          content: {
-            'application/json': {
-              schema: {
-                type: 'object',
-                required: ['verificationId', 'otp', 'parentName'],
-                properties: {
-                  verificationId: { type: 'string', format: 'uuid', description: 'Returned by /api/register' },
-                  otp: { type: 'string', example: '839201', description: '6-digit code from SMS' },
-                  parentName: { type: 'string', example: 'Mrs Okafor' }
-                }
-              }
-            }
-          }
-        },
-        responses: {
-          200: {
-            description: 'Verified — parent registered for notifications',
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'object',
-                  properties: {
-                    success: { type: 'boolean' },
-                    student: {
-                      type: 'object',
-                      properties: {
-                        name: { type: 'string' },
-                        studentClass: { type: 'string' }
-                      }
-                    },
-                    message: { type: 'string' }
-                  }
-                }
-              }
-            }
-          },
-          400: { description: 'Incorrect OTP', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
-          404: { description: 'Invalid verificationId', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
-          410: { description: 'OTP already used or expired', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } }
-        }
-      }
-    },
-
-    // ── Demo Requests ────────────────────────────────────────────────
     '/api/demo-requests': {
       post: {
         tags: ['Demo Requests'],
@@ -1049,6 +999,10 @@ const spec = {
 }
 
 export async function GET() {
+  if (!await hasDocsAccess()) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   const rootDomain = await getRootDomain()
   return Response.json({
     ...spec,

@@ -1,24 +1,7 @@
 import { checkLimit, registerLimiter } from '@/lib/ratelimit'
 import { getStudentByCode } from '@/lib/repo/students'
-import { createVerification } from '@/lib/repo/verifications'
 import { toE164 } from '@/lib/validation'
-import { sendOtpSms, notificationsDisabled } from '@/lib/notify'
-
-function generateOtp() {
-  return String(Math.floor(100000 + Math.random() * 900000))
-}
-
-async function sendOtp(phone, otp) {
-  try {
-    await sendOtpSms(phone, otp)
-    return { sent: true }
-  } catch (err) {
-    // A parent who never receives the code cannot register, so surface the failure
-    // rather than reporting success for a message that was never delivered.
-    console.error('OTP send failed:', err)
-    return { sent: false }
-  }
-}
+import { updateParent } from '@/lib/repo/parents'
 
 export async function POST(request) {
   const { allowed } = await checkLimit(registerLimiter, null, request)
@@ -73,38 +56,16 @@ export async function POST(request) {
     )
   }
 
-  const otp = generateOtp()
-  const expiresAt = new Date(Date.now() + 5 * 60 * 1000)
-
-  const verification = await createVerification({
-    studentId: student.id,
-    phone: inputPhone,
-    otp,
-    expiresAt,
-  })
-
-  const { sent } = await sendOtp(inputPhone, otp)
-
-  // Local dev, or a deployment with notifications switched off (the preview
-  // environment), has no way to deliver the code — so return it directly, making the
-  // flow testable there. VERCEL_ENV is 'production' only on real production
-  // deployments, so this cannot expose a live parent's OTP even if the flag is set
-  // by mistake.
-  const showOtp = process.env.NODE_ENV !== 'production' ||
-    (notificationsDisabled() && process.env.VERCEL_ENV !== 'production')
+  // Registration completes on the code-and-phone match alone. The gate code is
+  // issued by the school and only reaches the parent on the child's card, and the
+  // submitted number must already match the one the school holds — so an SMS
+  // round-trip confirmed nothing the school had not already asserted, while costing
+  // every parent an extra step before they could receive any alerts at all.
+  await updateParent(student.parent.id, { name: safeName, phoneVerified: true })
 
   return Response.json({
-    pending: true,
-    verificationId: verification.id,
-    studentName: student.name,
-    ...(showOtp && { devOtp: otp }),
-    // Never put the OTP in the response outside development: anyone who knows a
-    // student code and the parent's number could otherwise read the code straight
-    // out of a failed-send response and complete the registration themselves.
-    message: sent
-      ? `A verification code has been sent to ${inputPhone}`
-      : showOtp
-        ? `SMS not configured — use devOtp: ${otp} to verify`
-        : 'Could not send the verification code. Please try again shortly.',
+    success: true,
+    student: { name: student.name, studentClass: student.studentClass },
+    message: `You will receive notifications for ${student.name}`,
   })
 }
