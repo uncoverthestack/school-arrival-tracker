@@ -96,6 +96,6 @@ export async function scanCard(cardId, type) {
     success: true,
     student: studentInfo,
     time,
-    message: `${type === 'arrival' ? 'Arrived' : 'Departed'} at ${time} — parent notified`,
+    message: `${type === 'arrival' ? 'Arrived' : 'Departed'} at ${time} — notifying parent`,
   }
 }

@@ -23,7 +23,7 @@ export async function POST(request) {
 
   const { cardId, type = 'arrival' } = body
 
-  const result = await scanCard(cardId, type, apiKey)
+  const result = await scanCard(cardId, type)
 
   if (result.error === 'unauthorized') {
     return Response.json({ error: 'Unauthorized' }, { status: 401 })

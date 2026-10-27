@@ -1,7 +1,7 @@
-import { resolveBrand, senderIdFor } from './brands'
+import { resolveBrand, senderIdFor } from '../brands'
 import { smsProviderFor } from './providers'
 
-export { resolveBrand } from './brands'
+export { resolveBrand } from '../brands'
 
 /**
  * Sends one SMS through the brand's configured provider. Throws on failure so callers

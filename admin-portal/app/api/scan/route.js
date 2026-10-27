@@ -85,6 +85,6 @@ export async function POST(request) {
       photoUrl: student.photoUrl ?? null,
     },
     time,
-    message: `${type === 'arrival' ? 'Arrived' : 'Departed'} at ${time} — parent notified`,
+    message: `${type === 'arrival' ? 'Arrived' : 'Departed'} at ${time} — notifying parent`,
   })
 }
