@@ -1,4 +1,3 @@
-import { hasDocsAccess } from '@/lib/docsAccess'
 import { getRootDomain } from '@/lib/domain'
 
 function buildDescription(rootDomain) {
@@ -999,10 +998,6 @@ const spec = {
 }
 
 export async function GET() {
-  if (!await hasDocsAccess()) {
-    return Response.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
   const rootDomain = await getRootDomain()
   return Response.json({
     ...spec,
