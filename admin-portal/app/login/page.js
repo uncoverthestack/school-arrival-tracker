@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { AuthLayout } from '../_components/AuthLayout'
 
@@ -13,6 +13,12 @@ const inputClass =
 
 export default function LoginPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+
+  // Only relative, single-slash paths: "//evil.com" and "https://evil.com" are both
+  // rejected so this cannot be used as an open redirect.
+  const rawNext = searchParams.get('next')
+  const next = rawNext && /^\/[^/\\]/.test(rawNext) ? rawNext : '/'
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -39,7 +45,7 @@ export default function LoginPage() {
         return
       }
 
-      router.push('/')
+      router.push(next)
       router.refresh()
     } catch {
       setError('Network error — please try again')

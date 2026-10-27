@@ -14,7 +14,9 @@ const SWAGGER_VERSION = '5.17.14'
 const BASE = `https://cdn.jsdelivr.net/npm/swagger-ui-dist@${SWAGGER_VERSION}`
 
 export async function GET() {
-  if (!await hasDocsAccess()) redirect('/login')
+  // Carry the destination through the login so the reader lands back here rather
+  // than on the dashboard, which makes the gate look like a dead link.
+  if (!await hasDocsAccess()) redirect('/login?next=/swagger-docs')
 
   const rootDomain = await getRootDomain()
   const brand = resolveBrand(rootDomain)
