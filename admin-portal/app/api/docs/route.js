@@ -1,9 +1,7 @@
-const spec = {
-  openapi: '3.0.3',
-  info: {
-    title: 'Childmap — DataOcelot Schools API',
-    version: '1.0.0',
-    description: `
+import { getRootDomain } from '@/lib/domain'
+
+function buildDescription(rootDomain) {
+  return `
 ## Authentication
 
 Most endpoints require one of two auth methods:
@@ -27,13 +25,26 @@ Your school API key is shown in the dashboard after login.
 
 ## Base URL
 
-Production: \`https://{subdomain}.dataocelotschools.com\`
+Production: \`https://{subdomain}.${rootDomain}\`
     `.trim()
-  },
-  servers: [
-    { url: 'https://dataocelotschools.com', description: 'Production' },
+}
+
+function buildServers(rootDomain) {
+  return [
+    { url: `https://${rootDomain}`, description: 'Current domain' },
+    { url: 'https://dataocelotschools.com', description: 'Testing' },
+    { url: 'https://childmap.org', description: 'Live' },
     { url: 'http://localhost:3000', description: 'Local dev' }
-  ],
+  ]
+}
+
+const spec = {
+  openapi: '3.0.3',
+  info: {
+    title: 'Childmap API',
+    version: '1.0.0',
+  },
+  servers: [],
   tags: [
     { name: 'School Signup', description: 'Register a new school on the platform' },
     { name: 'Authentication', description: 'School admin login / logout' },
@@ -64,7 +75,7 @@ Production: \`https://{subdomain}.dataocelotschools.com\`
           name: { type: 'string', nullable: true },
           phone: { type: 'string', example: '+2348012345678', description: 'E.164 format' },
           email: { type: 'string', nullable: true },
-          phone_verified: { type: 'boolean', description: 'True once the parent has completed OTP verification via /api/register + /api/verify' },
+          phone_verified: { type: 'boolean', description: 'True once the parent has registered via /api/register' },
           created_at: { type: 'string', format: 'date-time' }
         }
       },
@@ -225,7 +236,7 @@ Production: \`https://{subdomain}.dataocelotschools.com\`
       post: {
         tags: ['Authentication'],
         summary: 'School admin login',
-        description: 'Authenticates the school admin and sets an `sp-admin` session cookie. Required before accessing admin portal endpoints.',
+        description: 'Authenticates the school admin and sets an `sp-admin` session cookie. Must be called on the school\'s own subdomain — the school is resolved server-side from the request host, not from the request body.',
         requestBody: {
           required: true,
           content: {
@@ -235,8 +246,7 @@ Production: \`https://{subdomain}.dataocelotschools.com\`
                 required: ['email', 'password'],
                 properties: {
                   email: { type: 'string', format: 'email' },
-                  password: { type: 'string' },
-                  schoolKey: { type: 'string', description: 'API key — required when not on the school subdomain' }
+                  password: { type: 'string' }
                 }
               }
             }
@@ -810,57 +820,6 @@ Production: \`https://{subdomain}.dataocelotschools.com\`
         }
       }
     },
-    '/api/verify': {
-      post: {
-        tags: ['Parent Registration'],
-        summary: 'Complete OTP verification',
-        description: 'Verifies the OTP from `/api/register`. On success, marks the parent as verified and updates the student record with the confirmed phone and parent name.',
-        requestBody: {
-          required: true,
-          content: {
-            'application/json': {
-              schema: {
-                type: 'object',
-                required: ['verificationId', 'otp', 'parentName'],
-                properties: {
-                  verificationId: { type: 'string', format: 'uuid', description: 'Returned by /api/register' },
-                  otp: { type: 'string', example: '839201', description: '6-digit code from SMS' },
-                  parentName: { type: 'string', example: 'Mrs Okafor' }
-                }
-              }
-            }
-          }
-        },
-        responses: {
-          200: {
-            description: 'Verified — parent registered for notifications',
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'object',
-                  properties: {
-                    success: { type: 'boolean' },
-                    student: {
-                      type: 'object',
-                      properties: {
-                        name: { type: 'string' },
-                        studentClass: { type: 'string' }
-                      }
-                    },
-                    message: { type: 'string' }
-                  }
-                }
-              }
-            }
-          },
-          400: { description: 'Incorrect OTP', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
-          404: { description: 'Invalid verificationId', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
-          410: { description: 'OTP already used or expired', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } }
-        }
-      }
-    },
-
-    // ── Demo Requests ────────────────────────────────────────────────
     '/api/demo-requests': {
       post: {
         tags: ['Demo Requests'],
@@ -1039,7 +998,12 @@ Production: \`https://{subdomain}.dataocelotschools.com\`
 }
 
 export async function GET() {
-  return Response.json(spec, {
+  const rootDomain = await getRootDomain()
+  return Response.json({
+    ...spec,
+    info: { ...spec.info, description: buildDescription(rootDomain) },
+    servers: buildServers(rootDomain),
+  }, {
     headers: { 'Access-Control-Allow-Origin': '*' }
   })
 }

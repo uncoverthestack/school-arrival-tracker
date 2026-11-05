@@ -3,12 +3,10 @@
 import { useState } from 'react'
 
 export default function RegisterPage() {
-  const [step, setStep] = useState('form') // form | verify | success
+  const [step, setStep] = useState('form') // form | success
   const [code, setCode] = useState('')
   const [parentName, setParentName] = useState('')
   const [parentPhone, setParentPhone] = useState('')
-  const [otp, setOtp] = useState('')
-  const [verificationId, setVerificationId] = useState('')
   const [studentName, setStudentName] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -28,31 +26,7 @@ export default function RegisterPage() {
 
       if (!res.ok) { setError(data.error ?? 'Something went wrong'); return }
 
-      setVerificationId(data.verificationId)
-      setStudentName(data.studentName)
-      setStep('verify')
-    } catch {
-      setError('Network error — please try again')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  async function handleVerify(e) {
-    e.preventDefault()
-    setError('')
-    setLoading(true)
-
-    try {
-      const res = await fetch('/api/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ verificationId, otp: otp.trim(), parentName: parentName.trim() })
-      })
-      const data = await res.json()
-
-      if (!res.ok) { setError(data.error ?? 'Something went wrong'); return }
-
+      setStudentName(data.student?.name ?? '')
       setStep('success')
     } catch {
       setError('Network error — please try again')
@@ -70,45 +44,6 @@ export default function RegisterPage() {
           <p className="text-gray-400">
             You will receive SMS notifications whenever <span className="text-white font-semibold">{studentName}</span> arrives at or leaves school.
           </p>
-        </div>
-      </div>
-    )
-  }
-
-  if (step === 'verify') {
-    return (
-      <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center p-6">
-        <div className="max-w-sm w-full">
-          <div className="text-center mb-8">
-            <h1 className="text-2xl font-bold">Verify Your Number</h1>
-            <p className="text-gray-400 text-sm mt-2">
-              Enter the 6-digit code sent to <span className="text-white">{parentPhone}</span>
-            </p>
-          </div>
-          <form onSubmit={handleVerify} className="space-y-4">
-            <input
-              type="text"
-              inputMode="numeric"
-              maxLength={6}
-              value={otp}
-              onChange={e => setOtp(e.target.value.replace(/\D/g, ''))}
-              placeholder="000000"
-              autoFocus
-              required
-              className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-4 text-center text-3xl font-bold tracking-widest outline-none focus:border-indigo-500"
-            />
-            {error && <p className="text-red-400 text-sm text-center">{error}</p>}
-            <button
-              type="submit"
-              disabled={loading || otp.length < 6}
-              className="w-full py-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:bg-gray-800 disabled:text-gray-600 text-white font-bold transition-colors"
-            >
-              {loading ? 'Verifying…' : 'Confirm'}
-            </button>
-            <button type="button" onClick={() => { setStep('form'); setOtp('') }} className="w-full text-sm text-gray-500 hover:text-gray-300">
-              Back
-            </button>
-          </form>
         </div>
       </div>
     )

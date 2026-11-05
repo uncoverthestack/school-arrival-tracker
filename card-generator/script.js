@@ -1,4 +1,4 @@
-let students = [];
+nlet students = [];
 
 document.getElementById('fileInput').addEventListener('change', function (e) {
   const file = e.target.files[0];

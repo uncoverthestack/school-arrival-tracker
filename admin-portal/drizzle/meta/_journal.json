@@ -29,6 +29,20 @@
       "when": 1786191031822,
       "tag": "0003_watery_sinister_six",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792448895209,
+      "tag": "0004_nostalgic_lightspeed",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792448919700,
+      "tag": "0005_amusing_vargas",
+      "breakpoints": true
     }
   ]
 }

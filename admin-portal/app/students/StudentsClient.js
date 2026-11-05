@@ -2,7 +2,8 @@
 
 import { useState, useTransition, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import { ClassFilter, filterByClass } from '../_components/ClassFilter'
+import { splitClass } from '../_components/ClassFilter'
+import { ClassSizeSelect } from '../_components/ClassSizeSelect'
 
 const MODEL_URL = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@0.22.2/weights'
 
@@ -769,13 +770,15 @@ export default function StudentsClient({ students, classes, codePrefix }) {
   const [adding, setAdding] = useState(false)
   const [importing, setImporting] = useState(false)
   const [managingClasses, setManagingClasses] = useState(false)
-  const [levelFilter, setLevelFilter] = useState(null)
-  const [armFilter, setArmFilter] = useState(null)
+  const [classFilter, setClassFilter] = useState(null) // e.g. "JSS1A", or null for "all"
 
-  const visibleStudents = useMemo(
-    () => filterByClass(students, levelFilter, armFilter),
-    [students, levelFilter, armFilter]
-  )
+  const visibleStudents = useMemo(() => {
+    if (!classFilter) return students
+    return students.filter(s => {
+      const { level, arm } = splitClass(s.studentClass)
+      return `${level}${arm}` === classFilter
+    })
+  }, [students, classFilter])
 
   const toolbar = (
     <div className="flex flex-wrap gap-3 mb-6">
@@ -827,13 +830,7 @@ export default function StudentsClient({ students, classes, codePrefix }) {
     <>
       {modals}
       {toolbar}
-      <ClassFilter
-        items={students}
-        level={levelFilter}
-        arm={armFilter}
-        onLevel={(l) => { setLevelFilter(l); setArmFilter(null) }}
-        onArm={setArmFilter}
-      />
+      <ClassSizeSelect items={students} value={classFilter} onChange={setClassFilter} />
 
       {visibleStudents.length === 0 ? (
         <div className="bg-surface-container-lowest rounded-xl p-12 text-center">

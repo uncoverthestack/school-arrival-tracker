@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { RequestDemoButton } from '../RequestDemoButton'
 import { RollingText } from '../RollingText'
+import logoIcon from '@/public/brand/childmap-icon-256.png'
 
 const NAV_LINKS = [
   { href: '#features', label: 'Features' },
@@ -36,7 +38,7 @@ export function Navbar() {
       <div className="max-w-7xl mx-auto px-4 md:px-8">
         <div className="flex items-center justify-between py-4 md:grid md:grid-cols-[1fr_auto_1fr]">
           <Link href="/" className="flex items-center gap-2.5 group md:justify-self-start">
-            <img src="/brand/childmap-icon-256.png" alt="" width={34} height={34} className="size-8.5 shrink-0" />
+            <Image src={logoIcon} alt="" width={34} height={34} className="size-8.5 shrink-0" />
             <span className={`font-bold text-base ${scrolled ? 'text-on-surface' : 'text-white'}`}>Childmap</span>
           </Link>
 

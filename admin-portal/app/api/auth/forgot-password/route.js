@@ -4,6 +4,7 @@ import { checkLimit, forgotPasswordLimiter } from '@/lib/ratelimit'
 import { getSchoolByAdminEmail } from '@/lib/repo/schools'
 import { createPasswordReset } from '@/lib/repo/passwordResets'
 import { sendPasswordResetEmail } from '@/lib/email'
+import { getRootDomain } from '@/lib/domain'
 
 export async function POST(request) {
   const { allowed } = await checkLimit(forgotPasswordLimiter, null, request)
@@ -33,11 +34,13 @@ export async function POST(request) {
 
     await createPasswordReset({ schoolId: school.id, token, expiresAt })
 
+    const rootDomain = await getRootDomain()
     after(() => sendPasswordResetEmail({
       toEmail: school.adminEmail,
       schoolName: school.name,
       subdomain: school.subdomain,
       token,
+      rootDomain,
     }))
   }
 

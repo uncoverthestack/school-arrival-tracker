@@ -83,13 +83,14 @@ school-arrival-tracker/
 │   │   ├── session.js           iron-session school admin auth
 │   │   ├── superSession.js      iron-session super admin auth (separate cookie)
 │   │   ├── schools.js           School lookup by API key
-│   │   ├── notify.js            Lambda notification helper
+│   │   ├── notify.js            Parent SMS notifications
+│   │   ├── sms/                 Brand identity + swappable SMS providers
 │   │   └── ratelimit.js         Upstash rate limiting
 │   └── proxy.js                 Subdomain routing (Next.js middleware)
 ├── card-generator/              Static HTML card printer (generates printable student codes)
 ├── lambda/
 │   └── notify/
-│       └── index.mjs            AWS Lambda — SMS + WhatsApp notifications
+│       └── index.mjs            AWS Lambda — WhatsApp only, undeployed (SMS now sends in-app)
 └── infrastructure/
     └── supabase-migration.sql   Full DB schema
 ```
@@ -438,6 +439,65 @@ aws lambda create-function \
 ```
 
 Enable a **Function URL** on the Lambda and add the URL + API key to Vercel environment variables.
+
+#### Lambda environment — SMS provider and brand identity
+
+The Lambda serves both `childmap.org` and `dataocelotschools.com` from one deployment. The
+admin portal sends the request Host as `brand`, and the Lambda resolves the sender ID, SMS
+provider and WhatsApp template from it. Every variable below can be suffixed with
+`_CHILDMAP` or `_DATAOCELOT` to override it for one brand; the unsuffixed name is the
+shared default.
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `NOTIFY_API_KEY` | — | Shared secret checked against the `x-api-key` header |
+| `SMS_PROVIDER` | `sns` | `sns`, `sendchamp`, `termii`, or `africastalking` |
+| `SENDER_ID` | brand name | Alphanumeric sender ID, truncated to the 11-char GSM limit |
+| `DEFAULT_BRAND` | `childmap` | Brand used when the caller sends no Host or brand |
+| `DEFAULT_COUNTRY_CODE` | `234` | Applied to local numbers starting `0` |
+| `SENDCHAMP_PUBLIC_KEY` | — | Required when `SMS_PROVIDER=sendchamp`; the dashboard's public access key |
+| `SENDCHAMP_BASE_URL` | `https://api.sendchamp.com` | Only needed if your account's live base URL differs; a trailing `/api/v1` or `/` is trimmed automatically |
+| `SENDCHAMP_ROUTE` | `dnd` | `dnd` reaches Do-Not-Disturb numbers; `non_dnd` does not |
+| `TERMII_API_KEY` | — | Required when `SMS_PROVIDER=termii` |
+| `TERMII_CHANNEL` | `dnd` | `dnd` reaches Do-Not-Disturb numbers; `generic` does not |
+| `AT_API_KEY` / `AT_USERNAME` | — | Required when `SMS_PROVIDER=africastalking` |
+| `AWS_WHATSAPP_PHONE_ID` | — | WhatsApp origination number; unset disables WhatsApp |
+| `AWS_WHATSAPP_TEMPLATE_NAME` | `school_arrival_notification` | Approved template name |
+
+Running the live brand on a Nigerian aggregator while the testing domain stays on SNS is
+just two variables:
+
+```bash
+SMS_PROVIDER=sns                           # dataocelotschools.com (testing)
+SMS_PROVIDER_CHILDMAP=sendchamp            # childmap.org (live)
+SENDCHAMP_PUBLIC_KEY_CHILDMAP=your-public-access-key
+```
+
+> **Nigeria deliverability:** AWS SNS has no sender-ID registration path for `+234` and
+> reports DND-blocked messages as successful publishes. Use `sendchamp` (or another local
+> aggregator) with a registered sender ID for the live brand.
+
+#### Delivery reports
+
+Sendchamp posts per-message delivery status to `POST /api/webhooks/sendchamp`, which
+updates the `sms_deliveries` row created when the message was submitted. This is what
+makes a carrier-dropped SMS visible — the send API reports success either way.
+
+The Sendchamp dashboard's **Webhook URL** field is an input, not a value it gives you —
+paste your own endpoint there, with the shared secret appended, and set the same secret
+in the portal's environment:
+
+```
+https://childmap.org/api/webhooks/sendchamp?token=<SENDCHAMP_WEBHOOK_SECRET>
+```
+
+| Variable | Where | Purpose |
+| --- | --- | --- |
+| `SENDCHAMP_WEBHOOK_SECRET` | Vercel | Shared secret in the webhook URL's `token` query param; the endpoint returns 503 until it is set |
+| `SENDCHAMP_WEBHOOK_SIGNING_KEY` | Vercel | Optional HMAC-SHA256 key, if your account signs webhooks |
+| `SENDCHAMP_SIGNATURE_HEADER` | Vercel | Header carrying that signature — the HMAC check engages only when both are set |
+
+Query recent failures with `getRecentSmsFailures()` from `lib/repo/smsDeliveries.js`.
 
 ---
 

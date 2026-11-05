@@ -1,7 +1,8 @@
-const BASE_URL = 'https://dataocelotschools.com'
+import { getRootDomain } from '@/lib/domain'
 
-export default function sitemap() {
-  const routes = ['', '/about', '/privacy', '/terms', '/login', '/signup']
+export default async function sitemap() {
+  const BASE_URL = `https://${await getRootDomain()}`
+  const routes = ['', '/about', '/privacy', '/terms', '/login', '/signup', '/register']
 
   return routes.map(path => ({
     url: `${BASE_URL}${path}`,

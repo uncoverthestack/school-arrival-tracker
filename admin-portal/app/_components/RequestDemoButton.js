@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useId } from 'react'
 import { createPortal } from 'react-dom'
+import { useRouter } from 'next/navigation'
 import { motion, useReducedMotion } from 'framer-motion'
 import { RollingText } from './RollingText'
 
@@ -20,8 +21,8 @@ function RequestDemoModal({ onClose, triggerRef }) {
   const [schoolAddress, setSchoolAddress] = useState('')
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
-  const [done, setDone] = useState(false)
 
+  const router = useRouter()
   const reduceMotion = useReducedMotion()
   const dialogRef = useRef(null)
   const firstFieldRef = useRef(null)
@@ -66,16 +67,24 @@ function RequestDemoModal({ onClose, triggerRef }) {
     setError('')
     setSubmitting(true)
 
-    const res = await fetch('/api/demo-requests', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ firstName, lastName, phone, schoolName, schoolEmail, schoolAddress })
-    })
-    const data = await res.json()
+    let res, data
+    try {
+      res = await fetch('/api/demo-requests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ firstName, lastName, phone, schoolName, schoolEmail, schoolAddress })
+      })
+      data = await res.json()
+    } catch {
+      setSubmitting(false)
+      setError('Network error — please try again')
+      return
+    }
     setSubmitting(false)
 
     if (!res.ok) { setError(data.error ?? 'Something went wrong'); return }
-    setDone(true)
+    onClose()
+    router.push('/thank-you')
   }
 
   return (
@@ -97,33 +106,12 @@ function RequestDemoModal({ onClose, triggerRef }) {
         className="bg-surface-container-lowest rounded-lg p-6 w-full max-w-sm max-h-[90vh] overflow-y-auto"
         onClick={e => e.stopPropagation()}
       >
-        {done ? (
-          <div className="text-center py-4">
-            <div className="mx-auto mb-4 w-14 h-14 rounded-full bg-success-container flex items-center justify-center">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M4 12l5 5L20 6" stroke="var(--color-on-success-container)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </div>
-            <p id={headingId} className="text-title-medium font-bold text-on-surface mb-1">Request received</p>
-            <p className="text-body-medium tracking-[0.1px] text-on-surface-variant mb-6">
-              We will contact you as soon as possible.
-            </p>
-            <button
-              type="button"
-              onClick={onClose}
-              className={`group w-full py-3 rounded-lg text-label-large bg-primary text-on-primary font-bold shadow-sm transition-all hover:opacity-90 hover:shadow-md ${focusRing}`}
-            >
-              <RollingText>Close</RollingText>
-            </button>
-          </div>
-        ) : (
-          <>
-            <h2 id={headingId} className="text-title-medium font-bold text-on-surface mb-1">Request a demo</h2>
-            <p className="text-body-medium tracking-[0.1px] text-on-surface-variant mb-5">
-              Tell us about your school and we&apos;ll reach out to set up a walkthrough.
-            </p>
+        <h2 id={headingId} className="text-title-medium font-bold text-on-surface mb-1">Request a demo</h2>
+        <p className="text-body-medium tracking-[0.1px] text-on-surface-variant mb-5">
+          Tell us about your school and we&apos;ll reach out to set up a walkthrough.
+        </p>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label htmlFor="demo-first-name" className={labelClass}>First name</label>
@@ -194,8 +182,6 @@ function RequestDemoModal({ onClose, triggerRef }) {
                 </button>
               </div>
             </form>
-          </>
-        )}
       </motion.div>
     </motion.div>
   )

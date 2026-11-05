@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState, useCallback } from 'react'
+import { getFaceDescriptors } from '@/app/actions/scan'
 
 const MODEL_URL = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@0.22.2/weights'
 
@@ -23,7 +24,7 @@ async function getFaceApi() {
   return fa
 }
 
-export function FaceScanView({ schoolKey, onScan, onEnterCode }) {
+export function FaceScanView({ onScan, onEnterCode }) {
   const videoRef = useRef(null)
   const [status, setStatus] = useState('loading') // loading | ready | no-students | error
   const [loadMsg, setLoadMsg] = useState('Loading face models…')
@@ -50,12 +51,8 @@ export function FaceScanView({ schoolKey, onScan, onEnterCode }) {
         if (cancelledRef.current) return
 
         setLoadMsg('Loading student faces…')
-        const res = await fetch('/api/students/descriptors', {
-          headers: { 'x-api-key': schoolKey }
-        })
+        const { students = [] } = await getFaceDescriptors()
         if (cancelledRef.current) return
-
-        const { students = [] } = await res.json()
 
         if (students.length === 0) {
           setStatus('no-students')
@@ -121,7 +118,7 @@ export function FaceScanView({ schoolKey, onScan, onEnterCode }) {
       cancelledRef.current = true
       stopCamera()
     }
-  }, [schoolKey, onScan, stopCamera])
+  }, [onScan, stopCamera])
 
   return (
     <div className="flex flex-col items-center gap-6 text-center max-w-xs w-full">

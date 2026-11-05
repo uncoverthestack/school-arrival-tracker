@@ -1,0 +1,1 @@
+CREATE INDEX "sms_deliveries_status_created_idx" ON "sms_deliveries" USING btree ("status","created_at" DESC NULLS LAST);

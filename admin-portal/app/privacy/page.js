@@ -1,7 +1,8 @@
 import Link from 'next/link'
 
 export const metadata = {
-  title: 'Privacy Policy — Childmap',
+  title: 'Privacy Policy',
+  description: 'How Childmap collects, uses, and protects student and parent data.',
 }
 
 const sectionClass = 'mt-8'

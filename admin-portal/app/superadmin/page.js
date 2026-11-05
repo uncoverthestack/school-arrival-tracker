@@ -4,6 +4,7 @@ import { getSuperSession } from '@/lib/superSession'
 import { LogoutButton, SchoolsTable } from './SuperAdminClient'
 import { getAllSchools, countStudentsInSchool, expireOverdueSchools } from '@/lib/repo/schools'
 import { getAllDemoRequests } from '@/lib/repo/demoRequests'
+import { getRootDomain } from '@/lib/domain'
 
 async function getSchoolsWithCounts() {
   const schools = await getAllSchools()
@@ -27,7 +28,7 @@ export default async function SuperAdminPage() {
   const session = await getSuperSession()
   if (!session.isSuperAdmin) redirect('/superadmin/login')
 
-  const [schools, demoRequests] = await Promise.all([getSchoolsWithCounts(), getAllDemoRequests()])
+  const [schools, demoRequests, rootDomain] = await Promise.all([getSchoolsWithCounts(), getAllDemoRequests(), getRootDomain()])
   const pendingDemoRequests = demoRequests.filter(r => !r.contacted).length
 
   return (
@@ -53,7 +54,7 @@ export default async function SuperAdminPage() {
           </div>
         </div>
 
-        <SchoolsTable schools={schools} />
+        <SchoolsTable schools={schools} rootDomain={rootDomain} />
 
       </div>
     </div>

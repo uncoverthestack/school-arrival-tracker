@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, boolean, integer, timestamp, unique } from 'drizzle-orm/pg-core'
+import { pgTable, uuid, text, boolean, integer, timestamp, unique, index } from 'drizzle-orm/pg-core'
 
 export const schools = pgTable('schools', {
   id:                  uuid('id').defaultRandom().primaryKey(),
@@ -134,3 +134,27 @@ export const verifications = pgTable('verifications', {
   used:       boolean('used').default(false).notNull(),
   createdAt:  timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 })
+
+// One row per SMS we hand to a provider, updated in place when the provider's
+// delivery webhook reports back. Without this, a message accepted by the API but
+// dropped by the carrier (the usual DND failure) is invisible to us.
+export const smsDeliveries = pgTable('sms_deliveries', {
+  id:         uuid('id').defaultRandom().primaryKey(),
+  provider:   text('provider').notNull(),
+  // Provider-side message id; the only key a delivery webhook gives us to join on.
+  messageId:  text('message_id').unique(),
+  brand:      text('brand'),
+  phone:      text('phone').notNull(),
+  kind:       text('kind'),
+  // submitted -> delivered | failed | expired, as reported by the provider
+  status:     text('status').notNull().default('submitted'),
+  // Provider's own status string and failure reason, kept verbatim for debugging
+  providerStatus: text('provider_status'),
+  failureReason:  text('failure_reason'),
+  createdAt:  timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  updatedAt:  timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+}, (table) => [
+  // Supports getRecentSmsFailures(): newest failures first. messageId already has an
+  // index via its unique constraint, which is the key delivery webhooks look up by.
+  index('sms_deliveries_status_created_idx').on(table.status, table.createdAt.desc()),
+])
